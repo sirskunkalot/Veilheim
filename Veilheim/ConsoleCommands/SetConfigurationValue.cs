@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HarmonyLib;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -296,6 +297,19 @@ namespace Veilheim.ConsoleCommands
                 TryExecuteCommand(ref input, true);
                 Console.instance.AddString($"Command '{inputCopy}' executed");
             }
+        }
+    }
+
+    [HarmonyPatch(typeof(Game), "Start")]
+    public static class Game_Start_Patch
+    {
+        private static void Prefix()
+        {
+            // Configuration console command RPC
+            ZRoutedRpc.instance.Register("SetConfigurationValue", new Action<long, ZPackage>(SetConfigurationValue.RPC_SetConfigurationValue));
+
+            // register all console commands
+            BaseConsoleCommand.InitializeCommand<SetConfigurationValue>();
         }
     }
 }

@@ -1,4 +1,7 @@
-﻿namespace Veilheim.Configurations
+﻿using HarmonyLib;
+using System;
+
+namespace Veilheim.Configurations
 {
     public class ConfigSync
     {
@@ -41,6 +44,16 @@
                     Logger.LogInfo("Successfully synced configuration from server.");
                 }
             }
+        }
+    }
+
+    [HarmonyPatch(typeof(Game), "Start")]
+    public static class Game_Start_Patch
+    {
+        private static void Prefix()
+        {
+            // Config Sync
+            ZRoutedRpc.instance.Register("ConfigSync", new Action<long, ZPackage>(ConfigSync.RPC_ConfigSync));
         }
     }
 }

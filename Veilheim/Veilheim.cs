@@ -1,11 +1,7 @@
 ﻿using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
-using IniParser;
 using System;
-using System.IO;
-using Veilheim.Configurations;
-using Veilheim.ConsoleCommands;
 
 namespace Veilheim
 {
@@ -18,9 +14,7 @@ namespace Veilheim
             // Expose Logger
             Veilheim.Logger.Instance = Logger;
             
-            // Configuration
-            Logger.LogInfo("Trying to load configuration");
-
+            // Create and patch
             var harmony = new Harmony("mod.veilheim");
             harmony.PatchAll();
         }
@@ -36,42 +30,5 @@ namespace Veilheim
         public static void LogMessage(Object data) { Instance.LogMessage(data); }
         public static void LogInfo(Object data) { Instance.LogInfo(data); }
         public static void LogDebug(Object data) { Instance.LogDebug(data); }
-    }
-
-    [HarmonyPatch(typeof(Game), "Start")]
-    public static class Game_Start_Patch
-    {
-        private static void Prefix()
-        {
-            //Config Sync
-            ZRoutedRpc.instance.Register("ConfigSync", new Action<long, ZPackage>(ConfigSync.RPC_ConfigSync));
-
-            // Configuration console command RPC
-            ZRoutedRpc.instance.Register("SetConfigurationValue", new Action<long, ZPackage>(SetConfigurationValue.RPC_SetConfigurationValue));
-
-            // register all console commands
-            BaseConsoleCommand.InitializeCommand<SetConfigurationValue>();
-        }
-    }
-
-    [HarmonyPatch(typeof(ZNet), "Awake")]
-    public static class ZNet_Awake_Patch
-    {
-        private static void Postfix()
-        {
-            bool isClient = ZNet.instance.IsClientInstance();
-            string msg = isClient ? "Loading client configuration" : "Loading server configuration";
-            Logger.LogInfo(msg);
-
-            // NEED PROPER DETECTION IF IT IS SERVER HERE
-            if (!Configuration.LoadConfiguration(isClient))
-            {
-                Logger.LogInfo("Error while loading configuration file.");
-            }
-            else
-            {
-                Logger.LogInfo("Configuration file loaded succesfully.");
-            }
-        }
     }
 }

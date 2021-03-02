@@ -2,6 +2,27 @@
 
 namespace Veilheim.Configurations
 {
+    [HarmonyPatch(typeof(ZNet), "Awake")]
+    public static class ZNet_Awake_Patch
+    {
+        private static void Postfix()
+        {
+            bool isClient = ZNet.instance.IsClientInstance();
+            string msg = isClient ? "Loading client configuration" : "Loading server configuration";
+            Logger.LogInfo(msg);
+
+            // NEED PROPER DETECTION IF IT IS SERVER HERE
+            if (!Configuration.LoadConfiguration(isClient))
+            {
+                Logger.LogInfo("Error while loading configuration file.");
+            }
+            else
+            {
+                Logger.LogInfo("Configuration file loaded succesfully.");
+            }
+        }
+    }
+
     [HarmonyPatch(typeof(ZNet), "RPC_Save")]
     public static class ZNet_RPCSave_Patch
     {
@@ -23,4 +44,5 @@ namespace Veilheim.Configurations
             Configuration.Current.SaveConfiguration();
         }
     }
+
 }
