@@ -10,6 +10,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "resources", "resources", "{
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
 		publish.ps1 = publish.ps1
+		README.MD = README.MD
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "win", "win", "{5FDD9881-A5D1-4E5D-A35D-36B80DC761E2}"
