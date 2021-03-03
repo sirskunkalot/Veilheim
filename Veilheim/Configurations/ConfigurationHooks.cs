@@ -7,18 +7,16 @@ namespace Veilheim.Configurations
     {
         private static void Postfix()
         {
-            bool isClient = ZNet.instance.IsClientInstance();
-            string msg = isClient ? "Loading client configuration" : "Loading server configuration";
+            string msg = $"Loading {ZNet.instance.GetInstanceType()} configuration";
             Logger.LogInfo(msg);
 
-            // NEED PROPER DETECTION IF IT IS SERVER HERE
-            if (!Configuration.LoadConfiguration(isClient))
+            if (!Configuration.LoadConfiguration())
             {
-                Logger.LogInfo("Error while loading configuration file.");
+                Logger.LogError("Error while loading configuration");
             }
             else
             {
-                Logger.LogInfo("Configuration file loaded succesfully.");
+                Logger.LogInfo("Configuration loaded succesfully");
             }
         }
     }
@@ -30,6 +28,7 @@ namespace Veilheim.Configurations
         {
             // Just save configuration after a save command is issued
             // Server side only
+            Logger.LogInfo("Saving configuration via RPC_Save");
             Configuration.Current.SaveConfiguration();
         }
     }
@@ -40,7 +39,7 @@ namespace Veilheim.Configurations
         private static void Prefix()
         {
             //ZLog.Log("Saving local configuration");
-            Logger.LogInfo("Saving local configuration");
+            Logger.LogInfo("Saving configuration via OnDestroy");
             Configuration.Current.SaveConfiguration();
         }
     }

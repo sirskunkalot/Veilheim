@@ -47,6 +47,9 @@ namespace Veilheim.Configurations
         }
     }
 
+    /// <summary>
+    /// Register RPC function for config sync
+    /// </summary>
     [HarmonyPatch(typeof(Game), "Start")]
     public static class Game_Start_Patch
     {
@@ -56,4 +59,21 @@ namespace Veilheim.Configurations
             ZRoutedRpc.instance.Register("ConfigSync", new Action<long, ZPackage>(ConfigSync.RPC_ConfigSync));
         }
     }
+
+    /// <summary>
+    /// Send config sync request
+    /// </summary>
+    [HarmonyPatch(typeof(ZNet), "RPC_PeerInfo")]
+    public static class ZNet_RPCPeerInfo_Patch
+    {
+        private static void Postfix(ref ZNet __instance)
+        {
+            if (ZNet.instance.IsClientInstance())
+            {
+                Logger.LogInfo("Sending config sync request to server");
+                ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), "ConfigSync", new object[] { new ZPackage() });
+            }
+        }
+    }
+
 }

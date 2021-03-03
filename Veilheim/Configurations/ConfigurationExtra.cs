@@ -44,12 +44,29 @@ namespace Veilheim.Configurations
         // Loaded configuration
         public static Configuration Current { get; private set; }
 
+        private static string GetIniFilePath(PropertyInfo property)
+        {
+            var needsSync = typeof(ISyncableSection).IsAssignableFrom(property.PropertyType);
+            var iniPath = ConfigIniPath;
+
+            if (needsSync && (ZNet.instance.IsServerInstance() || ZNet.instance.IsLocalInstance()))
+            {
+                iniPath = Path.Combine(iniPath, ZNet.instance.GetWorldUID().ToString());
+
+                if (!Directory.Exists(iniPath))
+                {
+                    Directory.CreateDirectory(iniPath);
+                }
+            }
+            
+            return Path.Combine(iniPath, property.Name + ".ini");
+        }
+
         /// <summary>
-        ///     Load configuration from it's ini files
+        ///     Load configuration from ini files. 
         /// </summary>
-        /// <param name="isClient"></param>
         /// <returns>true if successful</returns>
-        public static bool LoadConfiguration(bool isClient = false)
+        public static bool LoadConfiguration()
         {
             var errorWhileLoadingIni = false;
             Current = new Configuration();
@@ -61,14 +78,19 @@ namespace Veilheim.Configurations
                     Directory.CreateDirectory(ConfigIniPath);
                 }
 
+                // For every property (representing a section)
                 foreach (var property in propertyCache)
                 {
-                    var iniPath = Path.Combine(ConfigIniPath, property.Name + ".ini");
-
+                    // Server just reads syncable, client just base and local both sections
                     var needsSync = typeof(ISyncableSection).IsAssignableFrom(property.PropertyType);
 
-                    if (isClient || (!isClient && needsSync))
+                    if (ZNet.instance.IsLocalInstance() ||
+                        (ZNet.instance.IsClientInstance() && !needsSync) ||
+                        (ZNet.instance.IsServerInstance() && needsSync))
                     {
+                        // Load section from ini or create ini with default values
+                        var iniPath = GetIniFilePath(property);
+
                         if (File.Exists(iniPath))
                         {
                             errorWhileLoadingIni |= !LoadFromIni(Current, property, iniPath, sb);
@@ -76,7 +98,7 @@ namespace Veilheim.Configurations
                         else
                         {
                             Logger.LogInfo($"Saving missing default config for {property.Name}");
-                            Current.SaveConfiguration(property, isClient);
+                            Current.SaveConfiguration(property);
                         }
                     }
                 }
@@ -104,7 +126,8 @@ namespace Veilheim.Configurations
         public string GetSyncableSections()
         {
             var sb = new StringBuilder();
-            foreach (var property in propertyCache)
+            //foreach (var property in propertyCache)
+            foreach (var property in propertyCache.Where(x => typeof(ISyncableSection).IsAssignableFrom(x.PropertyType)))
             {
                 sb.AppendLine(GenerateSection(property, property.GetValue(this, null)));
             }
@@ -119,10 +142,9 @@ namespace Veilheim.Configurations
         /// </summary>
         public void SaveConfiguration()
         {
-            var isClient = !ZNet.instance.IsServer();
             foreach (var property in propertyCache)
             {
-                SaveConfiguration(property, isClient);
+                SaveConfiguration(property);
             }
         }
 
@@ -130,20 +152,19 @@ namespace Veilheim.Configurations
         ///     Save configuration section to its ini file
         /// </summary>
         /// <param name="property">Configuration property</param>
-        /// <param name="isClient"></param>
-        private void SaveConfiguration(PropertyInfo property, bool isClient)
+        private void SaveConfiguration(PropertyInfo property)
         {
-            var configName = property.Name + ".ini";
-
-            var sectionType = property.PropertyType;
-
             // For clients only save client values, for servers only server values
             var section = property.GetValue(Current, null);
             var needsSync = section is ISyncableSection;
 
-            if (isClient != needsSync)
+            if (ZNet.instance.IsLocalInstance() ||
+                (ZNet.instance.IsClientInstance() && !needsSync) ||
+                (ZNet.instance.IsServerInstance() && needsSync))
             {
-                using (TextWriter tw = new StreamWriter(Path.Combine(ConfigIniPath, configName)))
+                var iniPath = GetIniFilePath(property);
+
+                using (TextWriter tw = new StreamWriter(iniPath))
                 {
                     tw.Write(GenerateSection(property, section, true));
                 }

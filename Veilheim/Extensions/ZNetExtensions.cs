@@ -14,4 +14,20 @@
     {
         return !znet.IsLocalInstance() && !znet.IsClientInstance();
     }
+
+    public static string GetInstanceType(this ZNet znet)
+    {
+        if (znet.IsLocalInstance())
+        {
+            return "Local";
+        } 
+        else if (znet.IsClientInstance())
+        {
+            return "Client";
+        }
+        else
+        {
+            return "Server";
+        }
+    }
 }
