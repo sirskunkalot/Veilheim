@@ -10,13 +10,7 @@ param(
     [System.String]$TargetAssembly,
 
     [Parameter(Mandatory)]
-    [System.String]$ValheimPath,
-
-    [Parameter(Mandatory)]
-    [System.String]$SolutionPath,
-
-    [Parameter()]
-    [switch]$DebugScript
+    [System.String]$ValheimPath
 )
 
 function Create-BepInEx{
@@ -31,14 +25,14 @@ function Create-BepInEx{
     Write-Host "Creating BepInEx in $DistPath"
 
     # copy needed files for this target system
-    Copy-Item -Path "$SolutionPath\resources\$DistSystem\*" -Exclude 'BepInEx.cfg' -Destination "$DistPath" -Recurse -Force
+    Copy-Item -Path "$(Get-Location)\resources\$DistSystem\*" -Exclude 'BepInEx.cfg' -Destination "$DistPath" -Recurse -Force
     
     # create \BepInEx
     $bepinex = $DistPath.CreateSubdirectory('BepInEx')
     
     # create \BepInEx\config and copy config files
     $conf = $bepinex.CreateSubdirectory('config');
-    Copy-Item -Path "$SolutionPath\resources\$DistSystem\*" -Include 'BepInEx.cfg' -Destination "$conf" -Force
+    Copy-Item -Path "$(Get-Location)\resources\$DistSystem\*" -Include 'BepInEx.cfg' -Destination "$conf" -Force
     
     # create \BepInEx\core and copy core dlls from build
     $core = $bepinex.CreateSubdirectory('core');
@@ -52,14 +46,23 @@ function Create-BepInEx{
     Write-Host "Plugins: $TargetAssembly"
     Copy-Item -Path "$TargetPath\*" -Include $TargetAssembly.Split(',') -Destination "$plug" -Force
 
-    # copy debug files when target system = Local
+    # copy debug files when dist system = Local
     if ($DistSystem.Equals("Local")) {
+        Write-Host "Copy mono-2.0-bdwgc.dll to $ValheimPath\MonoBleedingEdge\EmbedRuntime"
+        if (!(Test-Path -Path "$(Get-Location)\libraries\Debug\mono-2.0-bdwgc.dll.orig")) {
+            Copy-Item -Path "$ValheimPath\MonoBleedingEdge\EmbedRuntime\mono-2.0-bdwgc.dll" -Destination "$ValheimPath\MonoBleedingEdge\EmbedRuntime\mono-2.0-bdwgc.dll.orig" -Force
+        }
+        Copy-Item -Path "$(Get-Location)\libraries\Debug\mono-2.0-bdwgc.dll" -Destination "$ValheimPath\MonoBleedingEdge\EmbedRuntime" -Force
+
+        Write-Host "Copy Valheim.DisplayBepInExInfo.dll to $plug"
+        Copy-Item -Path "$(Get-Location)\libraries\Debug\Valheim.DisplayBepInExInfo.dll" -Destination "$plug" -Force
+
         foreach($asm in $TargetAssembly.Split(',')){
             $pdb = "$TargetPath\" + ($asm -Replace('.dll','.pdb'))
             if (Test-Path -Path "$pdb") {
                 Write-Host "Copy Debug files for plugin $asm"
                 Copy-Item -Path "$pdb" -Destination "$plug" -Force
-                start "$SolutionPath\libraries\pdb2mdb.exe" "$plug\$asm"
+                start "$(Get-Location)\libraries\Debug\pdb2mdb.exe" "$plug\$asm"
             }
         }
     }
@@ -76,20 +79,10 @@ function Copy-Corlib{
         [Parameter(Mandatory)]
         [System.IO.DirectoryInfo]$LibPath
     )
-    Write-Host "Copying unstripped_corlib to $DistPath"
+    Write-Host "Copy unstripped_corlib to $DistPath"
 
     $rel = $DistPath.CreateSubdirectory('unstripped_corlib')
     Copy-Item -Path "$LibPath\*" -Filter '*.dll' -Destination "$rel" -Force
-}
-
-function Copy-Config{
-    param(
-        [Parameter(Mandatory)]
-        [System.IO.DirectoryInfo]$DistPath
-    )
-    Write-Host "Copying V+ config to $DistPath\BepInEx\config"
-
-    Copy-Item -Path "$SolutionPath\*" -Include 'valheim_plus.cfg' -Destination "$DistPath\BepInEx\config" -Force
 }
 
 function Make-Archive{
@@ -106,16 +99,25 @@ function Make-Archive{
     Compress-Archive -Path "$DistPath\*" -DestinationPath "$rel\$zip" -Force
 }
 
+# Parameter sanitation
 $TargetPath = $TargetPath.Trim();
 $ValheimPath = $ValheimPath.Trim();
-$SolutionPath = $SolutionPath.Trim();
 
-Write-Host "Publishing for $Target from $TargetPath"
+# Make sure Get-Location is the script path
+Push-Location -Path (Split-Path -Parent $MyInvocation.MyCommand.Path)
 
-if ($DebugScript) {
-    Write-Host "Just kidding, debugging myself"
-    Write-Host ""
+# Test some preliminaries
+("$TargetPath",
+ "$ValheimPath",
+ "$ValheimPath\unstripped_corlib",
+ "$(Get-Location)\resources",
+ "$(Get-Location)\libraries"
+) | % {
+    if (!(Test-Path "$_")) {Write-Error -ErrorAction Stop -Message "$_ folder is missing"}
 }
+
+# Main Script
+Write-Host "Publishing for $Target from $TargetPath"
 
 if ($Target.Equals("Debug")) {
     Write-Host "Updating local installation in $ValheimPath"
@@ -125,7 +127,7 @@ if ($Target.Equals("Debug")) {
 }
 
 if ($Target.Equals("Release")) {
-    $rel = New-Item -ItemType Directory -Path "$SolutionPath\release" -Force
+    $rel = New-Item -ItemType Directory -Path "$(Get-Location)\release" -Force
     $lib = Get-Item -Path "$ValheimPath\unstripped_corlib"
 
     Write-Host "Building release packages to $rel"
@@ -134,9 +136,11 @@ if ($Target.Equals("Release")) {
     ('Windows','Unix') | % {
         $dist = New-Item -ItemType Directory -Path "$rel\$_" -Force;
         Create-BepInEx -DistPath $dist -DistSystem $_
-        Copy-Config -DistPath $dist
         Copy-Corlib -DistPath $dist -LibPath $lib
         Make-Archive -DistPath $dist
         $dist.Delete($true);
     }
 }
+
+# Pop Location
+Pop-Location
