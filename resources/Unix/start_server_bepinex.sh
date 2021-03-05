@@ -15,8 +15,8 @@ executable_name="valheim_server.x86_64"
 
 # EDIT THIS: Valheim server parameters
 # Can be overriden by script parameters named exactly like the ones for the Valheim executable
-# (e.g. ./run_bepinex.sh -name "MyValheimPlusServer" -password "somethingsafe" -port 2456 -world "myworld" -public 1)
-server_name="Valheim+"
+# (e.g. ./start_server_bepinex.sh -name "MyValheimPlusServer" -password "somethingsafe" -port 2456 -world "myworld" -public 1)
+server_name="ValheimPlus"
 server_password="password"
 server_port=2456
 server_world="world"
@@ -31,15 +31,10 @@ export DOORSTOP_ENABLE=TRUE
 export DOORSTOP_INVOKE_DLL_PATH="${PWD}/BepInEx/core/BepInEx.Preloader.dll"
 
 # Which folder should be put in front of the Unity dll loading path
-export DOORSTOP_CORLIB_OVERRIDE_PATH=./unstripped_corlib
+export DOORSTOP_CORLIB_OVERRIDE_PATH="${PWD}/unstripped_corlib"
 
 # ----- DO NOT EDIT FROM THIS LINE FORWARD  ------
 # ----- (unless you know what you're doing) ------
-
-if [ ! -x "$1" -a ! -x "$executable_name" ]; then
-    echo "Please open run_bepinex.sh in a text editor and provide the correct executable."
-    exit 1
-fi
 
 doorstop_libs="${PWD}/doorstop_libs"
 arch=""
@@ -48,37 +43,37 @@ lib_postfix=""
 
 os_type=`uname -s`
 case $os_type in
-    Linux*)
-        executable_path="${PWD}/${executable_name}"
-        lib_postfix="so"
-        ;;
-    Darwin*)
-        executable_name=`basename "${executable_name}" .app`
-        real_executable_name=`defaults read "${PWD}/${executable_name}.app/Contents/Info" CFBundleExecutable`
-        executable_path="${PWD}/${executable_name}.app/Contents/MacOS/${real_executable_name}"
-        lib_postfix="dylib"
-        ;;
-    *)
-        echo "Cannot identify OS (got $(uname -s))!"
-        echo "Please create an issue at https://github.com/BepInEx/BepInEx/issues."
-        exit 1
-        ;;
+	Linux*)
+		executable_path="${PWD}/${executable_name}"
+		lib_postfix="so"
+		;;
+	Darwin*)
+		executable_name=`basename "${executable_name}" .app`
+		real_executable_name=`defaults read "${PWD}/${executable_name}.app/Contents/Info" CFBundleExecutable`
+		executable_path="${PWD}/${executable_name}.app/Contents/MacOS/${real_executable_name}"
+		lib_postfix="dylib"
+		;;
+	*)
+		echo "Cannot identify OS (got $(uname -s))!"
+		echo "Please create an issue at https://github.com/BepInEx/BepInEx/issues."
+		exit 1
+		;;
 esac
 
 executable_type=`LD_PRELOAD="" file -b "${executable_path}"`;
 
 case $executable_type in
-    *64-bit*)
-        arch="x64"
-        ;;
-    *32-bit*|*i386*)
-        arch="x86"
-        ;;
-    *)
-        echo "Cannot identify executable type (got ${executable_type})!"
-        echo "Please create an issue at https://github.com/BepInEx/BepInEx/issues."
-        exit 1
-        ;;
+	*64-bit*)
+		arch="x64"
+		;;
+	*32-bit*|*i386*)
+		arch="x86"
+		;;
+	*)
+		echo "Cannot identify executable type (got ${executable_type})!"
+		echo "Please create an issue at https://github.com/BepInEx/BepInEx/issues."
+		exit 1
+		;;
 esac
 
 doorstop_libname=libdoorstop_${arch}.${lib_postfix}
@@ -117,6 +112,6 @@ do
 	esac
 done
 
-"${PWD}/${executable_name}" -name "${server_name}" -password "${server_password}" -port "${server_port}" -world "${server_world}" -server_public "${server_public}"
+"${PWD}/${executable_name}" -name "${server_name}" -password "${server_password}" -port "${server_port}" -world "${server_world}" -public "${server_public}"
 
 export LD_LIBRARY_PATH=$templdpath

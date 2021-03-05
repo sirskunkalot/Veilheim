@@ -7,7 +7,7 @@ How to setup the development enviroment for this project.
 3. Unpack into your Valheim root folder. You should now see a new folder called .\Valheim\unstripped_corlib.
 4. [Compile](https://github.com/MrPurple6411/Bepinex-Tools) or [Download](https://mega.nz/file/oQxEjCJI#_XPXEjwLfv9zpcF2HRakYzepMwaUXflA9txxhx4tACA) Publicizers executable version.
 5. Drag and drop all assembly_.dll files from .\Valheim\valheim_Data\Managed onto "AssemblyPublicizer.exe". You should get a new folder .\Valheim\valheim_Data\Managed\publicized_assemblies with all dragged dll files in it.
-6. Checkout this repository using git. That should create a new folder Veilheim.
+6. Clone this repository using git. That should create a new folder Veilheim.
 7. Create a new user project file "Veilheim.csproj.user" alongside the project file within .\Veilheim\Veilheim to define some properties local to you. Paste this snippet and configure the paths as they are present on your computer.
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
