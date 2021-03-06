@@ -312,6 +312,10 @@ namespace Veilheim.Map
             // only act on clients
             if (ZNet.instance.IsClientInstance())
             {
+                if (!PrivateArea.CheckAccess(__instance.transform.position, 0f, true) || hold)
+                {
+                    return;
+                }
                 if (TextInput.instance.m_panel.activeSelf)
                 {
                     // set position of textinput (a bit higher)
