@@ -49,7 +49,7 @@ function Create-BepInEx{
     # copy debug files when dist system = Local
     if ($DistSystem.Equals("Local")) {
         Write-Host "Copy mono-2.0-bdwgc.dll to $ValheimPath\MonoBleedingEdge\EmbedRuntime"
-        if (!(Test-Path -Path "$(Get-Location)\libraries\Debug\mono-2.0-bdwgc.dll.orig")) {
+        if (!(Test-Path -Path "$ValheimPath\MonoBleedingEdge\EmbedRuntime\mono-2.0-bdwgc.dll.orig")) {
             Copy-Item -Path "$ValheimPath\MonoBleedingEdge\EmbedRuntime\mono-2.0-bdwgc.dll" -Destination "$ValheimPath\MonoBleedingEdge\EmbedRuntime\mono-2.0-bdwgc.dll.orig" -Force
         }
         Copy-Item -Path "$(Get-Location)\libraries\Debug\mono-2.0-bdwgc.dll" -Destination "$ValheimPath\MonoBleedingEdge\EmbedRuntime" -Force
@@ -65,6 +65,10 @@ function Create-BepInEx{
                 start "$(Get-Location)\libraries\Debug\pdb2mdb.exe" "$plug\$asm"
             }
         }
+        
+        # set dnspy debugger env
+        #$dnspy = '--debugger-agent=transport=dt_socket,server=y,address=127.0.0.1:56000,suspend=y,no-hide-debugger'
+        #[Environment]::SetEnvironmentVariable('DNSPY_UNITY_DBG2','','User')
     }
 
     # return basepath as DirectoryInfo
