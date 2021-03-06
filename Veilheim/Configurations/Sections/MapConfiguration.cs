@@ -3,8 +3,11 @@
     [ConfigurationSection("Map settings")]
     public class MapConfiguration : BaseConfig<MapConfiguration>
     {
-        [Configuration("Show portals automatically on map\nIf it does not activate automatically, just rename a existing portal.", ActivationTime.AfterRelog)]
+        [Configuration("Show portals automatically on map.", ActivationTime.AfterRelog)]
         public bool showPortalsOnMap { get; set; } = false;
+        
+        [Configuration("Show a list of available portal tags when renaming a portal.", ActivationTime.Immediately)]
+        public bool showPortalSelection { get; set; } = false;
 
     }
 }
