@@ -665,4 +665,59 @@ namespace Veilheim.Map
             }
         }
     }
+
+        [HarmonyPatch(typeof(Player), "PlacePiece", typeof(Piece))]
+    public static class Player_PlacePiece_Patch
+    {
+        public static void Postfix(Piece piece, ref bool __result)
+        {
+            if (__result)
+            {
+                if (!piece.IsCreator())
+                {
+                    if (piece.m_name == "$piece_portal")
+                    {
+                        if (ZNet.instance.IsClientInstance())
+                        {
+                            Debug.Log("CLIENT");
+                            Task.Factory.StartNew(() =>
+                            {
+                            // Wait for ZDO to be sent else server won't have accurate information to send back
+                            Thread.Sleep(5000);
+
+                            // Send trigger to server
+                            ZLog.Log("Sending message to server to trigger delivery of map icons after renaming portal");
+                                ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(TeleporterOnMap.RPC_TeleporterSync).Substring(4),
+                                    new ZPackage());
+                            });
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    [HarmonyPatch(typeof(WearNTear), "Destroy")]
+    public static class WearNTear_Destroy_Patch
+    {
+        public static void Prefix(WearNTear __instance)
+        {
+            if (__instance.m_piece)
+            {
+                if (__instance.m_piece.m_name == "$piece_portal")
+                {
+                    Task.Factory.StartNew(() =>
+                    {
+                        // Wait for ZDO to be sent else server won't have accurate information to send back
+                        Thread.Sleep(5000);
+
+                        // Send trigger to server
+                        ZLog.Log("Sending message to server to trigger delivery of map icons after renaming portal");
+                        ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(TeleporterOnMap.RPC_TeleporterSync).Substring(4),
+                            new ZPackage());
+                    });
+                }
+            }
+        }
+    }
 }
