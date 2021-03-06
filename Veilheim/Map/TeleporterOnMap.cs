@@ -401,6 +401,10 @@ namespace Veilheim.Map
             //if (ZNet.instance.IsClientInstance())
             if (!ZNet.instance.IsServerInstance())
             {
+                if (!PrivateArea.CheckAccess(__instance.transform.position, 0f, true) || hold)
+                {
+                    return;
+                }
                 if (TextInput.instance.m_panel.activeSelf)
                 {
                     // set position of textinput (a bit higher)
@@ -437,6 +441,11 @@ namespace Veilheim.Map
 
                     // Get name of portal
                     var actualName = TextInput.instance.m_textField.text;
+                    if (string.IsNullOrEmpty(actualName))
+                    {
+                        actualName = "<unnamed>";
+                        TextInput.instance.m_textField.text = actualName;
+                    }
 
 
                     if (TextInput.instance.m_panel.transform.Find("OK") != null)
@@ -446,7 +455,7 @@ namespace Veilheim.Map
                         foreach (var pin in singleTeleports)
                         {
                             // Skip if it is the selected teleporter
-                            if (pin.m_name == actualName)
+                            if ((pin.m_name == actualName) || (actualName == "<unnamed>" && string.IsNullOrEmpty(pin.m_name)))
                             {
                                 continue;
                             }
@@ -653,6 +662,60 @@ namespace Veilheim.Map
                 // restore mouse capture
                 GameCamera.instance.m_mouseCapture = true;
                 GameCamera.instance.UpdateMouseCapture();
+            }
+        }
+    }
+
+    [HarmonyPatch(typeof(Player), "PlacePiece", typeof(Piece))]
+    public static class Player_PlacePiece_Patch
+    {
+        public static void Postfix(Piece piece, ref bool __result)
+        {
+            if (__result)
+            {
+                if (!piece.IsCreator())
+                {
+                    if (piece.m_name == "$piece_portal")
+                    {
+                        if (ZNet.instance.IsClientInstance())
+                        {
+                            Task.Factory.StartNew(() =>
+                            {
+                                // Wait for ZDO to be sent else server won't have accurate information to send back
+                                Thread.Sleep(5000);
+
+                                // Send trigger to server
+                                ZLog.Log("Sending message to server to trigger delivery of map icons after renaming portal");
+                                ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(TeleporterOnMap.RPC_TeleporterSync).Substring(4),
+                                    new ZPackage());
+                            });
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    [HarmonyPatch(typeof(WearNTear), "Destroy")]
+    public static class WearNTear_Destroy_Patch
+    {
+        public static void Prefix(WearNTear __instance)
+        {
+            if (__instance.m_piece)
+            {
+                if (__instance.m_piece.m_name == "$piece_portal")
+                {
+                    Task.Factory.StartNew(() =>
+                    {
+                        // Wait for ZDO to be sent else server won't have accurate information to send back
+                        Thread.Sleep(5000);
+
+                        // Send trigger to server
+                        ZLog.Log("Sending message to server to trigger delivery of map icons after renaming portal");
+                        ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(TeleporterOnMap.RPC_TeleporterSync).Substring(4),
+                            new ZPackage());
+                    });
+                }
             }
         }
     }
