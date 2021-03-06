@@ -366,7 +366,7 @@ namespace Veilheim.Map
                         foreach (var pin in singleTeleports)
                         {
                             // Skip if it is the selected teleporter
-                            if ((pin.m_name == actualName) || (actualName=="<unnamed>" && string.IsNullOrEmpty(pin.m_name)))
+                            if ((pin.m_name == actualName) || (actualName == "<unnamed>" && string.IsNullOrEmpty(pin.m_name)))
                             {
                                 continue;
                             }
@@ -577,7 +577,7 @@ namespace Veilheim.Map
         }
     }
 
-        [HarmonyPatch(typeof(Player), "PlacePiece", typeof(Piece))]
+    [HarmonyPatch(typeof(Player), "PlacePiece", typeof(Piece))]
     public static class Player_PlacePiece_Patch
     {
         public static void Postfix(Piece piece, ref bool __result)
@@ -590,14 +590,13 @@ namespace Veilheim.Map
                     {
                         if (ZNet.instance.IsClientInstance())
                         {
-                            Debug.Log("CLIENT");
                             Task.Factory.StartNew(() =>
                             {
-                            // Wait for ZDO to be sent else server won't have accurate information to send back
-                            Thread.Sleep(5000);
+                                // Wait for ZDO to be sent else server won't have accurate information to send back
+                                Thread.Sleep(5000);
 
-                            // Send trigger to server
-                            ZLog.Log("Sending message to server to trigger delivery of map icons after renaming portal");
+                                // Send trigger to server
+                                ZLog.Log("Sending message to server to trigger delivery of map icons after renaming portal");
                                 ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(TeleporterOnMap.RPC_TeleporterSync).Substring(4),
                                     new ZPackage());
                             });
