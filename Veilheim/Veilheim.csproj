@@ -333,9 +333,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Map\PortalList.cs" />
+    <Compile Include="Map\PortalSelectionGUI.cs" />
     <Compile Include="Map\PublicPosition.cs" />
     <Compile Include="Map\SharedMapSystem.cs" />
-    <Compile Include="Map\TeleporterOnMap.cs" />
+    <Compile Include="Map\PortalsOnMap.cs" />
     <Compile Include="Configurations\ConfigSync.cs" />
     <Compile Include="Extensions\ZNetExtensions.cs" />
     <Compile Include="Util\Consumables.cs" />
