@@ -455,7 +455,7 @@ namespace Veilheim.Map
                         foreach (var pin in singleTeleports)
                         {
                             // Skip if it is the selected teleporter
-                            if (pin.m_name == actualName)
+                            if ((pin.m_name == actualName) || (actualName=="<unnamed>" && string.IsNullOrEmpty(pin.m_name)))
                             {
                                 continue;
                             }
