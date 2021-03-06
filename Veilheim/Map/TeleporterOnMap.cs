@@ -441,6 +441,11 @@ namespace Veilheim.Map
 
                     // Get name of portal
                     var actualName = TextInput.instance.m_textField.text;
+                    if (string.IsNullOrEmpty(actualName))
+                    {
+                        actualName = "<unnamed>";
+                        TextInput.instance.m_textField.text = actualName;
+                    }
 
 
                     if (TextInput.instance.m_panel.transform.Find("OK") != null)
