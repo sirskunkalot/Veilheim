@@ -363,3 +363,6 @@ FodyWeavers.xsd
 
 # csproj.user file (for local environment)
 *.csproj.user
+
+# not the libraries folder
+!libraries/*
