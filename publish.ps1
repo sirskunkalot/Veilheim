@@ -106,9 +106,9 @@ function Make-Archive{
     Compress-Archive -Path "$DistPath\*" -DestinationPath "$rel\$zip" -Force
 }
 
-$TargetPath = $TargetPath.Trim();
-$ValheimPath = $ValheimPath.Trim();
-$SolutionPath = $SolutionPath.Trim();
+$TargetPath = $TargetPath.Trim().TrimEnd('\');
+$ValheimPath = $ValheimPath.Trim().TrimEnd('\');
+$SolutionPath = $SolutionPath.Trim().TrimEnd('\');
 
 Write-Host "Publishing for $Target from $TargetPath"
 
