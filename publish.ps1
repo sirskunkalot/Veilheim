@@ -104,8 +104,8 @@ function Make-Archive{
 }
 
 # Parameter sanitation
-$TargetPath = $TargetPath.Trim();
-$ValheimPath = $ValheimPath.Trim();
+$TargetPath = $TargetPath.Trim().TrimEnd('\');
+$ValheimPath = $ValheimPath.Trim().TrimEnd('\');
 
 # Make sure Get-Location is the script path
 Push-Location -Path (Split-Path -Parent $MyInvocation.MyCommand.Path)
