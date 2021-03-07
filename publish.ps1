@@ -25,14 +25,10 @@ function Create-BepInEx{
     Write-Host "Creating BepInEx in $DistPath"
 
     # copy needed files for this target system
-    Copy-Item -Path "$(Get-Location)\resources\$DistSystem\*" -Exclude 'BepInEx.cfg' -Destination "$DistPath" -Recurse -Force
+    Copy-Item -Path "$(Get-Location)\resources\$DistSystem\*" -Destination "$DistPath" -Recurse -Force
     
     # create \BepInEx
     $bepinex = $DistPath.CreateSubdirectory('BepInEx')
-    
-    # create \BepInEx\config and copy config files
-    $conf = $bepinex.CreateSubdirectory('config');
-    Copy-Item -Path "$(Get-Location)\resources\$DistSystem\*" -Include 'BepInEx.cfg' -Destination "$conf" -Force
     
     # create \BepInEx\core and copy core dlls from build
     $core = $bepinex.CreateSubdirectory('core');
@@ -56,9 +52,6 @@ function Create-BepInEx{
 
         Write-Host "Copy Valheim.DisplayBepInExInfo.dll to $plug"
         Copy-Item -Path "$(Get-Location)\libraries\Debug\Valheim.DisplayBepInExInfo.dll" -Destination "$plug" -Force
-
-        Write-Host "Copy UnityExplorer.BIE.Mono.dll to $plug"
-        Copy-Item -Path "$(Get-Location)\libraries\Debug\UnityExplorer.BIE.Mono.dll" -Destination "$plug" -Force
 
         foreach($asm in $TargetAssembly.Split(',')){
             $pdb = "$TargetPath\" + ($asm -Replace('.dll','.pdb'))
