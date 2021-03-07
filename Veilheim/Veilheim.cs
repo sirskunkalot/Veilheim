@@ -7,18 +7,26 @@ using System.Diagnostics;
 
 namespace Veilheim
 {
-    [BepInPlugin("de.sirskunkalot.valheim.veilheim", "Veilheim", "0.0.1")]
+    [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
     class VeilheimPlugin : BaseUnityPlugin
     {
+        private const string PluginGUID = "de.sirskunkalot.valheim.veilheim";
+        private const string PluginName = "Veilheim";
+        private const string PluginVersion = "0.0.1";
+
         // Awake is called once when both the game and the plug-in are loaded
         void Awake()
         {
             // Create and patch
-            var harmony = new Harmony("mod.veilheim");
+            var harmony = new Harmony(PluginGUID);
             harmony.PatchAll();
         }
     }
 
+    /// <summary>
+    /// A namespace wide Logger class, which automatically creates a <see cref="ManualLogSource"/> 
+    /// for every namespace from which it is been called
+    /// </summary>
     public static class Logger
     {
         private static readonly Dictionary<string, ManualLogSource> m_logger 
