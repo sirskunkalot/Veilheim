@@ -333,6 +333,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Extensions\ObjectDBExtensions.cs" />
     <Compile Include="Map\PortalList.cs" />
     <Compile Include="Map\PortalSelectionGUI.cs" />
     <Compile Include="Map\PublicPosition.cs" />
