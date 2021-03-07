@@ -57,6 +57,9 @@ function Create-BepInEx{
         Write-Host "Copy Valheim.DisplayBepInExInfo.dll to $plug"
         Copy-Item -Path "$(Get-Location)\libraries\Debug\Valheim.DisplayBepInExInfo.dll" -Destination "$plug" -Force
 
+        Write-Host "Copy UnityExplorer.BIE.Mono.dll to $plug"
+        Copy-Item -Path "$(Get-Location)\libraries\Debug\UnityExplorer.BIE.Mono.dll" -Destination "$plug" -Force
+
         foreach($asm in $TargetAssembly.Split(',')){
             $pdb = "$TargetPath\" + ($asm -Replace('.dll','.pdb'))
             if (Test-Path -Path "$pdb") {
