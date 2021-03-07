@@ -24,6 +24,8 @@ namespace Veilheim.Map
         {
             if (TextInput.instance.m_panel.activeSelf)
             {
+                Logger.LogInfo("Collecting portals to connect to");
+
                 // set position of textinput (a bit higher)
                 TextInput.instance.m_panel.transform.localPosition = new Vector3(0, 270.0f, 0);
 
@@ -33,12 +35,14 @@ namespace Veilheim.Map
                     portalRect = GenerateGUI();
                 }
 
-                // Generate list of single teleporters (exclude portal names starting with * )
+                /*// Generate list of single teleporters (exclude portal names starting with * )
                 var singleTeleports = new List<Minimap.PinData>();
                 lock (PortalsOnMap.portalPins)
                 {
                     singleTeleports.AddRange(PortalsOnMap.portalPins.Where(x => !x.m_name.StartsWith("*")).OrderBy(x => x.m_name));
-                }
+                }*/
+                // Generate list of unconnected portals from ZDOMan
+                var singlePortals = PortalList.GetPortals().Where(x => !x.m_con);
 
                 // remove all buttons from earlier calls
                 foreach (var oldbt in teleporterButtons)
@@ -54,14 +58,14 @@ namespace Veilheim.Map
 
                 var idx = 0;
                 // calculate number of lines
-                var lines = singleTeleports.Count / 3;
+                var lines = singlePortals.Count() / 3;
 
                 // Get name of portal
-                var actualName = TextInput.instance.m_textField.text;
-                if (string.IsNullOrEmpty(actualName))
+                var currentTag = TextInput.instance.m_textField.text;
+                if (string.IsNullOrEmpty(currentTag))
                 {
-                    actualName = "<unnamed>";
-                    TextInput.instance.m_textField.text = actualName;
+                    currentTag = "<unnamed>";
+                    TextInput.instance.m_textField.text = currentTag;
                 }
 
 
@@ -69,10 +73,10 @@ namespace Veilheim.Map
                 {
                     var originalButton = TextInput.instance.m_panel.transform.Find("OK").gameObject;
 
-                    foreach (var pin in singleTeleports)
+                    foreach (var portal in singlePortals)
                     {
                         // Skip if it is the selected teleporter
-                        if ((pin.m_name == actualName) || (actualName == "<unnamed>" && string.IsNullOrEmpty(pin.m_name)))
+                        if ((portal.m_tag == currentTag) || (currentTag == "<unnamed>" && string.IsNullOrEmpty(portal.m_tag)))
                         {
                             continue;
                         }
@@ -88,16 +92,16 @@ namespace Veilheim.Map
                         newButton.SetActive(true);
 
                         // set button text
-                        newButton.GetComponentInChildren<Text>().text = pin.m_name;
+                        newButton.GetComponentInChildren<Text>().text = portal.m_tag;
 
                         // add event payload
                         newButton.GetComponentInChildren<Button>().onClick.AddListener(() =>
                         {
                             // Set input field text to new name
-                            TextInput.instance.m_textField.text = pin.m_name;
+                            TextInput.instance.m_textField.text = portal.m_tag;
 
                             // simulate enter key
-                            TextInput.instance.OnEnter(pin.m_name);
+                            TextInput.instance.OnEnter(portal.m_tag);
 
                             // hide textinput
                             TextInput.instance.Hide();
@@ -109,17 +113,17 @@ namespace Veilheim.Map
                     }
                 }
 
-                if (singleTeleports.Count > 0)
+                if (singlePortals.Count() > 0)
                 {
                     // show buttonlist only if single teleports are available to choose from
                     portalRect.gameObject.SetActive(true);
                 }
 
                 // Set anchor
-                buttonList.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -(singleTeleports.Count / 3) * 25.0f);
+                buttonList.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -(singlePortals.Count() / 3) * 25.0f);
 
                 // Set size
-                buttonList.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, singleTeleports.Count / 3 * 50.0f + 50f);
+                buttonList.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, singlePortals.Count() / 3 * 50.0f + 50f);
 
                 // release mouselock
                 GameCamera.instance.m_mouseCapture = false;
