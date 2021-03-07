@@ -2,6 +2,8 @@
 using BepInEx.Logging;
 using HarmonyLib;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Veilheim
 {
@@ -11,9 +13,6 @@ namespace Veilheim
         // Awake is called once when both the game and the plug-in are loaded
         void Awake()
         {
-            // Expose Logger
-            Veilheim.Logger.Instance = Logger;
-            
             // Create and patch
             var harmony = new Harmony("mod.veilheim");
             harmony.PatchAll();
@@ -22,13 +21,26 @@ namespace Veilheim
 
     public static class Logger
     {
-        public static ManualLogSource Instance { get; set; }
+        private static readonly Dictionary<string, ManualLogSource> m_logger 
+            = new Dictionary<string, ManualLogSource>();
 
-        public static void LogFatal(Object data) { Instance.LogFatal(data); }
-        public static void LogError(Object data) { Instance.LogError(data); }
-        public static void LogWarning(Object data) { Instance.LogWarning(data); }
-        public static void LogMessage(Object data) { Instance.LogMessage(data); }
-        public static void LogInfo(Object data) { Instance.LogInfo(data); }
-        public static void LogDebug(Object data) { Instance.LogDebug(data); }
+        public static ManualLogSource GetLogger()
+        {
+            var type = new StackFrame(2).GetMethod().DeclaringType;
+
+            ManualLogSource ret;
+            if (!m_logger.TryGetValue(type.Namespace, out ret))
+            {
+                ret = BepInEx.Logging.Logger.CreateLogSource(type.Namespace);
+                m_logger.Add(type.Namespace, ret);
+            }
+            return ret;
+        }
+        public static void LogFatal(Object data) { GetLogger().LogFatal(data); }
+        public static void LogError(Object data) { GetLogger().LogError(data); }
+        public static void LogWarning(Object data) { GetLogger().LogWarning(data); }
+        public static void LogMessage(Object data) { GetLogger().LogMessage(data); }
+        public static void LogInfo(Object data) { GetLogger().LogInfo(data); }
+        public static void LogDebug(Object data) { GetLogger().LogDebug(data); }
     }
 }
