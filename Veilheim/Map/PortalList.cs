@@ -7,14 +7,14 @@ using UnityEngine;
 namespace Veilheim.Map
 {
     /// <summary>
-    /// Portal meta class. Holds a portals coordinates,
+    /// Portal meta struct. Holds a portals coordinates,
     /// its tag and if it is connected to another portal or not.
     /// </summary>
-    public class Portal
+    public struct Portal
     {
-        public Vector3 m_pos;
-        public string m_tag;
-        public bool m_con;
+        public readonly Vector3 m_pos;
+        public readonly string m_tag;
+        public readonly bool m_con;
 
         public Portal(Vector3 pos, string tag, bool con)
         {
