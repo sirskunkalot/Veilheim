@@ -16,6 +16,7 @@
     <TargetFrameworkProfile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <AssemblyVersion>0.0.37.7736</AssemblyVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -333,6 +334,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Blueprints\FlattenTerrain.cs" />
+    <Compile Include="ConsoleCommands\SaveBlueprintCommand.cs" />
     <Compile Include="Map\PortalList.cs" />
     <Compile Include="Map\PortalSelectionGUI.cs" />
     <Compile Include="Map\PublicPosition.cs" />
@@ -367,6 +370,7 @@
   <ItemGroup>
     <Content Include="FodyWeavers.xml" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>powershell.exe -ExecutionPolicy RemoteSigned -File "$(SolutionDir)publish.ps1" -Target "$(ConfigurationName)" -TargetPath "$(TargetDir.TrimEnd('\'))" -TargetAssembly "$(TargetFileName)" -ValheimPath "$(ValheimDir.TrimEnd('\'))"</PostBuildEvent>

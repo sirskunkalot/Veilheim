@@ -310,6 +310,7 @@ namespace Veilheim.ConsoleCommands
 
             // register all console commands
             BaseConsoleCommand.InitializeCommand<SetConfigurationValue>();
+            BaseConsoleCommand.InitializeCommand<SaveBlueprintCommand>();
         }
     }
 }
