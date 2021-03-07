@@ -22,6 +22,11 @@ namespace Veilheim.Map
             m_tag = tag;
             m_con = con;
         }
+
+        public override string ToString()
+        {
+            return $"{m_tag}@{m_pos}";
+        }
     }
 
     public class PortalList : List<Portal>
@@ -32,6 +37,8 @@ namespace Veilheim.Map
         /// <returns></returns>
         public static PortalList GetPortals()
         {
+            Logger.LogDebug("Creating portal list from ZDOMan");
+
             // Collect all portal locations/names
             var connected = new List<ZDO>();
             var unconnected = new Dictionary<string, ZDO>();
@@ -60,13 +67,20 @@ namespace Veilheim.Map
 
             // Make a list of all Portals
             var ret = new PortalList();
-            foreach (var portal in connected)
+            Portal portal;
+            Logger.LogDebug("Connected Portals");
+            foreach (var entry in connected.OrderBy(x => x.GetString("tag")))
             {
-                ret.Add(new Portal(portal.m_position, portal.GetString("tag"), true));
+                portal = new Portal(entry.m_position, entry.GetString("tag"), true);
+                Logger.LogDebug(portal);
+                ret.Add(portal);
             }
-            foreach (var portal in unconnected)
+            Logger.LogDebug("Unconnected Portals");
+            foreach (var entry in unconnected.OrderBy(x => x.Value.GetString("tag")))
             {
-                ret.Add(new Portal(portal.Value.m_position, portal.Value.GetString("tag"), false));
+                portal = new Portal(entry.Value.m_position, entry.Value.GetString("tag"), false);
+                Logger.LogDebug(portal);
+                ret.Add(portal);
             }
             return ret;
         }
@@ -78,6 +92,8 @@ namespace Veilheim.Map
         /// <returns></returns>
         public static PortalList FromZPackage(ZPackage zpkg)
         {
+            Logger.LogDebug("Creating portal list from ZPackage");
+
             var ret = new PortalList();
             
             var numConnectedPortals = zpkg.ReadInt();
@@ -87,7 +103,7 @@ namespace Veilheim.Map
                 var portalPosition = zpkg.ReadVector3();
                 var portalName = zpkg.ReadString();
 
-                Logger.LogInfo(portalName);
+                Logger.LogDebug($"{portalName}@{portalPosition}");
                 ret.Add(new Portal(portalPosition, portalName, true));
 
                 numConnectedPortals--;
@@ -100,7 +116,7 @@ namespace Veilheim.Map
                 var portalPosition = zpkg.ReadVector3();
                 var portalName = zpkg.ReadString();
 
-                Logger.LogInfo(portalName);
+                Logger.LogDebug($"{portalName}@{portalPosition}");
                 ret.Add(new Portal(portalPosition, portalName, false));
 
                 numUnconnectedPortals--;
@@ -122,8 +138,10 @@ namespace Veilheim.Map
             package.Write(connected.Count());
             foreach (var connectedPortal in connected)
             {
+                Logger.LogDebug($"{connectedPortal.m_tag}@{connectedPortal.m_pos}");
                 package.Write(connectedPortal.m_pos);
-                package.Write("*" + connectedPortal.m_tag);
+                //package.Write("*" + connectedPortal.m_tag);
+                package.Write(connectedPortal.m_tag);
             }
             
             var unconnected = this.Where(x => !x.m_con);
@@ -131,6 +149,7 @@ namespace Veilheim.Map
             package.Write(unconnected.Count());
             foreach (var unconnectedPortal in unconnected)
             {
+                Logger.LogDebug($"{unconnectedPortal.m_tag}@{unconnectedPortal.m_pos}");
                 package.Write(unconnectedPortal.m_pos);
                 package.Write(unconnectedPortal.m_tag);
             }
