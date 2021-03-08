@@ -31,8 +31,7 @@ namespace Veilheim.Configurations
             // Create all configuration entries with default values
             foreach (var property in propertyCache)
             {
-                //ZLog.Log($"Initializing configuration section {property.Name}");
-                Logger.LogInfo($"Initializing configuration section {property.Name}");
+                Logger.LogDebug($"Initializing configuration section {property.Name}");
                 var section = Activator.CreateInstance(property.PropertyType, true);
                 property.SetValue(this, section, null);
 
@@ -63,7 +62,7 @@ namespace Veilheim.Configurations
         }
 
         /// <summary>
-        ///     Load configuration from ini files. 
+        /// Load configuration from ini files. 
         /// </summary>
         /// <returns>true if successful</returns>
         public static bool LoadConfiguration()
@@ -120,13 +119,12 @@ namespace Veilheim.Configurations
         }
 
         /// <summary>
-        ///     Get all section which need to synced with clients
+        /// Get all section which need to synced with clients
         /// </summary>
         /// <returns></returns>
         public string GetSyncableSections()
         {
             var sb = new StringBuilder();
-            //foreach (var property in propertyCache)
             foreach (var property in propertyCache.Where(x => typeof(ISyncableSection).IsAssignableFrom(x.PropertyType)))
             {
                 sb.AppendLine(GenerateSection(property, property.GetValue(this, null)));
@@ -137,8 +135,7 @@ namespace Veilheim.Configurations
 
 
         /// <summary>
-        ///     Save full config
-        ///     Do not call this from startup, ZNet isn't initialized yet
+        /// Save full config
         /// </summary>
         public void SaveConfiguration()
         {
@@ -149,9 +146,9 @@ namespace Veilheim.Configurations
         }
 
         /// <summary>
-        ///     Save configuration section to its ini file
+        /// Save configuration section to its ini file
         /// </summary>
-        /// <param name="property">Configuration property</param>
+        /// <param name="property">PropertyInfo representing a config section</param>
         private void SaveConfiguration(PropertyInfo property)
         {
             // For clients only save client values, for servers only server values
@@ -172,7 +169,7 @@ namespace Veilheim.Configurations
         }
 
         /// <summary>
-        ///     Generate ini section as string
+        ///  Generate ini section as string
         /// </summary>
         /// <param name="property">Configuration property</param>
         /// <param name="section">section object</param>
