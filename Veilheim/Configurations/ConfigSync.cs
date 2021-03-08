@@ -9,6 +9,8 @@ namespace Veilheim.Configurations
         {
             if (ZNet.m_isServer) //Server
             {
+                Logger.LogInfo($"Sending configuration data to peer #{sender}");
+
                 if (Configuration.Current == null)
                 {
                     Configuration.LoadConfiguration();
@@ -20,28 +22,23 @@ namespace Veilheim.Configurations
                 //Add number of clean lines to package
                 pkg.Write(data);
 
-                ZRoutedRpc.instance.InvokeRoutedRPC(sender, "ConfigSync", new object[]
+                ZRoutedRpc.instance.InvokeRoutedRPC(sender, nameof(ConfigSync.RPC_ConfigSync), new object[]
                 {
                     pkg
                 });
-
-                //ZLog.Log("Configuration synced to peer #" + sender);
-                Logger.LogInfo($"Configuration synced to peer #{sender}");
             }
             else //Client
             {
                 if (configPkg != null &&
                     configPkg.Size() > 0 &&
-                    sender == ZRoutedRpc.instance.GetServerPeerID()) //Validate the message is from the server and not another client.
+                    sender == ZRoutedRpc.instance.GetServerPeerID()) // Validate the message is from the server and not another client.
                 {
+                    Logger.LogInfo("Received configuration data from server.");
 
                     Configuration receivedConfig = new Configuration();
                     Configuration.LoadFromIniString(receivedConfig, configPkg.ReadString());
 
                     Configuration.SetSyncableValues(receivedConfig);
-
-                    //ZLog.Log("Successfully synced configuration from server.");
-                    Logger.LogInfo("Successfully synced configuration from server.");
                 }
             }
         }
@@ -56,7 +53,8 @@ namespace Veilheim.Configurations
         private static void Prefix()
         {
             // Config Sync
-            ZRoutedRpc.instance.Register("ConfigSync", new Action<long, ZPackage>(ConfigSync.RPC_ConfigSync));
+            ZRoutedRpc.instance.Register(nameof(ConfigSync.RPC_ConfigSync),
+                new Action<long, ZPackage>(ConfigSync.RPC_ConfigSync));
         }
     }
 
@@ -71,7 +69,10 @@ namespace Veilheim.Configurations
             if (ZNet.instance.IsClientInstance())
             {
                 Logger.LogInfo("Sending config sync request to server");
-                ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), "ConfigSync", new object[] { new ZPackage() });
+                ZRoutedRpc.instance.InvokeRoutedRPC(
+                    ZRoutedRpc.instance.GetServerPeerID(), 
+                    nameof(ConfigSync.RPC_ConfigSync), 
+                    new object[] { new ZPackage() });
             }
         }
     }

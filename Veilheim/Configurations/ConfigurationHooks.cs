@@ -27,7 +27,6 @@ namespace Veilheim.Configurations
         public static void Postfix()
         {
             // Just save configuration after a save command is issued
-            // Server side only
             Logger.LogInfo("Saving configuration via RPC_Save");
             Configuration.Current.SaveConfiguration();
         }
@@ -38,8 +37,7 @@ namespace Veilheim.Configurations
     {
         private static void Prefix()
         {
-            //ZLog.Log("Saving local configuration");
-            Logger.LogInfo("Saving configuration via OnDestroy");
+            Logger.LogInfo("Saving configuration");
             Configuration.Current.SaveConfiguration();
         }
     }

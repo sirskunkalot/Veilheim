@@ -131,7 +131,7 @@ namespace Veilheim.Configurations
 
                 if (!data.ContainsKey(keyName))
                 {
-                    Logger.LogInfo($" Key {keyName} not defined, using default value");
+                    Logger.LogWarning($" Key {keyName} not defined, using default value");
                     continue;
                 }
 
