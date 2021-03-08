@@ -24,7 +24,7 @@ namespace Veilheim.Map
         {
             if (TextInput.instance.m_panel.activeSelf)
             {
-                Logger.LogInfo("Collecting portals to connect to");
+                Logger.LogInfo("Generating portal selection");
 
                 // set position of textinput (a bit higher)
                 TextInput.instance.m_panel.transform.localPosition = new Vector3(0, 270.0f, 0);

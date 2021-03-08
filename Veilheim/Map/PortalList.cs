@@ -92,7 +92,7 @@ namespace Veilheim.Map
         /// <returns></returns>
         public static PortalList FromZPackage(ZPackage zpkg)
         {
-            Logger.LogDebug("Creating portal list from ZPackage");
+            Logger.LogDebug("Deserializing portal list from ZPackage");
 
             var ret = new PortalList();
             
@@ -131,6 +131,8 @@ namespace Veilheim.Map
         /// <returns></returns>
         public ZPackage ToZPackage()
         {
+            Logger.LogDebug("Serializing portal list to ZPackage");
+
             var package = new ZPackage();
 
             var connected = this.Where(x => x.m_con);
@@ -140,7 +142,6 @@ namespace Veilheim.Map
             {
                 Logger.LogDebug($"{connectedPortal.m_tag}@{connectedPortal.m_pos}");
                 package.Write(connectedPortal.m_pos);
-                //package.Write("*" + connectedPortal.m_tag);
                 package.Write(connectedPortal.m_tag);
             }
             
