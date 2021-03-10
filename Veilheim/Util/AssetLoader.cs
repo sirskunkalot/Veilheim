@@ -17,6 +17,11 @@ namespace Veilheim.Util
         public List<RecipeRequirementConfig> Resources = new List<RecipeRequirementConfig>();
     }
 
+    /// <summary>
+    /// Central class for loading and importing custom <see cref="AssetBundle"/>s into Valheim. 
+    /// Code inspired from https://github.com/RandyKnapp/ValheimMods
+    /// and https://github.com/Valheim-Modding/ValheimLib
+    /// </summary>
     static class AssetLoader
     {
         public static readonly List<GameObject> RegisteredPrefabs = new List<GameObject>();
