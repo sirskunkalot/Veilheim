@@ -25,7 +25,7 @@ namespace Veilheim
             Harmony = new Harmony(PluginGUID);
             Harmony.PatchAll();
 
-            var assetBundle = AssetLoader.GetAssetBundleFromResources("item_skunkaxe");
+            var assetBundle = AssetLoader.LoadAssetBundleFromResources("item_skunkaxe");
             AssetLoader.LoadPiecePrefab(assetBundle, "piece_trashcan", new PieceDef()
             {
                 Table = "_HammerPieceTable",
