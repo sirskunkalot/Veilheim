@@ -1,9 +1,9 @@
 ﻿using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Veilheim.Util;
 
 namespace Veilheim
 {
@@ -14,12 +14,29 @@ namespace Veilheim
         private const string PluginName = "Veilheim";
         private const string PluginVersion = "0.0.1";
 
+        internal static Harmony Harmony { get; private set; }
+
+        internal static VeilheimPlugin Instance { get; private set; }
+
         // Awake is called once when both the game and the plug-in are loaded
         void Awake()
         {
-            // Create and patch
-            var harmony = new Harmony(PluginGUID);
-            harmony.PatchAll();
+            Instance = this;
+            Harmony = new Harmony(PluginGUID);
+            Harmony.PatchAll();
+
+            var assetBundle = AssetLoader.GetAssetBundleFromResources("item_skunkaxe");
+            AssetLoader.LoadPiecePrefab(assetBundle, "piece_trashcan", new PieceDef()
+            {
+                Table = "_HammerPieceTable",
+                CraftingStation = "piece_workbench",
+                Resources = new List<RecipeRequirementConfig>
+                {
+                    new RecipeRequirementConfig { item = "Stone", amount = 1 },
+                    new RecipeRequirementConfig { item = "Wood", amount = 1 }
+                }
+            });
+            assetBundle.Unload(false);
         }
     }
 
@@ -27,12 +44,12 @@ namespace Veilheim
     /// A namespace wide Logger class, which automatically creates a <see cref="ManualLogSource"/> 
     /// for every namespace from which it is been called
     /// </summary>
-    public static class Logger
+    internal static class Logger
     {
         private static readonly Dictionary<string, ManualLogSource> m_logger 
             = new Dictionary<string, ManualLogSource>();
 
-        public static ManualLogSource GetLogger()
+        private static ManualLogSource GetLogger()
         {
             var type = new StackFrame(2).GetMethod().DeclaringType;
 
@@ -44,11 +61,11 @@ namespace Veilheim
             }
             return ret;
         }
-        public static void LogFatal(Object data) { GetLogger().LogFatal(data); }
-        public static void LogError(Object data) { GetLogger().LogError(data); }
-        public static void LogWarning(Object data) { GetLogger().LogWarning(data); }
-        public static void LogMessage(Object data) { GetLogger().LogMessage(data); }
-        public static void LogInfo(Object data) { GetLogger().LogInfo(data); }
-        public static void LogDebug(Object data) { GetLogger().LogDebug(data); }
+        internal static void LogFatal(object data) { GetLogger().LogFatal(data); }
+        internal static void LogError(object data) { GetLogger().LogError(data); }
+        internal static void LogWarning(object data) { GetLogger().LogWarning(data); }
+        internal static void LogMessage(object data) { GetLogger().LogMessage(data); }
+        internal static void LogInfo(object data) { GetLogger().LogInfo(data); }
+        internal static void LogDebug(object data) { GetLogger().LogDebug(data); }
     }
 }
