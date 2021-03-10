@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using HarmonyLib;
 using UnityEngine;
 
 namespace Veilheim.ConsoleCommands
@@ -78,31 +77,6 @@ namespace Veilheim.ConsoleCommands
             }
 
             return KeyCode.None;
-        }
-    }
-
-    [HarmonyPatch(typeof(Console), "InputText")]
-    public static class Console_InputText_Patch
-    {
-        public static void Postfix()
-        {
-            string temp = Console.instance.m_input.text;
-
-            // if help is issued, add list of our commands here
-            if (string.Equals(temp.Trim(), "help", StringComparison.InvariantCultureIgnoreCase))
-            {
-                Console.instance.AddString("");
-                Console.instance.AddString("Veilheim console commands:");
-                foreach (var cmd in BaseConsoleCommand.consoleCommandInstances)
-                {
-                    Console.instance.AddString(cmd.HelpText);
-                }
-            }
-
-            if (!BaseConsoleCommand.TryExecuteCommand(ref temp))
-            {
-                // Output something if command could not execute? not at this time.
-            }
         }
     }
 }
