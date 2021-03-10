@@ -361,9 +361,10 @@
     <Compile Include="Extensions\ZNetExtensions.cs" />
     <Compile Include="Properties\IgnoreAccessModifiers.cs" />
     <Compile Include="Util\AssetLoader.cs" />
-    <Compile Include="Util\Consumables.cs" />
+    <Compile Include="Util\ConsumablesConfig.cs" />
     <Compile Include="Extensions\PlayerExtensions.cs" />
     <Compile Include="Util\PrefabCreator.cs" />
+    <Compile Include="Util\RecipeConfig.cs" />
     <Compile Include="Util\Utils.cs" />
     <Compile Include="Veilheim.cs" />
     <Compile Include="Configurations\ActivationTime.cs" />

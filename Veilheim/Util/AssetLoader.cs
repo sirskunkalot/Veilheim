@@ -1,5 +1,7 @@
-﻿using HarmonyLib;
+﻿using BepInEx;
+using HarmonyLib;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
@@ -136,7 +138,7 @@ namespace Veilheim.Util
             }
         }
 
-        public static AssetBundle GetAssetBundleFromResources(string fileName)
+        public static AssetBundle LoadAssetBundleFromResources(string fileName)
         {
             var execAssembly = Assembly.GetExecutingAssembly();
 
@@ -150,6 +152,34 @@ namespace Veilheim.Util
             }
 
             return ret;
+        }
+
+        public static AssetBundle LoadAssetBundleFromFile(string fileName)
+        {
+            var assetBundlePath = GetAssetPath(fileName);
+            if (!string.IsNullOrEmpty(assetBundlePath))
+            {
+                return AssetBundle.LoadFromFile(assetBundlePath);
+            }
+
+            return null;
+        }
+
+        private static string GetAssetPath(string assetName, bool ignoreErrors = false)
+        {
+            var assetFileName = Path.Combine(Paths.PluginPath, nameof(VeilheimPlugin), assetName);
+            if (!File.Exists(assetFileName))
+            {
+                Assembly assembly = typeof(VeilheimPlugin).Assembly;
+                assetFileName = Path.Combine(Path.GetDirectoryName(assembly.Location), assetName);
+                if (!File.Exists(assetFileName))
+                {
+                    Logger.LogError($"Could not find asset ({assetName})");
+                    return null;
+                }
+            }
+
+            return assetFileName;
         }
 
         public static void LoadItemPrefab(AssetBundle assetBundle, string assetName)
