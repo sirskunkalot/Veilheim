@@ -353,6 +353,7 @@
   <ItemGroup>
     <Compile Include="ConsoleCommands\ConsoleHooks.cs" />
     <Compile Include="Extensions\ObjectDBExtensions.cs" />
+    <Compile Include="Map\MapHooks.cs" />
     <Compile Include="Map\PortalList.cs" />
     <Compile Include="Map\PortalSelectionGUI.cs" />
     <Compile Include="Map\PublicPosition.cs" />
