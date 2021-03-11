@@ -3,16 +3,16 @@ using BepInEx.Logging;
 using HarmonyLib;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Veilheim.Util;
+using Veilheim.AssetUtils;
 
 namespace Veilheim
 {
     [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
     class VeilheimPlugin : BaseUnityPlugin
     {
-        private const string PluginGUID = "de.sirskunkalot.valheim.veilheim";
-        private const string PluginName = "Veilheim";
-        private const string PluginVersion = "0.0.1";
+        public const string PluginGUID = "de.sirskunkalot.valheim.veilheim";
+        public const string PluginName = "Veilheim";
+        public const string PluginVersion = "0.0.1";
 
         internal static Harmony Harmony { get; private set; }
 
@@ -25,15 +25,41 @@ namespace Veilheim
             Harmony = new Harmony(PluginGUID);
             Harmony.PatchAll();
 
-            var assetBundle = AssetLoader.LoadAssetBundleFromResources("item_skunkaxe");
+            var assetBundle = AssetLoader.LoadAssetBundleFromResources("veilheim");
+            AssetLoader.LoadItemPrefab(assetBundle, "SkunkAxe", new ItemDef()
+            {
+                Amount = 1,
+                CraftingStation = "piece_workbench",
+                MinStationLevel = 1,
+                Enabled = true,
+                RepairStation = "piece_workbench",
+                Resources = new List<RequirementDef>
+                {
+                    new RequirementDef { Item = "Stone", Amount = 1 },
+                    new RequirementDef { Item = "Wood", Amount = 1 }
+                }
+            });
+            AssetLoader.LoadItemPrefab(assetBundle, "SkunkHammer", new ItemDef()
+            {
+                Amount = 1,
+                CraftingStation = "piece_workbench",
+                MinStationLevel = 1,
+                Enabled = true,
+                RepairStation = "piece_workbench",
+                Resources = new List<RequirementDef>
+                {
+                    new RequirementDef { Item = "Stone", Amount = 1 },
+                    new RequirementDef { Item = "Wood", Amount = 1 }
+                }
+            });
             AssetLoader.LoadPiecePrefab(assetBundle, "piece_trashcan", new PieceDef()
             {
                 Table = "_HammerPieceTable",
                 CraftingStation = "piece_workbench",
-                Resources = new List<RecipeRequirementConfig>
+                Resources = new List<RequirementDef>
                 {
-                    new RecipeRequirementConfig { item = "Stone", amount = 1 },
-                    new RecipeRequirementConfig { item = "Wood", amount = 1 }
+                    new RequirementDef { Item = "Stone", Amount = 1 },
+                    new RequirementDef { Item = "Wood", Amount = 1 }
                 }
             });
             assetBundle.Unload(false);
