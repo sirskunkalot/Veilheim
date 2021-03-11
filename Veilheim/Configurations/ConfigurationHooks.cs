@@ -46,7 +46,7 @@ namespace Veilheim.Configurations
         private static void Postfix()
         {
             string msg = $"Loading {ZNet.instance.GetInstanceType()} configuration";
-            Logger.LogInfo(msg);
+            Logger.LogMessage(msg);
 
             if (!Configuration.LoadConfiguration())
             {
@@ -54,7 +54,7 @@ namespace Veilheim.Configurations
             }
             else
             {
-                Logger.LogInfo("Configuration loaded succesfully");
+                Logger.LogMessage("Configuration loaded succesfully");
             }
         }
     }
