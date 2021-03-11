@@ -8,12 +8,20 @@ using UnityEngine;
 
 namespace Veilheim.AssetUtils
 {
+    /// <summary>
+    /// A wrapper class representing <see cref="Piece.Requirement"/>s as primitives.
+    /// Valheim objects are instantiated and referenced at runtime.
+    /// </summary>
     class RequirementDef
     {
         public string Item;
         public int Amount;
     }
-    
+
+    /// <summary>
+    /// A wrapper class representing <see cref="Piece"/>s as primitives.
+    /// Valheim objects are instantiated and referenced at runtime.
+    /// </summary>
     class PieceDef
     {
         public string Table;
@@ -23,6 +31,10 @@ namespace Veilheim.AssetUtils
         public List<RequirementDef> Resources = new List<RequirementDef>();
     }
 
+    /// <summary>
+    /// A wrapper class representing <see cref="ItemDrop"/>s and <see cref="Recipe"/>s as primitives.
+    /// Valheim objects are instantiated and referenced at runtime.
+    /// </summary>
     class ItemDef
     {
         public int Amount = 1;
@@ -36,7 +48,6 @@ namespace Veilheim.AssetUtils
     /// <summary>
     /// Central class for loading and importing custom <see cref="AssetBundle"/>s into Valheim. 
     /// Code inspired by <a href="https://github.com/RandyKnapp/ValheimMods"/>
-    /// and <a href="https://github.com/Valheim-Modding/ValheimLib"/>
     /// </summary>
     static class AssetLoader
     {
@@ -44,6 +55,11 @@ namespace Veilheim.AssetUtils
         private static readonly Dictionary<GameObject, ItemDef> RegisteredItems = new Dictionary<GameObject, ItemDef>();
         private static readonly Dictionary<GameObject, PieceDef> RegisteredPieces = new Dictionary<GameObject, PieceDef>();
 
+        /// <summary>
+        /// Load an assembly-embedded <see cref="AssetBundle"/>
+        /// </summary>
+        /// <param name="bundleName">Name of the bundle</param>
+        /// <returns></returns>
         public static AssetBundle LoadAssetBundleFromResources(string bundleName)
         {
             var execAssembly = Assembly.GetExecutingAssembly();
@@ -65,6 +81,12 @@ namespace Veilheim.AssetUtils
 
             return ret;
         }
+        /// <summary>
+        /// Load an external <see cref="AssetBundle"/> from either &lt;assembly path&gt;/&lt;plugin name&gt;/$fileName
+        /// or &lt;assembly path&gt;/$fileName as a fallback
+        /// </summary>
+        /// <param name="fileName">Filename of the bundle</param>
+        /// <returns></returns>
         public static AssetBundle LoadAssetBundleFromFile(string fileName)
         {
             var assetBundlePath = Path.Combine(Paths.PluginPath, VeilheimPlugin.PluginName, fileName);
