@@ -1,5 +1,7 @@
 using HarmonyLib;
 using System;
+using System.Linq;
+using System.Reflection;
 
 namespace Veilheim.ConsoleCommands
 {
@@ -45,7 +47,17 @@ namespace Veilheim.ConsoleCommands
                 new Action<long, ZPackage>(SetConfigurationValue.RPC_SetConfigurationValue));
 
             // Register console commands
-            BaseConsoleCommand.InitializeCommand<SetConfigurationValue>();
+
+            // Get InitializeCommand method
+            MethodInfo initializeMethod =
+                typeof(BaseConsoleCommand).GetMethod(nameof(BaseConsoleCommand.InitializeCommand), BindingFlags.Public | BindingFlags.Static);
+
+            foreach (Type type in typeof(VeilheimPlugin).Assembly.GetTypes().Where(x => x.BaseType == typeof(BaseConsoleCommand)))
+            {
+                // Activate each console command
+                MethodInfo generic = initializeMethod.MakeGenericMethod(type);
+                generic.Invoke(null, null);
+            }
         }
     }
 }

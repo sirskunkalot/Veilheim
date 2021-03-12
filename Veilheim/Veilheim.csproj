@@ -364,6 +364,7 @@
     <Compile Include="Extensions\ZNetExtensions.cs" />
     <Compile Include="Properties\IgnoreAccessModifiers.cs" />
     <Compile Include="AssetUtils\AssetLoader.cs" />
+    <Compile Include="Util\CommandLinePasswordPatch.cs" />
     <Compile Include="Util\ConsumablesConfig.cs" />
     <Compile Include="Extensions\PlayerExtensions.cs" />
     <Compile Include="Util\PrefabCreator.cs" />
