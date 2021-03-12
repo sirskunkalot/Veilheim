@@ -18,7 +18,6 @@ namespace Veilheim
 
         internal static VeilheimPlugin Instance { get; private set; }
 
-        // Awake is called once when both the game and the plug-in are loaded
         void Awake()
         {
             Instance = this;
@@ -26,12 +25,9 @@ namespace Veilheim
             Harmony.PatchAll();
 
             var assetBundle = AssetLoader.LoadAssetBundleFromResources("veilheim");
-            AssetLoader.LoadItemPrefab(assetBundle, "SkunkAxe", new ItemDef()
+            AssetLoader.LoadItemPrefab(assetBundle, "SkunkAxe", new ItemDef
             {
-                Amount = 1,
                 CraftingStation = "piece_workbench",
-                MinStationLevel = 1,
-                Enabled = true,
                 RepairStation = "piece_workbench",
                 Resources = new List<RequirementDef>
                 {
@@ -41,10 +37,7 @@ namespace Veilheim
             });
             AssetLoader.LoadItemPrefab(assetBundle, "SkunkHammer", new ItemDef()
             {
-                Amount = 1,
                 CraftingStation = "piece_workbench",
-                MinStationLevel = 1,
-                Enabled = true,
                 RepairStation = "piece_workbench",
                 Resources = new List<RequirementDef>
                 {
@@ -54,7 +47,7 @@ namespace Veilheim
             });
             AssetLoader.LoadPiecePrefab(assetBundle, "piece_trashcan", new PieceDef()
             {
-                Table = "_HammerPieceTable",
+                PieceTable = "_HammerPieceTable",
                 CraftingStation = "piece_workbench",
                 Resources = new List<RequirementDef>
                 {
@@ -63,6 +56,11 @@ namespace Veilheim
                 }
             });
             assetBundle.Unload(false);
+        }
+
+        private void OnDestroy()
+        {
+            Harmony.UnpatchAll(PluginGUID);
         }
     }
 

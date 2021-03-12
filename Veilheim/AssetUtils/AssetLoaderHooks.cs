@@ -2,22 +2,21 @@
 
 namespace Veilheim.AssetUtils
 {
-
-    [HarmonyPatch(typeof(ObjectDB), "CopyOtherDB")]
+    [HarmonyPatch(typeof(ObjectDB), "CopyOtherDB", typeof(ObjectDB))]
     public static class ObjectDB_CopyOtherDB_Patch
     {
-        public static void Postfix()
+        public static void Postfix(ObjectDB __instance)
         {
-            AssetLoader.AddToObjectDB();
+            AssetLoader.AddToObjectDB(__instance);
         }
     }
 
     [HarmonyPatch(typeof(ObjectDB), "Awake")]
     public static class ObjectDB_Awake_Patch
     {
-        public static void Postfix()
+        public static void Postfix(ObjectDB __instance)
         {
-            AssetLoader.AddToObjectDB();
+            AssetLoader.AddToObjectDB(__instance);
         }
     }
 
