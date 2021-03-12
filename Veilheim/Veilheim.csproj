@@ -342,6 +342,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Blueprints\FlattenTerrain.cs" />
+    <Compile Include="ConsoleCommands\ApplyBlueprintCommand.cs" />
     <Compile Include="ConsoleCommands\SaveBlueprintCommand.cs" />
     <Compile Include="Map\PortalList.cs" />
     <Compile Include="Map\PortalSelectionGUI.cs" />

@@ -1,6 +1,5 @@
 ﻿// Veilheim
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using Veilheim.Configurations;
-using Object = UnityEngine.Object;
 
 namespace Veilheim.ConsoleCommands
 {
@@ -39,7 +37,8 @@ namespace Veilheim.ConsoleCommands
 
             var name = string.Join(" ", parts.Skip(2).ToList());
 
-            var vec = Player.m_localPlayer.GetHeadPoint();
+            var vec = Player.m_localPlayer.transform.position;
+            var rot = Camera.main.transform.rotation.eulerAngles;
             Console.instance.AddString("Collecting piece information");
 
             var numPieces = 0;
@@ -55,7 +54,7 @@ namespace Veilheim.ConsoleCommands
                 numPieces = collected.Count(x => x.IsPlacedByPlayer() && x.m_category != Piece.PieceCategory.Misc);
                 var newStart = new Vector3();
                 foreach (var position in collected.Where(x => x.IsPlacedByPlayer() && x.m_category != Piece.PieceCategory.Misc)
-                    .Select(x => x.transform.position))
+                    .Select(x => x.m_nview.GetZDO().m_position))
                 {
                     newStart.x += position.x;
                     newStart.y += position.y;
@@ -75,6 +74,34 @@ namespace Veilheim.ConsoleCommands
 
             Console.instance.AddString($"Found {numPieces} in a radius of {startRadius:F2}");
 
+            // Relocate Z
+            var minZ = 9999999.9f;
+            var minX = 9999999.9f;
+            var minY = 9999999.9f;
+
+            foreach (var piece in collected.Where(x => x.IsPlacedByPlayer() && x.m_category != Piece.PieceCategory.Misc))
+            {
+                if (piece.m_nview.GetZDO().m_position.x < minX)
+                {
+                    minX = piece.m_nview.GetZDO().m_position.x;
+                }
+
+                if (piece.m_nview.GetZDO().m_position.z < minZ)
+                {
+                    minZ = piece.m_nview.GetZDO().m_position.z;
+                }
+
+                if (piece.m_nview.GetZDO().m_position.y < minY)
+                {
+                    minY = piece.m_nview.GetZDO().m_position.y;
+                }
+            }
+
+            Console.instance.AddString($"{minX} - {minY} - {minZ}");
+
+            var bottomleft = new Vector3(minX, minY, minZ);
+
+            // Prepare path
             var blueprintPath = Path.Combine(Configuration.ConfigIniPath, ZNet.instance.GetWorldUID().ToString(), "blueprints");
             if (!Directory.Exists(blueprintPath))
             {
@@ -83,17 +110,19 @@ namespace Veilheim.ConsoleCommands
 
             using (TextWriter tw = new StreamWriter(Path.Combine(blueprintPath, name + ".blueprint")))
             {
-                var bottomleft = collected.Where(x => x.IsPlacedByPlayer() && x.m_category != Piece.PieceCategory.Misc).OrderBy(x => x.GetCenter().y)
-                    .ThenBy(x => x.GetCenter().x).ThenBy(x => x.GetCenter().z).First().transform.position;
-                foreach (var piece in collected.Where(x => x.IsPlacedByPlayer() && x.m_category != Piece.PieceCategory.Misc).OrderBy(x => x.GetCenter().y)
-                    .ThenBy(x => x.GetCenter().x).ThenBy(x => x.GetCenter().z))
+                foreach (var piece in collected.Where(x => x.IsPlacedByPlayer() && x.m_category != Piece.PieceCategory.Misc)
+                    .OrderBy(x => x.transform.position.y).ThenBy(x => x.transform.position.x).ThenBy(x => x.transform.position.z))
                 {
-                    var v1 = piece.GetCenter() - bottomleft;
+                    var v1 = new Vector3(piece.m_nview.GetZDO().m_position.x - bottomleft.x, piece.m_nview.GetZDO().m_position.y - bottomleft.y,
+                        piece.m_nview.GetZDO().m_position.z - bottomleft.z);
+
                     var q = piece.m_nview.GetZDO().m_rotation;
-                    tw.WriteLine(string.Join(";", piece.m_name, piece.m_category.ToString(), v1.x.ToString("F5"), v1.y.ToString("F5"), v1.z.ToString("F5"),
-                        q.x.ToString("F5"), q.y.ToString("F5"), q.z.ToString("F5"), q.w.ToString("F5")));
+                    q.eulerAngles = new Vector3(0, q.eulerAngles.y, 0);
+                    tw.WriteLine(string.Join(";", piece.name.Split('(')[0], piece.m_category.ToString(), v1.x.ToString("F5"), v1.y.ToString("F5"),
+                        v1.z.ToString("F5"), q.x.ToString("F5"), q.y.ToString("F5"), q.z.ToString("F5"), q.w.ToString("F5"), q.eulerAngles.x.ToString("F5"), q.eulerAngles.y.ToString("F5"), q.eulerAngles.z.ToString("F5")));
                 }
             }
+
 
             Task.Factory.StartNew(() =>
             {
@@ -108,7 +137,7 @@ namespace Veilheim.ConsoleCommands
                 Hud.instance.Update();
                 Thread.Sleep(100);
 
-                ScreenCapture.CaptureScreenshot(Path.Combine(blueprintPath,name+".png"));
+                ScreenCapture.CaptureScreenshot(Path.Combine(blueprintPath, name + ".png"));
 
                 Hud.instance.m_userHidden = oldHud;
                 Hud.instance.Update();

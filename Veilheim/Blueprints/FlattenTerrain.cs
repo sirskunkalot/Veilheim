@@ -1,28 +1,45 @@
 ﻿// Veilheim
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Xml;
+using Steamworks;
 using UnityEngine;
+using Veilheim.ConsoleCommands;
+using Object = UnityEngine.Object;
 
 namespace Veilheim.Blueprints
 {
     public class FlattenTerrain
     {
-        public static void Flatten(Transform transform, Vector2 delta)
+        public static void Flatten(Transform transform, Vector2 floorSize, List<PieceEntry> pieces)
         {
+            Debug.Log($"Entered FlattenTerrain {transform} / {floorSize} with {pieces.Count}");
+
             var groundPrefab = ZNetScene.instance.GetPrefab("raise");
             if (groundPrefab)
             {
-                var startPosition = transform.position + transform.forward * 2.0f + Vector3.down * 0.5f;
+                var lowestY = pieces.Min(x => x.posY);
+                var startPosition = transform.position + Vector3.down * 0.5f;
                 var rotation = transform.rotation;
-
 
                 var forward = 0f;
 
-                while (forward < delta.x)
+                while (forward < floorSize.y)
                 {
                     var right = 0f;
-                    while (right < delta.y)
+                    while (right < floorSize.x)
                     {
-                        Object.Instantiate(groundPrefab, startPosition + transform.forward * forward + transform.right * right, rotation);
+
+
+                        var lowestAtPosition = pieces.OrderBy(x => x.posY).FirstOrDefault(x => (Math.Abs(x.posX - forward) < 4f) && (Math.Abs(x.posZ - right) < 4f));
+                        if (lowestAtPosition != null)
+                        {
+                            Debug.Log("Lowest: " + lowestAtPosition.posY);
+
+                            Object.Instantiate(groundPrefab, startPosition + transform.forward * forward + transform.right * right + new Vector3(0, lowestAtPosition.posY, 0), rotation);
+                        }
                         right++;
                     }
 
