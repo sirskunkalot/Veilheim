@@ -25,11 +25,11 @@ namespace Veilheim
             Harmony = new Harmony(PluginGUID);
             Harmony.PatchAll();
 
-            var assetBundle = AssetLoader.LoadAssetBundleFromResources("veilheim");
-            AssetLoader.LoadItemPrefab(assetBundle, "SkunkAxe", new ItemDef()
+            var assetBundle = AssetLoader.LoadAssetBundleFromResources("skunkitems");
+            AssetLoader.LoadItemPrefab(assetBundle, "SkunkBroadFireSword", new ItemDef()
             {
                 Amount = 1,
-                CraftingStation = "piece_workbench",
+                CraftingStation = "",
                 MinStationLevel = 1,
                 Enabled = true,
                 RepairStation = "piece_workbench",
@@ -39,27 +39,27 @@ namespace Veilheim
                     new RequirementDef { Item = "Wood", Amount = 1 }
                 }
             });
-            AssetLoader.LoadItemPrefab(assetBundle, "SkunkHammer", new ItemDef()
+            AssetLoader.LoadItemPrefab(assetBundle, "SkunkSword", new ItemDef()
             {
                 Amount = 1,
-                CraftingStation = "piece_workbench",
+                CraftingStation = "",
                 MinStationLevel = 1,
                 Enabled = true,
                 RepairStation = "piece_workbench",
                 Resources = new List<RequirementDef>
                 {
-                    new RequirementDef { Item = "Stone", Amount = 1 },
                     new RequirementDef { Item = "Wood", Amount = 1 }
+                   // new RequirementDef { Item = "Wood", Amount = 1 }
                 }
             });
-            AssetLoader.LoadPiecePrefab(assetBundle, "piece_trashcan", new PieceDef()
+            AssetLoader.LoadPiecePrefab(assetBundle, "Terrain", new PieceDef()
             {
                 Table = "_HammerPieceTable",
-                CraftingStation = "piece_workbench",
+                CraftingStation = "",
                 Resources = new List<RequirementDef>
                 {
-                    new RequirementDef { Item = "Stone", Amount = 1 },
-                    new RequirementDef { Item = "Wood", Amount = 1 }
+                    //new RequirementDef { Item = "Stone", Amount = 1 },
+                    //new RequirementDef { Item = "Wood", Amount = 1 }
                 }
             });
             assetBundle.Unload(false);
