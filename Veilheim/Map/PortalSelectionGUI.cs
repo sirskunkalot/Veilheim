@@ -1,14 +1,16 @@
 ﻿using HarmonyLib;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 using Veilheim.Configurations;
 
 namespace Veilheim.Map
 {
+    /// <summary>
+    /// When renaming/tagging a portal read all tags from unconnected portals in the world and make a list of them to tag it.
+    /// Coded by https://github.com/Algorithman
+    /// </summary>
     class PortalSelectionGUI
     {
         public static RectTransform portalRect;
@@ -24,6 +26,8 @@ namespace Veilheim.Map
         {
             if (TextInput.instance.m_panel.activeSelf)
             {
+                Logger.LogInfo("Generating portal selection");
+
                 // set position of textinput (a bit higher)
                 TextInput.instance.m_panel.transform.localPosition = new Vector3(0, 270.0f, 0);
 
@@ -33,12 +37,8 @@ namespace Veilheim.Map
                     portalRect = GenerateGUI();
                 }
 
-                // Generate list of single teleporters (exclude portal names starting with * )
-                var singleTeleports = new List<Minimap.PinData>();
-                lock (PortalsOnMap.portalPins)
-                {
-                    singleTeleports.AddRange(PortalsOnMap.portalPins.Where(x => !x.m_name.StartsWith("*")).OrderBy(x => x.m_name));
-                }
+                // Generate list of unconnected portals from ZDOMan
+                var singlePortals = PortalList.GetPortals().Where(x => !x.m_con);
 
                 // remove all buttons from earlier calls
                 foreach (var oldbt in teleporterButtons)
@@ -54,25 +54,24 @@ namespace Veilheim.Map
 
                 var idx = 0;
                 // calculate number of lines
-                var lines = singleTeleports.Count / 3;
+                var lines = singlePortals.Count() / 3;
 
                 // Get name of portal
-                var actualName = TextInput.instance.m_textField.text;
-                if (string.IsNullOrEmpty(actualName))
+                var currentTag = TextInput.instance.m_textField.text;
+                if (string.IsNullOrEmpty(currentTag))
                 {
-                    actualName = "<unnamed>";
-                    TextInput.instance.m_textField.text = actualName;
+                    currentTag = "<unnamed>";
+                    TextInput.instance.m_textField.text = currentTag;
                 }
-
 
                 if (TextInput.instance.m_panel.transform.Find("OK") != null)
                 {
                     var originalButton = TextInput.instance.m_panel.transform.Find("OK").gameObject;
 
-                    foreach (var pin in singleTeleports)
+                    foreach (var portal in singlePortals)
                     {
                         // Skip if it is the selected teleporter
-                        if ((pin.m_name == actualName) || (actualName == "<unnamed>" && string.IsNullOrEmpty(pin.m_name)))
+                        if ((portal.m_tag == currentTag) || (currentTag == "<unnamed>" && string.IsNullOrEmpty(portal.m_tag)))
                         {
                             continue;
                         }
@@ -88,16 +87,16 @@ namespace Veilheim.Map
                         newButton.SetActive(true);
 
                         // set button text
-                        newButton.GetComponentInChildren<Text>().text = pin.m_name;
+                        newButton.GetComponentInChildren<Text>().text = portal.m_tag;
 
                         // add event payload
                         newButton.GetComponentInChildren<Button>().onClick.AddListener(() =>
                         {
                             // Set input field text to new name
-                            TextInput.instance.m_textField.text = pin.m_name;
+                            TextInput.instance.m_textField.text = portal.m_tag;
 
                             // simulate enter key
-                            TextInput.instance.OnEnter(pin.m_name);
+                            TextInput.instance.OnEnter(portal.m_tag);
 
                             // hide textinput
                             TextInput.instance.Hide();
@@ -109,17 +108,17 @@ namespace Veilheim.Map
                     }
                 }
 
-                if (singleTeleports.Count > 0)
+                if (singlePortals.Count() > 0)
                 {
                     // show buttonlist only if single teleports are available to choose from
                     portalRect.gameObject.SetActive(true);
                 }
 
                 // Set anchor
-                buttonList.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -(singleTeleports.Count / 3) * 25.0f);
+                buttonList.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -(singlePortals.Count() / 3) * 25.0f);
 
                 // Set size
-                buttonList.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, singleTeleports.Count / 3 * 50.0f + 50f);
+                buttonList.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, singlePortals.Count() / 3 * 50.0f + 50f);
 
                 // release mouselock
                 GameCamera.instance.m_mouseCapture = false;
@@ -128,7 +127,7 @@ namespace Veilheim.Map
         }
 
         /// <summary>
-        /// Create background for teleporter button list
+        /// Clones the original valheim <see cref="InventoryGui"/> background <see cref="GameObject"/>
         /// </summary>
         /// <returns></returns>
         private static RectTransform GetOrCreateBackground()
@@ -148,6 +147,10 @@ namespace Veilheim.Map
             return transform as RectTransform;
         }
 
+        /// <summary>
+        /// Creates the base canvas for the portal buttons
+        /// </summary>
+        /// <returns></returns>
         private static RectTransform GenerateGUI()
         {
             // Create root gameobject with background image
@@ -251,64 +254,6 @@ namespace Veilheim.Map
             portalRect.GetComponent<ScrollRect>().content = rectButtonList;
 
             return portalRect;
-        }
-    }
-
-    /// <summary>
-    /// CLIENT SIDE: Create list of teleporter tags to choose from
-    /// </summary>
-    [HarmonyPatch(typeof(TeleportWorld), "Interact", typeof(Humanoid), typeof(bool))]
-    public static class TeleportWorld_Interact_Patch
-    {
-        public static void Postfix(ref TextInput __instance, Humanoid human, bool hold, ref bool __result)
-        {
-            // only act on clients
-            if (ZNet.instance.IsServerInstance())
-            {
-                return;
-            }
-            // must be enabled
-            if (!Configuration.Current.Map.IsEnabled || !Configuration.Current.Map.showPortalSelection)
-            {
-                return;
-            }
-            // i like my personal space
-            if (!PrivateArea.CheckAccess(__instance.transform.position, 0f, true) || hold)
-            {
-                return;
-            }
-
-            PortalSelectionGUI.OpenPortalSelection();
-        }
-    }
-
-    /// <summary>
-    /// CLIENT SIDE: Destroy portal tag list
-    /// </summary>
-    [HarmonyPatch(typeof(TextInput), "Hide")]
-    public static class TextInput_Hide_Patch
-    {
-        public static void Postfix(TextInput __instance)
-        {
-            if (ZNet.instance.IsServerInstance())
-            {
-                return;
-            }
-            if (PortalSelectionGUI.portalRect != null)
-            {
-                if (PortalSelectionGUI.portalRect.gameObject.activeSelf)
-                {
-                    // hide teleporter button box
-                    PortalSelectionGUI.portalRect.gameObject.SetActive(false);
-                }
-            }
-
-            // reset position of textinput panel
-            TextInput.instance.m_panel.transform.localPosition = new Vector3(0, 0f, 0);
-
-            // restore mouse capture
-            GameCamera.instance.m_mouseCapture = true;
-            GameCamera.instance.UpdateMouseCapture();
         }
     }
 }

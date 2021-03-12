@@ -1,5 +1,4 @@
-﻿using HarmonyLib;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -116,7 +115,6 @@ namespace Veilheim.ConsoleCommands
                 if (!isFromRemote)
                 {
                     Console.instance.AddString("Usage: SetValue <SectionName>.<ValueName> <value>");
-                    Console.instance.AddString("Example: SetValue Kiln.productionSpeed 15.7");
                 }
 
                 return false;
@@ -252,19 +250,19 @@ namespace Veilheim.ConsoleCommands
         {
             var zPgk = new ZPackage();
             zPgk.Write(inputCopy);
-            ZRoutedRpc.instance.InvokeRoutedRPC("SetConfigurationValue", zPgk);
+            ZRoutedRpc.instance.InvokeRoutedRPC(nameof(RPC_SetConfigurationValue), zPgk);
         }
 
-        public static void RPC_SetConfigurationValue(long sender, ZPackage inputString)
+        public static void RPC_SetConfigurationValue(long sender, ZPackage inputPkg)
         {
             if (ZNet.instance.IsLocalInstance()) // Local game
             {
                 Logger.LogInfo("RPC_SetConfigurationValue LOCAL");
-                var input = inputString.ReadString();
+                var input = inputPkg.ReadString();
                 string inputCopy = (input + " ").Trim();
                 TryExecuteCommand(ref input, true);
             }
-            else if (ZNet.instance.IsServerInstance()) // Server
+            if (ZNet.instance.IsServerInstance()) // Server
             {
                 var peer = ZNet.instance.GetPeer(sender);
                 if (peer == null)
@@ -278,21 +276,21 @@ namespace Veilheim.ConsoleCommands
                 var steamId = peer.m_socket.GetHostName();
                 if (ZNet.instance.m_adminList.Contains(steamId))
                 {
-                    var input = inputString.ReadString();
+                    var input = inputPkg.ReadString();
                     string inputCopy = (input + " ").Trim();
-                    BaseConsoleCommand.TryExecuteCommand(ref input, true);
+                    TryExecuteCommand(ref input, true);
                     foreach (var peerEntry in ZNet.instance.m_peers)
                     {
                         Logger.LogDebug($"SENDING {inputCopy}");
                         // Send same back to all clients to actually also set the value on the client
-                        ZRoutedRpc.instance.InvokeRoutedRPC(peerEntry.m_uid, "SetConfigurationValue", inputString);
+                        ZRoutedRpc.instance.InvokeRoutedRPC(peerEntry.m_uid, nameof(RPC_SetConfigurationValue), inputPkg);
                     }
                 }
             }
             else // Client
             {
                 Logger.LogInfo("RPC_SetConfigurationValue CLIENT");
-                var input = inputString.ReadString();
+                var input = inputPkg.ReadString();
                 string inputCopy = (input + " ").Trim();
                 TryExecuteCommand(ref input, true);
                 Console.instance.AddString($"Command '{inputCopy}' executed");
@@ -300,18 +298,4 @@ namespace Veilheim.ConsoleCommands
         }
     }
 
-    [HarmonyPatch(typeof(Game), "Start")]
-    public static class Game_Start_Patch
-    {
-        private static void Prefix()
-        {
-            // Configuration console command RPC
-            ZRoutedRpc.instance.Register("SetConfigurationValue", new Action<long, ZPackage>(SetConfigurationValue.RPC_SetConfigurationValue));
-
-            // register all console commands
-            BaseConsoleCommand.InitializeCommand<SetConfigurationValue>();
-            BaseConsoleCommand.InitializeCommand<SaveBlueprintCommand>();
-            BaseConsoleCommand.InitializeCommand<ApplyBlueprintCommand>();
-        }
-    }
 }
