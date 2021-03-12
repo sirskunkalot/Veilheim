@@ -388,6 +388,7 @@
   <ItemGroup>
     <None Include="app.config" />
     <EmbeddedResource Include="Assets\veilheim" />
+    <EmbeddedResource Include="Assets\skunkitems" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

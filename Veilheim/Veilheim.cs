@@ -24,6 +24,16 @@ namespace Veilheim
             Harmony = new Harmony(PluginGUID);
             Harmony.PatchAll();
 
+            LoadAssets();
+        }
+
+        private void OnDestroy()
+        {
+            Harmony.UnpatchAll(PluginGUID);
+        }
+
+        private void LoadAssets()
+        {
             var assetBundle = AssetLoader.LoadAssetBundleFromResources("veilheim");
             AssetLoader.LoadItemPrefab(assetBundle, "SkunkAxe", new ItemDef
             {
@@ -31,7 +41,6 @@ namespace Veilheim
                 RepairStation = "piece_workbench",
                 Resources = new List<RequirementDef>
                 {
-                    new RequirementDef { Item = "Stone", Amount = 1 },
                     new RequirementDef { Item = "Wood", Amount = 1 }
                 }
             });
@@ -41,26 +50,46 @@ namespace Veilheim
                 RepairStation = "piece_workbench",
                 Resources = new List<RequirementDef>
                 {
-                    new RequirementDef { Item = "Stone", Amount = 1 },
                     new RequirementDef { Item = "Wood", Amount = 1 }
                 }
             });
             AssetLoader.LoadPiecePrefab(assetBundle, "piece_trashcan", new PieceDef()
             {
                 PieceTable = "_HammerPieceTable",
-                CraftingStation = "piece_workbench",
+                //CraftingStation = "piece_workbench",  // no need to have a station?
                 Resources = new List<RequirementDef>
                 {
-                    new RequirementDef { Item = "Stone", Amount = 1 },
-                    new RequirementDef { Item = "Wood", Amount = 1 }
+                    new RequirementDef { Item = "Stone", Amount = 1 }
                 }
             });
             assetBundle.Unload(false);
-        }
 
-        private void OnDestroy()
-        {
-            Harmony.UnpatchAll(PluginGUID);
+            assetBundle = AssetLoader.LoadAssetBundleFromResources("skunkitems");
+            AssetLoader.LoadItemPrefab(assetBundle, "SkunkBroadFireSword", new ItemDef()
+            {
+                Amount = 1,
+                CraftingStation = "piece_workbench",
+                RepairStation = "piece_workbench",
+                Resources = new List<RequirementDef>
+                {
+                    new RequirementDef { Item = "Wood", Amount = 1 }
+                }
+            });
+            AssetLoader.LoadItemPrefab(assetBundle, "SkunkSword", new ItemDef()
+            {
+                Amount = 1,
+                CraftingStation = "piece_workbench",
+                RepairStation = "piece_workbench",
+                Resources = new List<RequirementDef>
+                {
+                    new RequirementDef { Item = "Wood", Amount = 1 }
+                }
+            });
+            AssetLoader.LoadPiecePrefab(assetBundle, "Terrain", new PieceDef()
+            {
+                PieceTable = "_HoePieceTable"
+            });
+            assetBundle.Unload(false);
         }
     }
 
