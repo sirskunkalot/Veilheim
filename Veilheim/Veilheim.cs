@@ -51,7 +51,7 @@ namespace Veilheim
 
     /// <summary>
     /// A namespace wide Logger class, which automatically creates a <see cref="ManualLogSource"/> 
-    /// for every namespace from which it is been called
+    /// for every namespace from which it is being called
     /// </summary>
     internal class Logger
     {

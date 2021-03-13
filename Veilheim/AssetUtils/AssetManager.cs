@@ -53,6 +53,8 @@ namespace Veilheim.AssetUtils
         private readonly List<GameObject> RegisteredPrefabs = new List<GameObject>();
         private readonly Dictionary<GameObject, ItemDef> RegisteredItems = new Dictionary<GameObject, ItemDef>();
         private readonly Dictionary<GameObject, PieceDef> RegisteredPieces = new Dictionary<GameObject, PieceDef>();
+        
+        private Dictionary<string, CraftingStation> CraftingStations;
 
         public static AssetManager Instance;
 
@@ -64,11 +66,13 @@ namespace Veilheim.AssetUtils
         public void Destroy()
         {
             Logger.LogDebug("Destroying AssetManager");
+
+            //TODO: deregister pieces, they are globally registered
         }
 
         /// <summary>
-        /// Register an "untyped" prefab with this class.<br />
-        /// The "untyped" prefabs are added to the <see cref="ZNetScene"/> on initialization.
+        /// Register an "untyped" prefab.<br />
+        /// The "untyped" prefabs are added to the current <see cref="ZNetScene"/> on initialization.
         /// </summary>
         /// <param name="prefab"></param>
         public static void AddPrefab(GameObject prefab)
@@ -77,8 +81,8 @@ namespace Veilheim.AssetUtils
         }
 
         /// <summary>
-        /// Register an item prefab with this class.<br />
-        /// The item prefabs are added to the <see cref="ObjectDB"/> and <see cref="ZNetScene"/> on initialization.<br />
+        /// Register an <see cref="ItemDrop"/> prefab.<br />
+        /// The item prefabs are added to the current <see cref="ObjectDB"/> and <see cref="ZNetScene"/> on initialization.<br />
         /// A <see cref="Recipe"/> is created and added automatically, when a <see cref="CraftingStation"/> and the 
         /// <see cref="Piece.Requirement"/>s are defined in the <see cref="ItemDef"/>.
         /// </summary>
@@ -91,10 +95,10 @@ namespace Veilheim.AssetUtils
         }
 
         /// <summary>
-        /// Register a piece prefab with this class.<br />
-        /// The piece prefabs are added to the <see cref="ZNetScene"/> on initialization.<br />
+        /// Register a <see cref="Piece"/> prefab.<br />
+        /// The piece prefabs are added to the current <see cref="ZNetScene"/> on initialization.<br />
         /// The <see cref="Piece"/> is added to the <see cref="PieceTable"/> defined in <see cref="PieceDef"/> automatically.<br />
-        /// When ExtensionStation is defined, the <see cref="Piece"/> is added as a <see cref="StationExtension"/>.
+        /// When ExtensionStation is defined in <see cref="PieceDef"/>, the <see cref="Piece"/> is added as a <see cref="StationExtension"/> to that station.
         /// </summary>
         /// <param name="prefab"></param>
         /// <param name="pieceDef"></param>
@@ -105,7 +109,7 @@ namespace Veilheim.AssetUtils
         }
 
         /// <summary>
-        /// Add all loaded prefabs to the namedPrefabs in <see cref="ZNetScene"/>.
+        /// Add all registered prefabs to the namedPrefabs in <see cref="ZNetScene"/>.
         /// </summary>
         /// <param name="instance"></param>
         public static void AddToZNetScene(ZNetScene instance)
@@ -142,20 +146,60 @@ namespace Veilheim.AssetUtils
             Instance.TryRegisterPieces(instance);
         }
 
+        public void Reset()
+        {
+            CraftingStations = null;
+        }
+
+        private void InitCraftingStations(ObjectDB instance)
+        {
+            if (CraftingStations == null)
+            {
+                CraftingStations = new Dictionary<string, CraftingStation>();
+
+                // Collect all current PieceTables from the items in ObjectDB
+                var pieceTables = new List<PieceTable>();
+                foreach (var itemPrefab in instance.m_items)
+                {
+                    var item = itemPrefab.GetComponent<ItemDrop>().m_itemData;
+                    if (item.m_shared.m_buildPieces != null && !pieceTables.Contains(item.m_shared.m_buildPieces))
+                    {
+                        pieceTables.Add(item.m_shared.m_buildPieces);
+                    }
+                }
+
+                // Collect all possible CraftingStations from the collected PieceTables
+                var craftingStations = new List<CraftingStation>();
+                foreach (var pieceTable in pieceTables)
+                {
+                    foreach (var station in pieceTable.m_pieces
+                        .Where(x => x.GetComponent<CraftingStation>() != null)
+                        .Select(x => x.GetComponent<CraftingStation>()))
+                    {
+                        if (!CraftingStations.ContainsKey(station.name))
+                        {
+                            CraftingStations.Add(station.name, station);
+                        }
+                    }
+                }
+
+                // Collect all CraftingStations from the recipes in ObjectDB
+                foreach (var recipe in instance.m_recipes)
+                {
+                    if (recipe.m_craftingStation != null && !CraftingStations.ContainsKey(recipe.m_craftingStation.name))
+                    {
+                        CraftingStations.Add(recipe.m_craftingStation.name, recipe.m_craftingStation);
+                    }
+                }
+            }
+        }
+
         private void TryRegisterItems(ObjectDB instance)
         {
             Logger.LogMessage($"Registering custom items in ObjectDB {instance}");
 
-            // Collect all current CraftingStations from the recipes in ObjectDB
-            var craftingStations = new List<CraftingStation>();
-            foreach (var recipe in instance.m_recipes)
-            {
-                if (recipe.m_craftingStation != null && !craftingStations.Contains(recipe.m_craftingStation))
-                {
-                    craftingStations.Add(recipe.m_craftingStation);
-                }
-            }
-
+            Instance.InitCraftingStations(instance);
+            
             // Go through all registered Items and try to obtain references
             // to the actual objects defined as strings in ItemDef
             foreach (var entry in RegisteredItems)
@@ -189,7 +233,7 @@ namespace Veilheim.AssetUtils
                 Logger.LogInfo($"Registered item {prefab.name}");
 
                 // Create the Recipe for this item, defined in ItemDef
-                var recipe = CreateRecipe(instance, prefab, itemDef, craftingStations);
+                var recipe = CreateRecipe(instance, prefab, itemDef);
 
                 // Add the Recipe to the ObjectDB, remove one with the same name first
                 var removed = instance.m_recipes.RemoveAll(x => x.name == recipe.name);
@@ -217,7 +261,7 @@ namespace Veilheim.AssetUtils
         /// <param name="itemDef"></param>
         /// <param name="craftingStations">List of stations which are allowed to act as the crafting and repair station for this item</param>
         /// <returns></returns>
-        private Recipe CreateRecipe(ObjectDB instance, GameObject prefab, ItemDef itemDef, List<CraftingStation> craftingStations)
+        private Recipe CreateRecipe(ObjectDB instance, GameObject prefab, ItemDef itemDef)
         {
             var newRecipe = ScriptableObject.CreateInstance<Recipe>();
             newRecipe.name = $"Recipe_{prefab.name}";
@@ -229,11 +273,11 @@ namespace Veilheim.AssetUtils
             // Assign the crafting station for this Recipe if defined in ItemDef
             if (!string.IsNullOrEmpty(itemDef.CraftingStation))
             {
-                var craftingStation = craftingStations.Find(x => x.name == itemDef.CraftingStation);
+                var craftingStation = CraftingStations.GetValueSafe(itemDef.CraftingStation);
                 if (craftingStation == null)
                 {
                     Logger.LogWarning($"Could not find crafting station: {itemDef.CraftingStation}");
-                    var stationList = string.Join(", ", craftingStations);
+                    var stationList = string.Join(", ", CraftingStations.Keys);
                     Logger.LogDebug($"Available Stations: {stationList}");
                 }
                 else
@@ -245,11 +289,11 @@ namespace Veilheim.AssetUtils
             // Assign the repair station for this recipe if defined in ItemDef
             if (!string.IsNullOrEmpty(itemDef.RepairStation))
             {
-                var repairStation = craftingStations.Find(x => x.name == itemDef.RepairStation);
+                var repairStation = CraftingStations.GetValueSafe(itemDef.RepairStation);
                 if (repairStation == null)
                 {
                     Logger.LogWarning($"Could not find repair station: {itemDef.RepairStation}");
-                    var stationList = string.Join(", ", craftingStations);
+                    var stationList = string.Join(", ", CraftingStations.Keys);
                     Logger.LogDebug($"Available Stations: {stationList}");
                 }
                 else
@@ -287,6 +331,9 @@ namespace Veilheim.AssetUtils
         {
             Logger.LogMessage($"Registering custom pieces in ObjectDB {instance}");
 
+            // Get CraftingStations if necessary
+            Instance.InitCraftingStations(instance);
+
             // Collect all current PieceTables from the items in ObjectDB
             var pieceTables = new List<PieceTable>();
             foreach (var itemPrefab in instance.m_items)
@@ -296,15 +343,6 @@ namespace Veilheim.AssetUtils
                 {
                     pieceTables.Add(item.m_shared.m_buildPieces);
                 }
-            }
-
-            // Collect all possible CraftingStations from the collected PieceTables
-            var craftingStations = new List<CraftingStation>();
-            foreach (var pieceTable in pieceTables)
-            {
-                craftingStations.AddRange(pieceTable.m_pieces
-                    .Where(x => x.GetComponent<CraftingStation>() != null)
-                    .Select(x => x.GetComponent<CraftingStation>()));
             }
 
             // Go through all registered Pieces and try to obtain references
@@ -336,11 +374,11 @@ namespace Veilheim.AssetUtils
                 // Assign the needed CraftingStation for this piece, if needed
                 if (!string.IsNullOrEmpty(pieceDef.CraftingStation))
                 {
-                    var pieceStation = craftingStations.Find(x => x.name == pieceDef.CraftingStation);
+                    var pieceStation = CraftingStations.GetValueSafe(pieceDef.CraftingStation);
                     if (pieceStation == null)
                     {
                         Logger.LogWarning($"Could not find crafting station: {pieceDef.CraftingStation}");
-                        var stationList = string.Join(", ", craftingStations);
+                        var stationList = string.Join(", ", CraftingStations.Keys);
                         Logger.LogDebug($"Available Stations: {stationList}");
                     }
                     else

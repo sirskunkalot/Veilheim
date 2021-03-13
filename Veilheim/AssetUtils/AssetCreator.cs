@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using BepInEx;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using UnityEngine;
 
 namespace Veilheim.AssetUtils
@@ -18,118 +21,39 @@ namespace Veilheim.AssetUtils
             return c;
         }
 
-        public static void Reset()
+        public static GameObject CreatePiece(string name)
         {
-            CraftingStations = null;
+            var ret = new GameObject(name);
+            GameObject.DontDestroyOnLoad(ret);
+
+            // Create basic Components
+            var znet = RequireComponent<ZNetView>(ret);
+            znet.m_persistent = true;
+            znet.m_type = ZDO.ObjectType.Solid;
+
+            var piece = RequireComponent<Piece>(ret);
+
+            return ret;
         }
 
-        private static void InitCraftingStations()
+        public static GameObject ClonePiece(string name, string item)
         {
-            if (CraftingStations == null)
+            var orig = ObjectDB.instance.GetItemPrefab(item);
+            if (orig == null)
             {
-                CraftingStations = new Dictionary<string, CraftingStation>();
-                foreach (var recipe in ObjectDB.instance.m_recipes)
-                {
-                    if (recipe.m_craftingStation != null && !CraftingStations.ContainsKey(recipe.m_craftingStation.name))
-                    {
-                        CraftingStations.Add(recipe.m_craftingStation.name, recipe.m_craftingStation);
-                    }
-                }
-            }
-        }
-
-        public static Recipe CreateRecipe(string name, string itemId, Util.RecipeConfig recipeConfig)
-        {
-            InitCraftingStations();
-
-            var itemPrefab = ObjectDB.instance.GetItemPrefab(itemId);
-            if (itemPrefab == null)
-            {
-                Debug.LogWarning($"[PrefabCreator] Could not find item prefab ({itemId})");
+                Logger.LogWarning($"Could not find item prefab ({item})");
                 return null;
             }
 
-            var newRecipe = ScriptableObject.CreateInstance<Recipe>();
-            newRecipe.name = name;
-            newRecipe.m_amount = recipeConfig.amount;
-            newRecipe.m_minStationLevel = recipeConfig.minStationLevel;
-            newRecipe.m_item = itemPrefab.GetComponent<ItemDrop>();
-            newRecipe.m_enabled = recipeConfig.enabled;
+            GameObject clone = new GameObject(name);
+            GameObject.DontDestroyOnLoad(clone);
 
-            if (!string.IsNullOrEmpty(recipeConfig.craftingStation))
-            {
-                var craftingStationExists = CraftingStations.ContainsKey(recipeConfig.craftingStation);
-                if (!craftingStationExists)
-                {
-                    Debug.LogWarning($"[PrefabCreator] Could not find crafting station ({itemId}): {recipeConfig.craftingStation}");
-                    var stationList = string.Join(", ", CraftingStations.Keys);
-                    Debug.Log($"[PrefabCreator] Available Stations: {stationList}");
-                }
-                else
-                {
-                    newRecipe.m_craftingStation = CraftingStations[recipeConfig.craftingStation];
-                }
-            }
+            //TODO: clone all needed values
+            var origPiece = orig.GetComponent<Piece>();
+            var newPiece = RequireComponent<Piece>(clone);
 
-            if (!string.IsNullOrEmpty(recipeConfig.repairStation))
-            {
-                var repairStationExists = CraftingStations.ContainsKey(recipeConfig.repairStation);
-                if (!repairStationExists)
-                {
-                    Debug.LogWarning($"[PrefabCreator] Could not find repair station ({itemId}): {recipeConfig.repairStation}");
-                    var stationList = string.Join(", ", CraftingStations.Keys);
-                    Debug.Log($"[PrefabCreator] Available Stations: {stationList}");
-                }
-                else
-                {
-                    newRecipe.m_repairStation = CraftingStations[recipeConfig.repairStation];
-                }
-            }
 
-            var reqs = new List<Piece.Requirement>();
-            foreach (var requirement in recipeConfig.resources)
-            {
-                var reqPrefab = ObjectDB.instance.GetItemPrefab(requirement.item);
-                if (reqPrefab == null)
-                {
-                    Debug.LogError($"[PrefabCreator] Could not find requirement item ({itemId}): {requirement.item}");
-                    continue;
-                }
-
-                reqs.Add(new Piece.Requirement()
-                {
-                    m_amount = requirement.amount,
-                    m_resItem = reqPrefab.GetComponent<ItemDrop>()
-                });
-            }
-            newRecipe.m_resources = reqs.ToArray();
-
-            return newRecipe;
-        }
-
-        public static Recipe AddNewRecipe(string name, string itemId, Util.RecipeConfig recipeConfig)
-        {
-            var recipe = CreateRecipe(name, itemId, recipeConfig);
-            if (recipe == null)
-            {
-                Debug.LogError($"[PrefabCreator] Failed to create recipe ({name})");
-                return null;
-            }
-            return AddNewRecipe(recipe);
-        }
-
-        public static Recipe AddNewRecipe(Recipe recipe)
-        {
-            var removed = ObjectDB.instance.m_recipes.RemoveAll(x => x.name == recipe.name);
-            if (removed > 0)
-            {
-                Debug.Log($"[PrefabCreator] Removed recipe ({recipe.name}): {removed}");
-            }
-
-            ObjectDB.instance.m_recipes.Add(recipe);
-            Debug.Log($"[PrefabCreator] Added recipe: {recipe.name}");
-
-            return recipe;
+            return clone;
         }
     }
 }

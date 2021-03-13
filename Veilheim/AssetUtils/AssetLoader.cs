@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Veilheim.AssetUtils
 {
-    //TODO: Make non-static, make Destroyable, dont hardcode prefab and bundle names
+    //TODO: dont hardcode prefab and bundle names
 
     internal class AssetLoader : IDestroyable
     {
@@ -84,6 +84,41 @@ namespace Veilheim.AssetUtils
         }
 
         /// <summary>
+        /// Try to get a path to <paramref name="fileName"/> from either &lt;assembly_path&gt;/&lt;plugin_name&gt;/
+        /// or &lt;assembly_path&gt;/ as a fallback
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
+        private string GetFilePath(string fileName)
+        {
+            var filePath = Path.Combine(Paths.PluginPath, VeilheimPlugin.PluginName, fileName);
+            if (!File.Exists(filePath))
+            {
+                Assembly assembly = typeof(VeilheimPlugin).Assembly;
+                filePath = Path.Combine(Path.GetDirectoryName(assembly.Location), fileName);
+                if (!File.Exists(filePath))
+                {
+                    Logger.LogError($"Asset file {fileName} not found in filesystem");
+                    return null;
+                }
+            }
+
+            return filePath;
+        }
+
+        public Sprite LoadSpriteFromFile(string spritePath)
+        {
+            byte[] fileData = File.ReadAllBytes(GetFilePath(spritePath));
+            Texture2D tex = new Texture2D(20, 20);
+            if (tex.LoadImage(fileData))
+            {
+                return Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(), 100);
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Load an assembly-embedded <see cref="AssetBundle"/>
         /// </summary>
         /// <param name="bundleName">Name of the bundle</param>
@@ -111,31 +146,18 @@ namespace Veilheim.AssetUtils
         }
 
         /// <summary>
-        /// Load an external <see cref="AssetBundle"/> from either &lt;assembly path&gt;/&lt;plugin name&gt;/$fileName
-        /// or &lt;assembly path&gt;/$fileName as a fallback
+        /// Load an external <see cref="AssetBundle"/> 
         /// </summary>
         /// <param name="fileName">Filename of the bundle</param>
         /// <returns></returns>
         public AssetBundle LoadAssetBundleFromFile(string fileName)
         {
-            var assetBundlePath = Path.Combine(Paths.PluginPath, VeilheimPlugin.PluginName, fileName);
-            if (!File.Exists(assetBundlePath))
-            {
-                Assembly assembly = typeof(VeilheimPlugin).Assembly;
-                assetBundlePath = Path.Combine(Path.GetDirectoryName(assembly.Location), fileName);
-                if (!File.Exists(assetBundlePath))
-                {
-                    Logger.LogError($"AssetBundle file {fileName} not found in filesystem");
-                    return null;
-                }
-            }
-
+            var assetBundlePath = GetFilePath(fileName);
             return AssetBundle.LoadFromFile(assetBundlePath);
         }
 
         /// <summary>
-        /// Load an "untyped" prefab from a bundle and register it with this class.<br />
-        /// The "untyped" prefabs are added to the <see cref="ZNetScene"/> on initialization.
+        /// Load an "untyped" prefab from a bundle and register it in <see cref="AssetManager"/>.
         /// </summary>
         /// <param name="assetBundle"></param>
         /// <param name="assetName"></param>
@@ -146,10 +168,7 @@ namespace Veilheim.AssetUtils
         }
 
         /// <summary>
-        /// Load an item prefab from a bundle and register it with this class.<br />
-        /// The item prefabs are added to the <see cref="ObjectDB"/> and <see cref="ZNetScene"/> on initialization.<br />
-        /// A <see cref="Recipe"/> is created and added automatically, when a <see cref="CraftingStation"/> and the 
-        /// <see cref="Piece.Requirement"/>s are defined in the <see cref="ItemDef"/>.
+        /// Load an item prefab from a bundle and register it in <see cref="AssetManager"/>.
         /// </summary>
         /// <param name="assetBundle"></param>
         /// <param name="assetName"></param>
@@ -162,10 +181,7 @@ namespace Veilheim.AssetUtils
         }
 
         /// <summary>
-        /// Load a piece prefab from a bundle and register it with this class.<br />
-        /// The piece prefabs are added to the <see cref="ZNetScene"/> on initialization.<br />
-        /// The <see cref="Piece"/> is added to the <see cref="PieceTable"/> defined in <see cref="PieceDef"/> automatically.<br />
-        /// When ExtensionStation is defined, the <see cref="Piece"/> is added as a <see cref="StationExtension"/>.
+        /// Load a piece prefab from a bundle and register it in <see cref="AssetManager"/>.
         /// </summary>
         /// <param name="assetBundle"></param>
         /// <param name="assetName"></param>
