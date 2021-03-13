@@ -8,13 +8,15 @@ using Veilheim.AssetUtils;
 namespace Veilheim
 {
     [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
-    internal class VeilheimPlugin : BaseUnityPlugin, IDestroyable
+    internal class VeilheimPlugin : BaseUnityPlugin
     {
         public const string PluginGUID = "de.sirskunkalot.valheim.veilheim";
         public const string PluginName = "Veilheim";
         public const string PluginVersion = "0.0.1";
+        
+        private new readonly Logger Logger = new Logger();
 
-        internal static Harmony m_harmony { get; private set; }
+        private Harmony m_harmony;
 
         private readonly List<IDestroyable> m_destroyables = new List<IDestroyable>();
 
@@ -22,8 +24,6 @@ namespace Veilheim
         {
             m_harmony = new Harmony(PluginGUID);
             m_harmony.PatchAll();
-
-            m_destroyables.Add(new Logger());
 
             m_destroyables.Add(new AssetManager());
 
@@ -36,17 +36,14 @@ namespace Veilheim
 
         public void OnDestroy()
         {
-            Destroy();
-        }
-
-        public void Destroy()
-        {
             Logger.LogInfo("Destroying plugin");
 
             foreach (var destroyable in m_destroyables)
             {
                 destroyable.Destroy();
             }
+
+            Logger.Destroy();
 
             m_harmony.UnpatchAll(PluginGUID);
         }
@@ -56,7 +53,7 @@ namespace Veilheim
     /// A namespace wide Logger class, which automatically creates a <see cref="ManualLogSource"/> 
     /// for every namespace from which it is been called
     /// </summary>
-    internal class Logger : IDestroyable
+    internal class Logger
     {
         private readonly Dictionary<string, ManualLogSource> m_logger 
             = new Dictionary<string, ManualLogSource>();
@@ -70,12 +67,14 @@ namespace Veilheim
 
         public void Destroy()
         {
-            GetLogger().LogDebug("Destroying Logger");
-
+            Logger.LogDebug("Destroying Logger");
+            
             foreach (var entry in m_logger)
             {
                 BepInEx.Logging.Logger.Sources.Remove(entry.Value);
             }
+
+            m_logger.Clear();
         }
 
         private ManualLogSource GetLogger()
