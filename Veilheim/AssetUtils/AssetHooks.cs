@@ -7,7 +7,7 @@ namespace Veilheim.AssetUtils
     {
         public static void Postfix(ObjectDB __instance)
         {
-            AssetLoader.AddToObjectDB(__instance);
+            AssetManager.AddToObjectDB(__instance);
         }
     }
 
@@ -16,7 +16,7 @@ namespace Veilheim.AssetUtils
     {
         public static void Postfix(ObjectDB __instance)
         {
-            AssetLoader.AddToObjectDB(__instance);
+            AssetManager.AddToObjectDB(__instance);
         }
     }
 
@@ -25,7 +25,7 @@ namespace Veilheim.AssetUtils
     {
         public static void Prefix(ZNetScene __instance)
         {
-            AssetLoader.AddToZNetScene(__instance);
+            AssetManager.AddToZNetScene(__instance);
         }
     }
 }

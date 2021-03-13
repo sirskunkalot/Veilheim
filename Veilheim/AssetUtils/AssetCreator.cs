@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace Veilheim.Util
+namespace Veilheim.AssetUtils
 {
-    public static class RecipeCreator
+    public static class AssetCreator
     {
         public static Dictionary<string, CraftingStation> CraftingStations;
 
@@ -38,7 +38,7 @@ namespace Veilheim.Util
             }
         }
 
-        public static Recipe CreateRecipe(string name, string itemId, RecipeConfig recipeConfig)
+        public static Recipe CreateRecipe(string name, string itemId, Util.RecipeConfig recipeConfig)
         {
             InitCraftingStations();
 
@@ -107,7 +107,7 @@ namespace Veilheim.Util
             return newRecipe;
         }
 
-        public static Recipe AddNewRecipe(string name, string itemId, RecipeConfig recipeConfig)
+        public static Recipe AddNewRecipe(string name, string itemId, Util.RecipeConfig recipeConfig)
         {
             var recipe = CreateRecipe(name, itemId, recipeConfig);
             if (recipe == null)
