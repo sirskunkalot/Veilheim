@@ -1,31 +1,30 @@
 ﻿using HarmonyLib;
 using Veilheim.Configurations;
+using Veilheim.PatchEvents;
 
 namespace Veilheim.Map
 {
-    [HarmonyPatch(typeof(ZNet), "Awake")]
-    public static class ZNet_Awake_Patch
+
+    public class PublicPostion_Patches : Payload
     {
-        private static void Postfix(ref ZNet __instance)
+
+        [PatchEvent(typeof(ZNet), nameof(ZNet.Awake), PatchEventType.Postfix, 600)]
+        public static void EnablePublicPosition(ZNet instance)
         {
             if (Configuration.Current.MapServer.IsEnabled && Configuration.Current.MapServer.playerPositionPublicOnJoin)
             {
                 // Set player position visibility to public by default on server join
-                __instance.m_publicReferencePosition = true;
+                instance.m_publicReferencePosition = true;
             }
         }
-    }
 
-    [HarmonyPatch(typeof(ZNet), "SetPublicReferencePosition")]
-    public static class ZNet_SetPublicReferencePosition_Patch
-    {
-        public static void Postfix()
+        [PatchEvent(typeof(ZNet), nameof(ZNet.SetPublicReferencePosition), PatchEventType.Postfix)]
+        public static void PreventDisablePublicPosition(ZNet instance)
         {
             if (Configuration.Current.MapServer.IsEnabled && Configuration.Current.MapServer.preventPlayerFromTurningOffPublicPosition)
             {
-                ZNet.instance.m_publicReferencePosition = true;
+                instance.m_publicReferencePosition = true;
             }
         }
     }
-
 }

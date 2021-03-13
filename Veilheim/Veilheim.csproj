@@ -351,19 +351,34 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AssetUtils\AssetLoader.cs" />
     <Compile Include="AssetUtils\AssetLoaderHooks.cs" />
     <Compile Include="ConsoleCommands\ConsoleHooks.cs" />
     <Compile Include="Extensions\ObjectDBExtensions.cs" />
+    <Compile Include="Configurations\ConfigSync.cs" />
+    <Compile Include="Extensions\ZNetExtensions.cs" />
     <Compile Include="Map\MapHooks.cs" />
     <Compile Include="Map\PortalList.cs" />
     <Compile Include="Map\PortalSelectionGUI.cs" />
+    <Compile Include="Map\PortalsOnMap.cs" />
     <Compile Include="Map\PublicPosition.cs" />
     <Compile Include="Map\SharedMapSystem.cs" />
-    <Compile Include="Map\PortalsOnMap.cs" />
-    <Compile Include="Configurations\ConfigSync.cs" />
-    <Compile Include="Extensions\ZNetExtensions.cs" />
+    <Compile Include="PatchEvents\PatchDispatcher.cs" />
+    <Compile Include="PatchEvents\PatchEventAttribute.cs" />
+    <Compile Include="PatchEvents\PatchEventType.cs" />
+    <Compile Include="PatchEvents\PatchStubs\Console_Patches.cs" />
+    <Compile Include="PatchEvents\PatchStubs\Game_Patches.cs" />
+    <Compile Include="PatchEvents\PatchStubs\Minimap_Patches.cs" />
+    <Compile Include="PatchEvents\PatchStubs\ObjectDB_Patches.cs" />
+    <Compile Include="PatchEvents\PatchStubs\Player_Patches.cs" />
+    <Compile Include="PatchEvents\PatchStubs\Smelter_Patches.cs" />
+    <Compile Include="PatchEvents\PatchStubs\TeleportWorld_Patches.cs" />
+    <Compile Include="PatchEvents\PatchStubs\TextInput_Patches.cs" />
+    <Compile Include="PatchEvents\PatchStubs\WearNTear_Patches.cs" />
+    <Compile Include="PatchEvents\PatchStubs\ZNetScene_Patches.cs" />
+    <Compile Include="PatchEvents\PatchStubs\ZNet_Patches.cs" />
+    <Compile Include="PatchEvents\Payload.cs" />
     <Compile Include="Properties\IgnoreAccessModifiers.cs" />
-    <Compile Include="AssetUtils\AssetLoader.cs" />
     <Compile Include="Util\CommandLinePasswordPatch.cs" />
     <Compile Include="Util\ConsumablesConfig.cs" />
     <Compile Include="Extensions\PlayerExtensions.cs" />
@@ -388,8 +403,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <EmbeddedResource Include="Assets\veilheim" />
     <EmbeddedResource Include="Assets\skunkitems" />
+    <EmbeddedResource Include="Assets\veilheim" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

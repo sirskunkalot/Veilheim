@@ -1,45 +1,19 @@
 using HarmonyLib;
 using UnityEngine;
 using Veilheim.Configurations;
+using Veilheim.PatchEvents;
 
 namespace Veilheim.Map
 {
 
-    /// <summary>
-    /// CLIENT SIDE: Creates a <see cref="PortalSelectionGUI"/> when interacting with a portal
-    /// </summary>
-    [HarmonyPatch(typeof(TeleportWorld), "Interact", typeof(Humanoid), typeof(bool))]
-    public static class TeleportWorld_Interact_Patch
+    public class Map_Patches : Payload
     {
-        public static void Postfix(ref TextInput __instance, Humanoid human, bool hold, ref bool __result)
-        {
-            // only act on clients
-            if (ZNet.instance.IsServerInstance())
-            {
-                return;
-            }
-            // must be enabled
-            if (!Configuration.Current.Map.IsEnabled || !Configuration.Current.Map.showPortalSelection)
-            {
-                return;
-            }
-            // i like my personal space
-            if (!PrivateArea.CheckAccess(__instance.transform.position, 0f, true) || hold)
-            {
-                return;
-            }
-
-            PortalSelectionGUI.OpenPortalSelection();
-        }
-    }
-
-    /// <summary>
-    /// CLIENT SIDE: Destroy the <see cref="PortalSelectionGUI"/> when active
-    /// </summary>
-    [HarmonyPatch(typeof(TextInput), "Hide")]
-    public static class TextInput_Hide_Patch
-    {
-        public static void Postfix(TextInput __instance)
+        /// <summary>
+        /// CLIENT SIDE: Destroy the <see cref="PortalSelectionGUI"/> when active
+        /// </summary>
+        /// <param name="instance">TextInput instance</param>
+        [PatchEvent(typeof(TextInput), nameof(TextInput.Hide), PatchEventType.Postfix)]
+        public static void ResetPortalSelector(TextInput instance)
         {
             if (ZNet.instance.IsServerInstance())
             {
@@ -55,11 +29,39 @@ namespace Veilheim.Map
             }
 
             // reset position of textinput panel
-            TextInput.instance.m_panel.transform.localPosition = new Vector3(0, 0f, 0);
+            instance.m_panel.transform.localPosition = new Vector3(0, 0f, 0);
 
             // restore mouse capture
             GameCamera.instance.m_mouseCapture = true;
             GameCamera.instance.UpdateMouseCapture();
+        }
+
+        /// <summary>
+        /// CLIENT SIDE: Creates a <see cref="PortalSelectionGUI"/> when interacting with a portal
+        /// </summary>
+        /// <param name="instance">Teleporter instance</param>
+        /// <param name="human">unused</param>
+        /// <param name="hold"></param>
+        [PatchEvent(typeof(TeleportWorld), nameof(TeleportWorld.Interact), PatchEventType.Postfix)]
+        public static void ShowPortalSelection(TeleportWorld instance, Humanoid human, bool hold)
+        {
+            // only act on clients
+            if (ZNet.instance.IsServerInstance())
+            {
+                return;
+            }
+            // must be enabled
+            if (!Configuration.Current.Map.IsEnabled || !Configuration.Current.Map.showPortalSelection)
+            {
+                return;
+            }
+            // i like my personal space
+            if (!PrivateArea.CheckAccess(instance.transform.position, 0f, true) || hold)
+            {
+                return;
+            }
+
+            PortalSelectionGUI.OpenPortalSelection();
         }
     }
 }

@@ -179,7 +179,7 @@ namespace Veilheim.Configurations
         {
             var sb = new StringBuilder();
             var sectionType = property.PropertyType;
-            var sectionAttribute = sectionType.GetCustomAttributes(false).OfType<ConfigurationSectionAttribute>().FirstOrDefault();
+            var sectionAttribute = sectionType.GetCustomAttributes(false).OfType<ConfigurationSectionAttribute>().First();
 
             if (sectionAttribute != null && withComments)
             {

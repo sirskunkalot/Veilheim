@@ -4,6 +4,7 @@ using HarmonyLib;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Veilheim.AssetUtils;
+using Veilheim.PatchEvents;
 
 namespace Veilheim
 {
@@ -23,7 +24,8 @@ namespace Veilheim
             Instance = this;
             Harmony = new Harmony(PluginGUID);
             Harmony.PatchAll();
-
+            // Instantiate and initialize PatchDispatcher
+            PatchDispatcher.Instance.Dummy();
             LoadAssets();
         }
 

@@ -1,31 +1,27 @@
 ﻿using HarmonyLib;
+using Veilheim.PatchEvents;
 
 namespace Veilheim.AssetUtils
 {
-    [HarmonyPatch(typeof(ObjectDB), "CopyOtherDB", typeof(ObjectDB))]
-    public static class ObjectDB_CopyOtherDB_Patch
+   
+    public class AssetLoader_Patches: Payload
     {
-        public static void Postfix(ObjectDB __instance)
+        [PatchEvent(typeof(ObjectDB), nameof(ObjectDB.CopyOtherDB), PatchEventType.Postfix)]
+        public static void Postfix(ObjectDB instance)
         {
-            AssetLoader.AddToObjectDB(__instance);
+            AssetLoader.AddToObjectDB(instance);
         }
-    }
 
-    [HarmonyPatch(typeof(ObjectDB), "Awake")]
-    public static class ObjectDB_Awake_Patch
-    {
-        public static void Postfix(ObjectDB __instance)
+        [PatchEvent(typeof(ObjectDB), nameof(ObjectDB.Awake), PatchEventType.Postfix)]
+        public static void Assetloader_AddObjectDB(ObjectDB instance)
         {
-            AssetLoader.AddToObjectDB(__instance);
+            AssetLoader.AddToObjectDB(instance);
         }
-    }
 
-    [HarmonyPatch(typeof(ZNetScene), "Awake")]
-    public static class ZNetScene_Awake_Patch
-    {
-        public static void Prefix(ZNetScene __instance)
+        [PatchEvent(typeof(ZNetScene), nameof(ZNetScene.Awake), PatchEventType.Prefix)]
+        public static void Assetloader_Load(ZNetScene instance)
         {
-            AssetLoader.AddToZNetScene(__instance);
+            AssetLoader.AddToZNetScene(instance);
         }
     }
 }

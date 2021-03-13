@@ -1,23 +1,36 @@
-﻿using System;
+﻿// Veilheim
+
+using System;
 using System.Linq;
-using HarmonyLib;
+using Veilheim.PatchEvents;
 
 namespace Veilheim.Util
 {
-
-    // Adding +password <password> to the commandline works now as intended
-    // Password is checked against server, but no dialog is shown
-    [HarmonyPatch(typeof(ZNet), "RPC_ClientHandshake", new Type[] { typeof(ZRpc), typeof(bool) })]
-    public static class CommandLinePasswordPatch
+    public class CommandLinePassword : Payload
     {
-        public static bool Prefix(ZNet __instance, ZRpc rpc, bool needPassword)
+        /// <summary>
+        ///     Adding +password «password» to the commandline works now as intended
+        ///     Password is checked against server, but no dialog is shown
+        /// </summary>
+        /// <param name="instance"></param>
+        /// <param name="cancel"></param>
+        /// <param name="rpc"></param>
+        /// <param name="needPassword"></param>
+        [PatchEvent(typeof(ZNet), nameof(ZNet.RPC_ClientHandshake), PatchEventType.BlockingPrefix)]
+        public static void ApplyPassword(ZNet instance, ref bool cancel, ZRpc rpc, bool needPassword)
         {
+            // return if previous blocking prefix event was cancelling
+            if (cancel)
+            {
+                return;
+            }
+
             if (Environment.GetCommandLineArgs().Any(x => x.ToLower() == "+password"))
             {
-                string[] args = Environment.GetCommandLineArgs();
-                
+                var args = Environment.GetCommandLineArgs();
+
                 // find password argument index
-                int index = 0;
+                var index = 0;
                 while (index < args.Length && args[index].ToLower() != "+password")
                 {
                     index++;
@@ -29,19 +42,16 @@ namespace Veilheim.Util
                 if (index >= args.Length)
                 {
                     // Not enough commandline arguments
-                    return true;
+                    return;
                 }
 
                 // do normal handshake
-                __instance.m_connectingDialog.gameObject.SetActive(false);
-                __instance.SendPeerInfo(rpc, args[index]);
+                instance.m_connectingDialog.gameObject.SetActive(false);
+                instance.SendPeerInfo(rpc, args[index]);
 
                 // prevent execution of original code 
-                return false;
+                cancel = true;
             }
-
-            return true;
         }
-
     }
 }

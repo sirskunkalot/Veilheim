@@ -1,23 +1,25 @@
-﻿using System;
+﻿// Veilheim
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using HarmonyLib;
 using UnityEngine;
 using Veilheim.Configurations;
+using Veilheim.PatchEvents;
 
 namespace Veilheim.Map
 {
-    public class PortalsOnMap
+    public class PortalsOnMap : Payload
     {
         /// <summary>
-        /// Holder for our pins, these get drawn to the map
+        ///     Holder for our pins, these get drawn to the map
         /// </summary>
         public static List<Minimap.PinData> portalPins = new List<Minimap.PinData>();
 
         /// <summary>
-        /// Create PinData objects without adding them to the map directly
+        ///     Create PinData objects without adding them to the map directly
         /// </summary>
         public static Minimap.PinData CreatePinData(Vector3 pos, Minimap.PinType type, string name, bool save, bool isChecked)
         {
@@ -32,13 +34,13 @@ namespace Veilheim.Map
         }
 
         /// <summary>
-        /// Add and remove pins in internal list based on a list of portals
+        ///     Add and remove pins in internal list based on a list of portals
         /// </summary>
         /// <param name="portals"></param>
         public static void UpdatePins(PortalList portals)
         {
             Logger.LogDebug("Updating pins of portals on minimap");
-            
+
             // prevent MT crashing
             lock (portalPins)
             {
@@ -105,7 +107,7 @@ namespace Veilheim.Map
         }
 
         /// <summary>
-        /// Add and remove pins on minimap based on the internal list
+        ///     Add and remove pins on minimap based on the internal list
         /// </summary>
         public static void UpdateMinimap()
         {
@@ -142,7 +144,7 @@ namespace Veilheim.Map
         }
 
         /// <summary>
-        /// RPC to handle initial sync to a new peer
+        ///     RPC to handle initial sync to a new peer
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="teleporterZPackage"></param>
@@ -162,7 +164,7 @@ namespace Veilheim.Map
 
                 var package = portals.ToZPackage();
 
-                ZRoutedRpc.instance.InvokeRoutedRPC(sender, nameof(RPC_TeleporterSyncInit), new object[] { package });
+                ZRoutedRpc.instance.InvokeRoutedRPC(sender, nameof(RPC_TeleporterSyncInit), package);
             }
 
             // CLIENT SIDE
@@ -181,7 +183,7 @@ namespace Veilheim.Map
         }
 
         /// <summary>
-        /// RPC to handle sync to all peers
+        ///     RPC to handle sync to all peers
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="teleporterZPackage"></param>
@@ -207,7 +209,7 @@ namespace Veilheim.Map
                     {
                         Logger.LogInfo($"Sending portal data to peer #{peer.m_uid}");
 
-                        ZRoutedRpc.instance.InvokeRoutedRPC(peer.m_uid, nameof(RPC_TeleporterSync), new object[] { package });
+                        ZRoutedRpc.instance.InvokeRoutedRPC(peer.m_uid, nameof(RPC_TeleporterSync), package);
                     }
                 }
             }
@@ -226,60 +228,95 @@ namespace Veilheim.Map
                 }
             }
         }
-    }
 
-    /// <summary>
-    /// Register TeleporterSync RPC calls
-    /// </summary>
-    [HarmonyPatch(typeof(Game), "Start")]
-    public static class Game_Start_Patch
-    {
-        private static void Prefix()
-        {
-            ZRoutedRpc.instance.Register(nameof(PortalsOnMap.RPC_TeleporterSyncInit),
-                new Action<long, ZPackage>(PortalsOnMap.RPC_TeleporterSyncInit));
-            ZRoutedRpc.instance.Register(nameof(PortalsOnMap.RPC_TeleporterSync),
-                new Action<long, ZPackage>(PortalsOnMap.RPC_TeleporterSync));
-        }
-    }
-
-    /// <summary>
-    /// CLIENT SIDE: Initially pull portals after SetMapData on Minimap
-    /// </summary>
-    [HarmonyPatch(typeof(Minimap), "SetMapData")]
-    public static class Minimap_SetMapData_Patch
-    {
-        public static void Postfix()
+        /// <summary>
+        ///     CLIENT SIDE: React to setting tag on portal
+        /// </summary>
+        /// <param name="instance"></param>
+        [PatchEvent(typeof(WearNTear), nameof(WearNTear.Destroy), PatchEventType.Prefix)]
+        public static void OnPortalDestroy(WearNTear instance)
         {
             if (ZNet.instance.IsServerInstance())
             {
                 return;
             }
+
+            if (instance.m_piece && instance.m_piece.m_name == "$piece_portal")
+            {
+                Logger.LogInfo("Portal destroyed");
+
+                if (ZNet.instance.IsLocalInstance())
+                {
+                    Logger.LogInfo("Sending portal sync request to server");
+
+                    ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(RPC_TeleporterSync), new ZPackage());
+                }
+
+                if (ZNet.instance.IsClientInstance())
+                {
+                    Logger.LogInfo("Sending deferred portal sync request to server");
+
+                    Task.Factory.StartNew(() =>
+                    {
+                        // Wait for ZDO to be sent else server won't have accurate information to send back
+                        Thread.Sleep(5000);
+
+                        // Send trigger to server
+                        ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(RPC_TeleporterSync), new ZPackage());
+                    });
+                }
+            }
+        }
+
+        /// <summary>
+        ///     Register TeleporterSync RPC calls
+        /// </summary>
+        /// <param name="instance"></param>
+        [PatchEvent(typeof(Game), nameof(Game.Start), PatchEventType.Prefix)]
+        public static void RegisterRPC(Game instance)
+        {
+            ZRoutedRpc.instance.Register(nameof(RPC_TeleporterSyncInit), new Action<long, ZPackage>(RPC_TeleporterSyncInit));
+            ZRoutedRpc.instance.Register(nameof(RPC_TeleporterSync), new Action<long, ZPackage>(RPC_TeleporterSync));
+        }
+
+        /// <summary>
+        ///     CLIENT SIDE: Initially pull portals after SetMapData on Minimap
+        /// </summary>
+        /// <param name="instance"></param>
+        [PatchEvent(typeof(Minimap), nameof(Minimap.SetMapData), PatchEventType.Postfix)]
+        public static void UpdatePortalPins(Minimap instance)
+        {
+            if (ZNet.instance.IsServerInstance())
+            {
+                return;
+            }
+
             if (!Configuration.Current.Map.IsEnabled || !Configuration.Current.Map.showPortalsOnMap)
             {
                 return;
             }
+
             if (ZNet.instance.IsLocalInstance())
             {
                 Logger.LogInfo("Initializing portals");
-                PortalsOnMap.UpdatePins(PortalList.GetPortals());
+                UpdatePins(PortalList.GetPortals());
             }
+
             if (ZNet.instance.IsClientInstance())
             {
                 Logger.LogInfo("Sending portal sync request to server");
-                ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(PortalsOnMap.RPC_TeleporterSyncInit),
-                    new object[] { new ZPackage() });
+                ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(RPC_TeleporterSyncInit), new ZPackage());
             }
         }
-    }
 
-    /// <summary>
-    /// CLIENT SIDE: React to setting tag on portal
-    /// </summary>
-    [HarmonyPatch(typeof(TeleportWorld), "RPC_SetTag", typeof(long), typeof(string))]
-    public static class TeleportWorld_RPCSetTag_Patch
-    {
-        public static void Postfix(TeleportWorld __instance, long sender, string tag)
+        /// <summary>
+        ///     CLIENT SIDE: React to setting tag on portal
+        /// </summary>
+        /// <param name="instance"></param>
+        /// <param name="sender"></param>
+        /// <param name="tag"></param>
+        [PatchEvent(typeof(TeleportWorld), nameof(TeleportWorld.RPC_SetTag), PatchEventType.Postfix)]
+        public static void ResyncAfterTagChange(TeleportWorld instance, long sender, string tag)
         {
             if (ZNet.instance.IsServerInstance())
             {
@@ -293,8 +330,7 @@ namespace Veilheim.Map
                 Logger.LogInfo("Sending portal sync request to server");
 
                 // Send trigger to server
-                ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(PortalsOnMap.RPC_TeleporterSync),
-                    new object[] { new ZPackage() });
+                ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(RPC_TeleporterSync), new ZPackage());
             }
 
             if (ZNet.instance.IsClientInstance())
@@ -302,7 +338,7 @@ namespace Veilheim.Map
                 Logger.LogDebug("Forcing ZDO to server");
 
                 // Force sending ZDO to server
-                var temp = __instance.m_nview.GetZDO();
+                var temp = instance.m_nview.GetZDO();
 
                 ZDOMan.instance.GetZDO(temp.m_uid);
 
@@ -316,45 +352,44 @@ namespace Veilheim.Map
                     Thread.Sleep(5000);
 
                     // Send trigger to server
-                    ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(PortalsOnMap.RPC_TeleporterSync),
-                        new object[] { new ZPackage() });
+                    ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(RPC_TeleporterSync), new ZPackage());
                 });
             }
         }
-    }
 
-    /// <summary>
-    /// CLIENT SIDE: Update portal pins on the minimap in each update cycle
-    /// </summary>
-    [HarmonyPatch(typeof(Minimap), "UpdateLocationPins")]
-    public static class Minimap_UpdateLocationPins_Patch
-    {
-        public static void Postfix()
+        /// <summary>
+        ///     CLIENT SIDE: Update portal pins on the minimap in each update cycle
+        /// </summary>
+        /// <param name="instance"></param>
+        [PatchEvent(typeof(Minimap), nameof(Minimap.UpdateLocationPins), PatchEventType.Postfix)]
+        public static void UpdatePinsOnMinimap(Minimap instance)
         {
             if (ZNet.instance.IsServerInstance())
             {
                 return;
             }
+
             if (Configuration.Current.Map.IsEnabled && Configuration.Current.Map.showPortalsOnMap)
             {
-                PortalsOnMap.UpdateMinimap();
+                UpdateMinimap();
             }
         }
-    }
 
-    /// <summary>
-    /// CLIENT SIDE: React to a placement of a portal
-    /// </summary>
-    [HarmonyPatch(typeof(Player), "PlacePiece", typeof(Piece))]
-    public static class Player_PlacePiece_Patch
-    {
-        public static void Postfix(Piece piece, ref bool __result)
+        /// <summary>
+        ///     CLIENT SIDE: React to a placement of a portal
+        /// </summary>
+        /// <param name="instance"></param>
+        /// <param name="piece"></param>
+        /// <param name="successful"></param>
+        [PatchEvent(typeof(Player), nameof(Player.PlacePiece), PatchEventType.Postfix)]
+        public static void AfterPlacingPortal(Player instance, Piece piece, bool successful)
         {
             if (ZNet.instance.IsServerInstance())
             {
                 return;
             }
-            if (__result && !piece.IsCreator() && piece.m_name == "$piece_portal")
+
+            if (successful && !piece.IsCreator() && piece.m_name == "$piece_portal")
             {
                 Logger.LogInfo("Portal created");
 
@@ -362,8 +397,7 @@ namespace Veilheim.Map
                 {
                     Logger.LogInfo("Sending portal sync request to server");
 
-                    ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(PortalsOnMap.RPC_TeleporterSync),
-                        new object[] { new ZPackage() });
+                    ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(RPC_TeleporterSync), new ZPackage());
                 }
 
                 if (ZNet.instance.IsClientInstance())
@@ -376,50 +410,7 @@ namespace Veilheim.Map
                         Thread.Sleep(5000);
 
                         // Send trigger to server
-                        ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(PortalsOnMap.RPC_TeleporterSync),
-                            new object[] { new ZPackage() });
-                    });
-                }
-            }
-        }
-    }
-
-    /// <summary>
-    /// CLIENT SIDE: React to a destruction of a portal
-    /// </summary>
-    [HarmonyPatch(typeof(WearNTear), "Destroy")]
-    public static class WearNTear_Destroy_Patch
-    {
-        public static void Prefix(WearNTear __instance)
-        {
-            if (ZNet.instance.IsServerInstance())
-            {
-                return;
-            }
-            if (__instance.m_piece && __instance.m_piece.m_name == "$piece_portal")
-            {
-                Logger.LogInfo("Portal destroyed");
-
-                if (ZNet.instance.IsLocalInstance())
-                {
-                    Logger.LogInfo("Sending portal sync request to server");
-
-                    ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(PortalsOnMap.RPC_TeleporterSync),
-                        new object[] { new ZPackage() });
-                }
-
-                if (ZNet.instance.IsClientInstance())
-                {
-                    Logger.LogInfo("Sending deferred portal sync request to server");
-
-                    Task.Factory.StartNew(() =>
-                    {
-                        // Wait for ZDO to be sent else server won't have accurate information to send back
-                        Thread.Sleep(5000);
-
-                        // Send trigger to server
-                        ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(PortalsOnMap.RPC_TeleporterSync),
-                            new object[] { new ZPackage() });
+                        ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(RPC_TeleporterSync), new ZPackage());
                     });
                 }
             }

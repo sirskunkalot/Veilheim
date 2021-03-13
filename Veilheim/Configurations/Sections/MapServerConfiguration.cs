@@ -1,5 +1,6 @@
 ﻿namespace Veilheim.Configurations.Sections
 {
+    [ConfigurationSection("Map Settings Server")]
     public class MapServerConfiguration : ServerSyncConfig<MapServerConfiguration>
     {
         [Configuration("With this enabled you will receive the same exploration progression as other players on the server", ActivationTime.Immediately)]
