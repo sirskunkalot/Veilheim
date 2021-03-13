@@ -6,5 +6,6 @@ namespace Veilheim.Configurations
     {
         public MapConfiguration Map { get; set; }
         public MapServerConfiguration MapServer { get; set; }
+        public ProductionInputAmountServerConfiguration ProductionInputAmounts { get; set; }
     }
 }

@@ -357,6 +357,7 @@
     <Compile Include="AssetUtils\AssetManager.cs" />
     <Compile Include="Blueprints\Blueprint.cs" />
     <Compile Include="Blueprints\FlattenTerrain.cs" />
+    <Compile Include="Configurations\Sections\ProductionInputAmountServerConfiguration.cs" />
     <Compile Include="ConsoleCommands\ApplyBlueprintCommand.cs" />
     <Compile Include="ConsoleCommands\ConsoleHooks.cs" />
     <Compile Include="ConsoleCommands\SaveBlueprintCommand.cs" />
@@ -370,6 +371,7 @@
     <Compile Include="Map\PortalsOnMap.cs" />
     <Compile Include="Map\PublicPosition.cs" />
     <Compile Include="Map\SharedMapSystem.cs" />
+    <Compile Include="Patches\ProductionInputAmounts.cs" />
     <Compile Include="PatchEvents\PatchDispatcher.cs" />
     <Compile Include="PatchEvents\PatchEventAttribute.cs" />
     <Compile Include="PatchEvents\PatchEventType.cs" />
@@ -415,9 +417,7 @@
   <ItemGroup>
     <Content Include="FodyWeavers.xml" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Patches\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>powershell.exe -ExecutionPolicy RemoteSigned -File "$(SolutionDir)publish.ps1" -Target "$(ConfigurationName)" -TargetPath "$(TargetDir.TrimEnd('\'))" -TargetAssembly "$(TargetFileName)" -ValheimPath "$(ValheimDir.TrimEnd('\'))"</PostBuildEvent>
