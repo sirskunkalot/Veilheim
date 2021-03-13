@@ -4,6 +4,7 @@ using HarmonyLib;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Veilheim.AssetUtils;
+using Veilheim.PatchEvents;
 
 namespace Veilheim
 {
@@ -30,6 +31,8 @@ namespace Veilheim
             var assets = new AssetLoader();
             assets.LoadAssets();
             m_destroyables.Add(assets);
+
+            PatchDispatcher.Init();
 
             Logger.LogInfo("Plugin loaded");
         }

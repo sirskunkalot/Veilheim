@@ -14,14 +14,9 @@ namespace Veilheim.PatchEvents
     /// </summary>
     public class PatchDispatcher
     {
-        public static PatchDispatcher Instance = new PatchDispatcher();
+        public static PatchDispatcher Instance;
 
         private MethodInfo addHarmonyEvent;
-
-        public void Dummy()
-        {
-            Logger.LogInfo("Patchdispatcher activated");
-        }
 
         public PatchDispatcher()
         {
@@ -123,7 +118,7 @@ namespace Veilheim.PatchEvents
                 // Just in case if the HarmonyPatch class has no eventhandler
                 if (evt == null)
                 {
-                    Logger.LogError("EVT NULL!!!");
+                    Logger.LogError($"{eventType} Event could not be found for class {method.DeclaringType}");
                 }
 
 
@@ -141,6 +136,12 @@ namespace Veilheim.PatchEvents
             {
                 Logger.LogError(ex.Message + Environment.NewLine + ex.StackTrace);
             }
+        }
+
+        public static void Init()
+        {
+            Instance = new PatchDispatcher();
+            Logger.LogInfo("Patchdispatcher activated");
         }
     }
 }
