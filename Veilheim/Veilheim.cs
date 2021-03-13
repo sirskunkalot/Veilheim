@@ -8,88 +8,47 @@ using Veilheim.AssetUtils;
 namespace Veilheim
 {
     [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
-    class VeilheimPlugin : BaseUnityPlugin
+    internal class VeilheimPlugin : BaseUnityPlugin, IDestroyable
     {
         public const string PluginGUID = "de.sirskunkalot.valheim.veilheim";
         public const string PluginName = "Veilheim";
         public const string PluginVersion = "0.0.1";
 
-        internal static Harmony Harmony { get; private set; }
+        internal static Harmony m_harmony { get; private set; }
 
-        internal static VeilheimPlugin Instance { get; private set; }
+        private readonly List<IDestroyable> m_destroyables = new List<IDestroyable>();
 
-        void Awake()
+        public void Awake()
         {
-            Instance = this;
-            Harmony = new Harmony(PluginGUID);
-            Harmony.PatchAll();
+            m_harmony = new Harmony(PluginGUID);
+            m_harmony.PatchAll();
 
-            LoadAssets();
+            m_destroyables.Add(new Logger());
+
+            m_destroyables.Add(new AssetManager());
+
+            var assets = new AssetLoader();
+            assets.LoadAssets();
+            m_destroyables.Add(assets);
+
+            Logger.LogInfo("Plugin loaded");
         }
 
-        private void OnDestroy()
+        public void OnDestroy()
         {
-            Harmony.UnpatchAll(PluginGUID);
+            Destroy();
         }
 
-        private void LoadAssets()
+        public void Destroy()
         {
-            var assetBundle = AssetLoader.LoadAssetBundleFromResources("veilheim");
-            AssetLoader.LoadItemPrefab(assetBundle, "SkunkAxe", new ItemDef
-            {
-                CraftingStation = "piece_workbench",
-                RepairStation = "piece_workbench",
-                Resources = new List<RequirementDef>
-                {
-                    new RequirementDef { Item = "Wood", Amount = 1 }
-                }
-            });
-            AssetLoader.LoadItemPrefab(assetBundle, "SkunkHammer", new ItemDef()
-            {
-                CraftingStation = "piece_workbench",
-                RepairStation = "piece_workbench",
-                Resources = new List<RequirementDef>
-                {
-                    new RequirementDef { Item = "Wood", Amount = 1 }
-                }
-            });
-            AssetLoader.LoadPiecePrefab(assetBundle, "piece_trashcan", new PieceDef()
-            {
-                PieceTable = "_HammerPieceTable",
-                //CraftingStation = "piece_workbench",  // no need to have a station?
-                Resources = new List<RequirementDef>
-                {
-                    new RequirementDef { Item = "Stone", Amount = 1 }
-                }
-            });
-            assetBundle.Unload(false);
+            Logger.LogInfo("Destroying plugin");
 
-            assetBundle = AssetLoader.LoadAssetBundleFromResources("skunkitems");
-            AssetLoader.LoadItemPrefab(assetBundle, "SkunkBroadFireSword", new ItemDef()
+            foreach (var destroyable in m_destroyables)
             {
-                Amount = 1,
-                CraftingStation = "piece_workbench",
-                RepairStation = "piece_workbench",
-                Resources = new List<RequirementDef>
-                {
-                    new RequirementDef { Item = "Wood", Amount = 1 }
-                }
-            });
-            AssetLoader.LoadItemPrefab(assetBundle, "SkunkSword", new ItemDef()
-            {
-                Amount = 1,
-                CraftingStation = "piece_workbench",
-                RepairStation = "piece_workbench",
-                Resources = new List<RequirementDef>
-                {
-                    new RequirementDef { Item = "Wood", Amount = 1 }
-                }
-            });
-            AssetLoader.LoadPiecePrefab(assetBundle, "Terrain", new PieceDef()
-            {
-                PieceTable = "_HoePieceTable"
-            });
-            assetBundle.Unload(false);
+                destroyable.Destroy();
+            }
+
+            m_harmony.UnpatchAll(PluginGUID);
         }
     }
 
@@ -97,12 +56,29 @@ namespace Veilheim
     /// A namespace wide Logger class, which automatically creates a <see cref="ManualLogSource"/> 
     /// for every namespace from which it is been called
     /// </summary>
-    internal static class Logger
+    internal class Logger : IDestroyable
     {
-        private static readonly Dictionary<string, ManualLogSource> m_logger 
+        private readonly Dictionary<string, ManualLogSource> m_logger 
             = new Dictionary<string, ManualLogSource>();
 
-        private static ManualLogSource GetLogger()
+        public static Logger Instance;
+
+        public Logger()
+        {
+            Instance = this;
+        }
+
+        public void Destroy()
+        {
+            GetLogger().LogDebug("Destroying Logger");
+
+            foreach (var entry in m_logger)
+            {
+                BepInEx.Logging.Logger.Sources.Remove(entry.Value);
+            }
+        }
+
+        private ManualLogSource GetLogger()
         {
             var type = new StackFrame(2).GetMethod().DeclaringType;
 
@@ -114,11 +90,11 @@ namespace Veilheim
             }
             return ret;
         }
-        internal static void LogFatal(object data) { GetLogger().LogFatal(data); }
-        internal static void LogError(object data) { GetLogger().LogError(data); }
-        internal static void LogWarning(object data) { GetLogger().LogWarning(data); }
-        internal static void LogMessage(object data) { GetLogger().LogMessage(data); }
-        internal static void LogInfo(object data) { GetLogger().LogInfo(data); }
-        internal static void LogDebug(object data) { GetLogger().LogDebug(data); }
+        internal static void LogFatal(object data) { Instance.GetLogger().LogFatal(data); }
+        internal static void LogError(object data) { Instance.GetLogger().LogError(data); }
+        internal static void LogWarning(object data) { Instance.GetLogger().LogWarning(data); }
+        internal static void LogMessage(object data) { Instance.GetLogger().LogMessage(data); }
+        internal static void LogInfo(object data) { Instance.GetLogger().LogInfo(data); }
+        internal static void LogDebug(object data) { Instance.GetLogger().LogDebug(data); }
     }
 }
