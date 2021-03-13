@@ -52,7 +52,7 @@ namespace Veilheim.Configurations
         /// Load configuration files when creating/joining a game (e.g. instantiating a new ZNet)
         /// </summary>
         /// <param name="instance"></param>
-        [PatchEvent(typeof(ZNet), nameof(ZNet.Awake), PatchEventType.Postfix)]
+        [PatchEvent(typeof(ZNet), nameof(ZNet.Awake), PatchEventType.Postfix, 0)]
         public static void LoadConfiguration(ZNet instance)
         {
             string msg = $"Loading {instance.GetInstanceType()} configuration";
