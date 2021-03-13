@@ -9,19 +9,19 @@ namespace Veilheim.AssetUtils
         [PatchEvent(typeof(ObjectDB), nameof(ObjectDB.CopyOtherDB), PatchEventType.Postfix)]
         public static void Postfix(ObjectDB instance)
         {
-            AssetLoader.AddToObjectDB(instance);
+            AssetManager.AddToObjectDB(instance);
         }
 
         [PatchEvent(typeof(ObjectDB), nameof(ObjectDB.Awake), PatchEventType.Postfix)]
         public static void Assetloader_AddObjectDB(ObjectDB instance)
         {
-            AssetLoader.AddToObjectDB(instance);
+            AssetManager.AddToObjectDB(instance);
         }
 
         [PatchEvent(typeof(ZNetScene), nameof(ZNetScene.Awake), PatchEventType.Prefix)]
         public static void Assetloader_Load(ZNetScene instance)
         {
-            AssetLoader.AddToZNetScene(instance);
+            AssetManager.AddToZNetScene(instance);
         }
     }
 }
