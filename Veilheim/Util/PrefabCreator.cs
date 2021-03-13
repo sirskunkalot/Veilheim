@@ -3,11 +3,11 @@ using UnityEngine;
 
 namespace Veilheim.Util
 {
-    public static class PrefabCreator
+    public static class RecipeCreator
     {
         public static Dictionary<string, CraftingStation> CraftingStations;
 
-        public static T RequireComponent<T>(GameObject go) where T:Component
+        public static T RequireComponent<T>(GameObject go) where T : Component
         {
             var c = go.GetComponent<T>();
             if (c == null)
@@ -23,7 +23,7 @@ namespace Veilheim.Util
             CraftingStations = null;
         }
 
-        public static GameObject CreatePrefab(ConsumableItemConfig config)
+        private static void InitCraftingStations()
         {
             if (CraftingStations == null)
             {
@@ -36,93 +36,24 @@ namespace Veilheim.Util
                     }
                 }
             }
-
-            var existingItemPrefab = ObjectDB.instance.GetItemPrefab(config.id);
-            if (existingItemPrefab != null)
-            {
-                Logger.LogDebug($"[PrefabCreator] Found existing prefab for {existingItemPrefab.name}");
-                return existingItemPrefab;
-                /*var existingRecipe = ObjectDB.instance.GetRecipe(existingItemPrefab.GetComponent<ItemDrop>().m_itemData);
-                if (existingRecipe != null)
-                {
-                    ObjectDB.instance.m_recipes.Remove(existingRecipe);
-                }
-
-                ZNetScene.instance.m_namedPrefabs.Remove(existingItemPrefab.name.GetStableHashCode());
-                ObjectDB.instance.m_items.Remove(existingItemPrefab);
-                Object.DestroyImmediate(existingItemPrefab);*/
-            }
-
-            var basePrefab = ObjectDB.instance.GetItemPrefab(config.basePrefab);
-            if (basePrefab == null)
-            {
-                Logger.LogError($"[PrefabCreator] Could not load basePrefab: {config.basePrefab}");
-                return null;
-            }
-
-            var newPrefab = GameObject.Instantiate(basePrefab);
-            newPrefab.name = config.id;
-            newPrefab.layer = 12;
-
-            ZNetView zNetView = RequireComponent<ZNetView>(newPrefab);
-            zNetView.m_persistent = true;
-            zNetView.m_distant = false;
-
-            newPrefab.transform.SetParent(null);
-            Object.DontDestroyOnLoad(newPrefab);
-            ZNetScene.instance.m_instances.Remove(zNetView.GetZDO());
-            ZNetScene.instance.m_namedPrefabs.Add(newPrefab.name.GetStableHashCode(), newPrefab);
-            //newPrefab.SetActive(false);
-
-            var rigidBody = newPrefab.GetComponent<Rigidbody>();
-            rigidBody.centerOfMass = Vector3.zero;
-            rigidBody.inertiaTensor = new Vector3(1, 1, 1);
-            rigidBody.useGravity = false;
-            rigidBody.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
-            rigidBody.isKinematic = true;
-
-            var itemDrop = RequireComponent<ItemDrop>(newPrefab);
-            itemDrop.m_itemData = new ItemDrop.ItemData();
-            itemDrop.m_itemData.m_shared = new ItemDrop.ItemData.SharedData()
-            {
-                m_name = config.displayName,
-                m_description = config.description,
-                m_itemType = ItemDrop.ItemData.ItemType.Consumable,
-                m_maxStackSize = config.maxStackSize,
-                m_food = config.food,
-                m_foodStamina = config.foodStamina,
-                m_foodRegen = config.foodRegen,
-                m_foodBurnTime = config.foodBurnTime
-            };
-
-            if (!ColorUtility.TryParseHtmlString(config.foodColor, out itemDrop.m_itemData.m_shared.m_foodColor))
-            {
-                Logger.LogError($"[PrefabCreator] Could not parse foodColor ({config.id}): {config.foodColor}");
-            }
-
-            var icons = new List<Sprite>();
-            foreach (var icon in config.icons)
-            {
-                var sprite = Veilheim.Util.Utils.LoadSpriteFromFile(icon);
-                icons.Add(sprite);
-            }
-            itemDrop.m_itemData.m_shared.m_icons = icons.ToArray();
-            ObjectDB.instance.m_items.Add(newPrefab);
-
-            AddNewRecipe($"Recipe_{config.id}", config.id, config.RecipeConfig);
-
-            Logger.LogDebug($"[PrefabCreator] Created {newPrefab.name}");
-
-            return newPrefab;
         }
 
         public static Recipe CreateRecipe(string name, string itemId, RecipeConfig recipeConfig)
         {
+            InitCraftingStations();
+
+            var itemPrefab = ObjectDB.instance.GetItemPrefab(itemId);
+            if (itemPrefab == null)
+            {
+                Debug.LogWarning($"[PrefabCreator] Could not find item prefab ({itemId})");
+                return null;
+            }
+
             var newRecipe = ScriptableObject.CreateInstance<Recipe>();
             newRecipe.name = name;
             newRecipe.m_amount = recipeConfig.amount;
             newRecipe.m_minStationLevel = recipeConfig.minStationLevel;
-            newRecipe.m_item = ObjectDB.instance.GetItemPrefab(itemId).GetComponent<ItemDrop>();
+            newRecipe.m_item = itemPrefab.GetComponent<ItemDrop>();
             newRecipe.m_enabled = recipeConfig.enabled;
 
             if (!string.IsNullOrEmpty(recipeConfig.craftingStation))
@@ -130,9 +61,9 @@ namespace Veilheim.Util
                 var craftingStationExists = CraftingStations.ContainsKey(recipeConfig.craftingStation);
                 if (!craftingStationExists)
                 {
-                    Logger.LogWarning($"[PrefabCreator] Could not find crafting station ({itemId}): {recipeConfig.craftingStation}");
+                    Debug.LogWarning($"[PrefabCreator] Could not find crafting station ({itemId}): {recipeConfig.craftingStation}");
                     var stationList = string.Join(", ", CraftingStations.Keys);
-                    Logger.LogDebug($"[PrefabCreator] Available Stations: {stationList}");
+                    Debug.Log($"[PrefabCreator] Available Stations: {stationList}");
                 }
                 else
                 {
@@ -145,9 +76,9 @@ namespace Veilheim.Util
                 var repairStationExists = CraftingStations.ContainsKey(recipeConfig.repairStation);
                 if (!repairStationExists)
                 {
-                    Logger.LogWarning($"[PrefabCreator] Could not find repair station ({itemId}): {recipeConfig.repairStation}");
+                    Debug.LogWarning($"[PrefabCreator] Could not find repair station ({itemId}): {recipeConfig.repairStation}");
                     var stationList = string.Join(", ", CraftingStations.Keys);
-                    Logger.LogDebug($"[PrefabCreator] Available Stations: {stationList}");
+                    Debug.Log($"[PrefabCreator] Available Stations: {stationList}");
                 }
                 else
                 {
@@ -161,7 +92,7 @@ namespace Veilheim.Util
                 var reqPrefab = ObjectDB.instance.GetItemPrefab(requirement.item);
                 if (reqPrefab == null)
                 {
-                    Logger.LogError($"[PrefabCreator] Could not load requirement item ({itemId}): {requirement.item}");
+                    Debug.LogError($"[PrefabCreator] Could not find requirement item ({itemId}): {requirement.item}");
                     continue;
                 }
 
@@ -179,6 +110,11 @@ namespace Veilheim.Util
         public static Recipe AddNewRecipe(string name, string itemId, RecipeConfig recipeConfig)
         {
             var recipe = CreateRecipe(name, itemId, recipeConfig);
+            if (recipe == null)
+            {
+                Debug.LogError($"[PrefabCreator] Failed to create recipe ({name})");
+                return null;
+            }
             return AddNewRecipe(recipe);
         }
 
@@ -187,11 +123,11 @@ namespace Veilheim.Util
             var removed = ObjectDB.instance.m_recipes.RemoveAll(x => x.name == recipe.name);
             if (removed > 0)
             {
-                Logger.LogDebug($"[PrefabCreator] Removed recipes ({recipe.name}): {removed}");
+                Debug.Log($"[PrefabCreator] Removed recipe ({recipe.name}): {removed}");
             }
 
             ObjectDB.instance.m_recipes.Add(recipe);
-            Logger.LogDebug($"[PrefabCreator] Added recipe: {recipe.name}");
+            Debug.Log($"[PrefabCreator] Added recipe: {recipe.name}");
 
             return recipe;
         }

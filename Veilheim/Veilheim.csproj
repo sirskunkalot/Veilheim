@@ -351,11 +351,17 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AssetUtils\AssetLoader.cs" />
-    <Compile Include="AssetUtils\AssetLoaderHooks.cs" />
+    <Compile Include="AssetUtils\AssetCreator.cs" />
+    <Compile Include="AssetUtils\AssetHooks.cs" />
+    <Compile Include="AssetUtils\AssetManager.cs" />
+    <Compile Include="Blueprints\Blueprint.cs" />
+    <Compile Include="Blueprints\FlattenTerrain.cs" />
+    <Compile Include="ConsoleCommands\ApplyBlueprintCommand.cs" />
     <Compile Include="ConsoleCommands\ConsoleHooks.cs" />
+    <Compile Include="ConsoleCommands\SaveBlueprintCommand.cs" />
     <Compile Include="Extensions\ObjectDBExtensions.cs" />
     <Compile Include="Configurations\ConfigSync.cs" />
+    <Compile Include="IDestroyable.cs" />
     <Compile Include="Extensions\ZNetExtensions.cs" />
     <Compile Include="Map\MapHooks.cs" />
     <Compile Include="Map\PortalList.cs" />
@@ -402,15 +408,15 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
     <EmbeddedResource Include="Assets\skunkitems" />
     <EmbeddedResource Include="Assets\veilheim" />
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="FodyWeavers.xml" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Patches\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>powershell.exe -ExecutionPolicy RemoteSigned -File "$(SolutionDir)publish.ps1" -Target "$(ConfigurationName)" -TargetPath "$(TargetDir.TrimEnd('\'))" -TargetAssembly "$(TargetFileName)" -ValheimPath "$(ValheimDir.TrimEnd('\'))"</PostBuildEvent>

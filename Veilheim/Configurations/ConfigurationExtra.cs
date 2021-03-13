@@ -16,7 +16,7 @@ namespace Veilheim.Configurations
     // Configuration implementation part
     public partial class Configuration
     {
-        public static string ConfigIniPath = Path.Combine(Path.GetDirectoryName(Paths.BepInExConfigPath), "Veilheim");
+        public static string ConfigIniPath = Path.Combine(Path.GetDirectoryName(Paths.BepInExConfigPath), VeilheimPlugin.PluginName);
 
         internal static readonly List<PropertyInfo> propertyCache;
 

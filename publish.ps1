@@ -50,9 +50,6 @@ function Create-BepInEx{
         }
         Copy-Item -Path "$(Get-Location)\libraries\Debug\mono-2.0-bdwgc.dll" -Destination "$ValheimPath\MonoBleedingEdge\EmbedRuntime" -Force
 
-        Write-Host "Copy Valheim.DisplayBepInExInfo.dll to $plug"
-        Copy-Item -Path "$(Get-Location)\libraries\Debug\Valheim.DisplayBepInExInfo.dll" -Destination "$plug" -Force
-
         foreach($asm in $TargetAssembly.Split(',')){
             $pdb = "$TargetPath\" + ($asm -Replace('.dll','.pdb'))
             if (Test-Path -Path "$pdb") {
