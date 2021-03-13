@@ -63,7 +63,7 @@ namespace Veilheim.ConsoleCommands
             var filename = string.Join(" ", parts.Skip(1));
 
             var lines = File.ReadAllLines(Path.Combine(blueprintPath, filename + ".blueprint")).ToList();
-            Debug.Log("Anzahl zeilen: " + lines.Count + " von " + Path.Combine(blueprintPath, filename + ".blueprint"));
+            Logger.LogDebug("Anzahl zeilen: " + lines.Count + " von " + Path.Combine(blueprintPath, filename + ".blueprint"));
 
             var pieces = new List<PieceEntry>();
             foreach (var line in lines)

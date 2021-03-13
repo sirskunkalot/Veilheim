@@ -354,6 +354,7 @@
     <Compile Include="AssetUtils\AssetCreator.cs" />
     <Compile Include="AssetUtils\AssetHooks.cs" />
     <Compile Include="AssetUtils\AssetManager.cs" />
+    <Compile Include="Blueprints\Blueprint.cs" />
     <Compile Include="Blueprints\FlattenTerrain.cs" />
     <Compile Include="ConsoleCommands\ApplyBlueprintCommand.cs" />
     <Compile Include="ConsoleCommands\ConsoleHooks.cs" />
