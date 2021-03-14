@@ -67,8 +67,6 @@ namespace Veilheim.Blueprints
 
         private PieceEntry[] m_pieceEntries;
 
-        private byte[] m_screen;
-
         public Blueprint(string name)
         {
             m_name = name;

@@ -146,7 +146,7 @@ namespace Veilheim.AssetUtils
             Instance.TryRegisterPieces(instance);
         }
 
-        public void Reset()
+        public void ResetCraftingStations()
         {
             CraftingStations = null;
         }
@@ -364,6 +364,11 @@ namespace Veilheim.AssetUtils
 
                 // Assign the piece to the actual PieceTable if not already in there
                 var pieceTable = pieceTables.Find(x => x.name == pieceDef.PieceTable);
+                if (pieceTable == null)
+                {
+                    Logger.LogWarning($"Could not find piecetable: {pieceDef.PieceTable}");
+                    continue;
+                }
                 if (pieceTable.m_pieces.Contains(prefab))
                 {
                     Logger.LogDebug($"Piece already added to PieceTable {pieceDef.PieceTable}");

@@ -25,6 +25,7 @@ namespace Veilheim.AssetUtils
         
         public void LoadAssets()
         {
+            // Testing assets
             var assetBundle = LoadAssetBundleFromResources("veilheim");
             LoadItemPrefab(assetBundle, "SkunkAxe", new ItemDef
             {
@@ -81,6 +82,25 @@ namespace Veilheim.AssetUtils
                 PieceTable = "_HoePieceTable"
             });
             assetBundle.Unload(false);
+
+            // Real Assets
+            assetBundle = LoadAssetBundleFromResources("blueprintrune");
+            //LoadPrefab(assetBundle, "BlueprintRuneIcon");
+            LoadItemPrefab(assetBundle, "BlueprintRune", new ItemDef()
+            {
+                Amount = 1,
+                CraftingStation = "piece_workbench",
+                Resources = new List<RequirementDef>
+                {
+                    new RequirementDef { Item = "Stone", Amount = 1 }
+                }
+            });
+            LoadPiecePrefab(assetBundle, "make_blueprint", new PieceDef()
+            {
+                PieceTable = "_BlueprintPieceTable"
+            });
+            assetBundle.Unload(false);
+
         }
 
         /// <summary>
