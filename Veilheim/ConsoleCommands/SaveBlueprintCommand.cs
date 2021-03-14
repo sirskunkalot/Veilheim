@@ -34,7 +34,16 @@ namespace Veilheim.ConsoleCommands
 
             var blueprint = new Blueprint(name);
 
-            return blueprint.Capture(radiusDelta);
+            if (!blueprint.Capture(radiusDelta))
+            {
+                return false;
+            }
+            if (!blueprint.Save())
+            {
+                return false;
+            }
+            blueprint.RecordFrame();
+            return true;
         }
     }
 }
