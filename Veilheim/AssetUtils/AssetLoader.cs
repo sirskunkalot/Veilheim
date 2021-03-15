@@ -27,65 +27,6 @@ namespace Veilheim.AssetUtils
         {
             AssetBundle assetBundle;
 
-            // Testing assets
-            /*var assetBundle = LoadAssetBundleFromResources("veilheim");
-            LoadItemPrefab(assetBundle, "SkunkAxe", new ItemDef
-            {
-                CraftingStation = "piece_workbench",
-                RepairStation = "piece_workbench",
-                Resources = new List<RequirementDef>
-                {
-                    new RequirementDef { Item = "Wood", Amount = 1 }
-                }
-            });
-            LoadItemPrefab(assetBundle, "SkunkHammer", new ItemDef()
-            {
-                CraftingStation = "piece_workbench",
-                RepairStation = "piece_workbench",
-                Resources = new List<RequirementDef>
-                {
-                    new RequirementDef { Item = "Wood", Amount = 1 }
-                }
-            });
-            LoadPiecePrefab(assetBundle, "piece_trashcan", new PieceDef()
-            {
-                PieceTable = "_HammerPieceTable",
-                //CraftingStation = "piece_workbench",  // no need to have a station?
-                Resources = new List<RequirementDef>
-                {
-                    new RequirementDef { Item = "Stone", Amount = 1 }
-                }
-            });
-            assetBundle.Unload(false);
-
-            assetBundle = LoadAssetBundleFromResources("skunkitems");
-            LoadItemPrefab(assetBundle, "SkunkBroadFireSword", new ItemDef()
-            {
-                Amount = 1,
-                CraftingStation = "piece_workbench",
-                RepairStation = "piece_workbench",
-                Resources = new List<RequirementDef>
-                {
-                    new RequirementDef { Item = "Wood", Amount = 1 }
-                }
-            });
-            LoadItemPrefab(assetBundle, "SkunkSword", new ItemDef()
-            {
-                Amount = 1,
-                CraftingStation = "piece_workbench",
-                RepairStation = "piece_workbench",
-                Resources = new List<RequirementDef>
-                {
-                    new RequirementDef { Item = "Wood", Amount = 1 }
-                }
-            });
-            LoadPiecePrefab(assetBundle, "Terrain", new PieceDef()
-            {
-                PieceTable = "_HoePieceTable"
-            });
-            assetBundle.Unload(false);*/
-
-            // Real Assets
             assetBundle = LoadAssetBundleFromResources("blueprintrune");
             LoadItemPrefab(assetBundle, "BlueprintRune", new ItemDef()
             {
@@ -96,7 +37,6 @@ namespace Veilheim.AssetUtils
                     new RequirementDef { Item = "Stone", Amount = 1 }
                 }
             });
-            //LoadPiecePrefab(assetBundle, "make_blueprint", new PieceDef());
             LoadLocalization(assetBundle);
             assetBundle.Unload(false);
 
