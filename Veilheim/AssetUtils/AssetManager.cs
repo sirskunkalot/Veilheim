@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Veilheim.PatchEvents;
 
 namespace Veilheim.AssetUtils
 {
@@ -48,7 +49,7 @@ namespace Veilheim.AssetUtils
     /// Central class for loading and importing custom <see cref="AssetBundle"/>s into Valheim. 
     /// Code inspired by <a href="https://github.com/RandyKnapp/ValheimMods"/>
     /// </summary>
-    internal class AssetManager : IDestroyable
+    internal class AssetManager : Payload, IDestroyable
     {
         private readonly List<GameObject> RegisteredPrefabs = new List<GameObject>();
         private readonly List<AssetLocalization> RegisteredLocalizations = new List<AssetLocalization>();
@@ -153,6 +154,7 @@ namespace Veilheim.AssetUtils
         /// Add all registered prefabs to the namedPrefabs in <see cref="ZNetScene"/>.
         /// </summary>
         /// <param name="instance"></param>
+        [PatchEvent(typeof(ZNetScene), nameof(ZNetScene.Awake), PatchEventType.Prefix)]
         public static void AddToZNetScene(ZNetScene instance)
         {
             if (instance == null)
@@ -177,6 +179,7 @@ namespace Veilheim.AssetUtils
         /// <summary>
         /// Initialize and register all loaded items to the <see cref="ObjectDB"/> in <see cref="FejdStartup"/> (no recipes and pieces needed)
         /// </summary>
+        [PatchEvent(typeof(ObjectDB), nameof(ObjectDB.CopyOtherDB), PatchEventType.Postfix)]
         public static void AddToObjectDBFejd(ObjectDB instance)
         {
             if (instance == null || instance.m_items.Count == 0)
@@ -190,6 +193,7 @@ namespace Veilheim.AssetUtils
         /// <summary>
         /// Initialize and register all loaded items and pieces to the current instance of the <see cref="ObjectDB"/>.
         /// </summary>
+        [PatchEvent(typeof(ObjectDB), nameof(ObjectDB.Awake), PatchEventType.Postfix)]
         public static void AddToObjectDB(ObjectDB instance)
         {
             if (instance == null || instance.m_items.Count == 0)
@@ -205,6 +209,7 @@ namespace Veilheim.AssetUtils
         /// Setup languages for all registered <see cref="AssetLocalization"/>s
         /// </summary>
         /// <param name="language"></param>
+        [PatchEvent(typeof(Localization), nameof(Localization.SetupLanguage), PatchEventType.Postfix)]
         public static void SetupLanguage(string language)
         {
             foreach (var localization in Instance.RegisteredLocalizations)
@@ -218,6 +223,7 @@ namespace Veilheim.AssetUtils
         /// </summary>
         /// <param name="word"></param>
         /// <param name="translated"></param>
+        [PatchEvent(typeof(Localization), nameof(Localization.Translate), PatchEventType.Postfix)]
         public static bool TryTranslate(string word, out string translated)
         {
             bool isTranslated = false;

@@ -352,7 +352,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssetUtils\AssetCreator.cs" />
-    <Compile Include="AssetUtils\AssetHooks.cs" />
     <Compile Include="AssetUtils\AssetLoader.cs" />
     <Compile Include="AssetUtils\AssetLocalization.cs" />
     <Compile Include="AssetUtils\AssetManager.cs" />
