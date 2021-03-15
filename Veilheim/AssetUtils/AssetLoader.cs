@@ -25,8 +25,10 @@ namespace Veilheim.AssetUtils
         
         public void LoadAssets()
         {
+            AssetBundle assetBundle;
+
             // Testing assets
-            var assetBundle = LoadAssetBundleFromResources("veilheim");
+            /*var assetBundle = LoadAssetBundleFromResources("veilheim");
             LoadItemPrefab(assetBundle, "SkunkAxe", new ItemDef
             {
                 CraftingStation = "piece_workbench",
@@ -81,11 +83,10 @@ namespace Veilheim.AssetUtils
             {
                 PieceTable = "_HoePieceTable"
             });
-            assetBundle.Unload(false);
+            assetBundle.Unload(false);*/
 
             // Real Assets
             assetBundle = LoadAssetBundleFromResources("blueprintrune");
-            //LoadPrefab(assetBundle, "BlueprintRuneIcon");
             LoadItemPrefab(assetBundle, "BlueprintRune", new ItemDef()
             {
                 Amount = 1,
@@ -95,10 +96,8 @@ namespace Veilheim.AssetUtils
                     new RequirementDef { Item = "Stone", Amount = 1 }
                 }
             });
-            LoadPiecePrefab(assetBundle, "make_blueprint", new PieceDef()
-            {
-                PieceTable = "_BlueprintPieceTable"
-            });
+            //LoadPiecePrefab(assetBundle, "make_blueprint", new PieceDef());
+            LoadLocalization(assetBundle);
             assetBundle.Unload(false);
 
         }
@@ -184,7 +183,7 @@ namespace Veilheim.AssetUtils
         public void LoadPrefab(AssetBundle assetBundle, string assetName)
         {
             var prefab = assetBundle.LoadAsset<GameObject>(assetName);
-            AssetManager.AddPrefab(prefab);
+            AssetManager.RegisterPrefab(prefab);
         }
 
         /// <summary>
@@ -196,8 +195,7 @@ namespace Veilheim.AssetUtils
         public void LoadItemPrefab(AssetBundle assetBundle, string assetName, ItemDef itemDef)
         {
             var prefab = assetBundle.LoadAsset<GameObject>(assetName);
-            AssetManager.AddtemPrefab(prefab, itemDef);
-            AssetManager.AddPrefab(prefab);
+            AssetManager.RegisterItemPrefab(prefab, itemDef);
         }
 
         /// <summary>
@@ -209,8 +207,23 @@ namespace Veilheim.AssetUtils
         public void LoadPiecePrefab(AssetBundle assetBundle, string assetName, PieceDef pieceDef)
         {
             var prefab = assetBundle.LoadAsset<GameObject>(assetName);
-            AssetManager.AddPiecePrefab(prefab, pieceDef);
-            AssetManager.AddPrefab(prefab);
+            AssetManager.RegisterPiecePrefab(prefab, pieceDef);
         }
+
+        /// <summary>
+        /// Load the localization <see cref="TextAsset"/> from a bundle. Asset name must be "localization".
+        /// </summary>
+        /// <param name="assetBundle"></param>
+        public void LoadLocalization(AssetBundle assetBundle)
+        {
+            var asset = assetBundle.LoadAsset<TextAsset>("localization");
+
+            if (asset != null)
+            {
+                var localization = new AssetLocalization(assetBundle.name, asset);
+                AssetManager.RegisterLocalization(localization);
+            }
+        }
+
     }
 }

@@ -51,9 +51,10 @@ namespace Veilheim.AssetUtils
     internal class AssetManager : IDestroyable
     {
         private readonly List<GameObject> RegisteredPrefabs = new List<GameObject>();
+        private readonly List<AssetLocalization> RegisteredLocalizations = new List<AssetLocalization>();
         private readonly Dictionary<GameObject, ItemDef> RegisteredItems = new Dictionary<GameObject, ItemDef>();
         private readonly Dictionary<GameObject, PieceDef> RegisteredPieces = new Dictionary<GameObject, PieceDef>();
-        
+
         private Dictionary<string, CraftingStation> CraftingStations;
 
         public static AssetManager Instance;
@@ -67,7 +68,25 @@ namespace Veilheim.AssetUtils
         {
             Logger.LogDebug("Destroying AssetManager");
 
-            //TODO: deregister pieces, they are globally registered
+            foreach (var localization in RegisteredLocalizations)
+            {
+                localization.Destroy();
+                Logger.LogDebug($"Localization {localization} destroyed");
+            }
+            RegisteredLocalizations.Clear();
+
+            foreach (var prefab in RegisteredPrefabs)
+            {
+                UnityEngine.Object.Destroy(prefab);
+                Logger.LogDebug($"Prefab {prefab.name} destroyed");
+            }
+            RegisteredPrefabs.Clear();
+            RegisteredItems.Clear();
+            RegisteredPieces.Clear();
+
+            Instance = null;
+
+            Logger.LogDebug("AssetManager destroyed");
         }
 
         /// <summary>
@@ -75,9 +94,12 @@ namespace Veilheim.AssetUtils
         /// The "untyped" prefabs are added to the current <see cref="ZNetScene"/> on initialization.
         /// </summary>
         /// <param name="prefab"></param>
-        public static void AddPrefab(GameObject prefab)
+        public static void RegisterPrefab(GameObject prefab)
         {
-            Instance.RegisteredPrefabs.Add(prefab);
+            if (!Instance.RegisteredPrefabs.Contains(prefab))
+            {
+                Instance.RegisteredPrefabs.Add(prefab);
+            }
         }
 
         /// <summary>
@@ -88,10 +110,13 @@ namespace Veilheim.AssetUtils
         /// </summary>
         /// <param name="prefab"></param>
         /// <param name="itemDef"></param>
-        public static void AddtemPrefab(GameObject prefab, ItemDef itemDef)
+        public static void RegisterItemPrefab(GameObject prefab, ItemDef itemDef)
         {
-            Instance.RegisteredItems.Add(prefab, itemDef);
-            Instance.RegisteredPrefabs.Add(prefab);
+            if (!Instance.RegisteredPrefabs.Contains(prefab))
+            {
+                Instance.RegisteredPrefabs.Add(prefab);
+                Instance.RegisteredItems.Add(prefab, itemDef);
+            }
         }
 
         /// <summary>
@@ -102,10 +127,26 @@ namespace Veilheim.AssetUtils
         /// </summary>
         /// <param name="prefab"></param>
         /// <param name="pieceDef"></param>
-        public static void AddPiecePrefab(GameObject prefab, PieceDef pieceDef)
+        public static void RegisterPiecePrefab(GameObject prefab, PieceDef pieceDef)
         {
-            Instance.RegisteredPieces.Add(prefab, pieceDef);
-            Instance.RegisteredPrefabs.Add(prefab);
+            if (!Instance.RegisteredPrefabs.Contains(prefab))
+            {
+                Instance.RegisteredPrefabs.Add(prefab);
+                Instance.RegisteredPieces.Add(prefab, pieceDef);
+            }
+        }
+
+        /// <summary>
+        /// Register an <see cref="AssetLocalization"/>.<br />
+        /// </summary>
+        /// <param name="localization"></param>
+        public static void RegisterLocalization(AssetLocalization localization)
+        {
+            if (!Instance.RegisteredLocalizations.Contains(localization))
+            {
+                localization.SetupLanguage(Localization.instance.GetSelectedLanguage());
+                Instance.RegisteredLocalizations.Add(localization);
+            }
         }
 
         /// <summary>
@@ -132,6 +173,20 @@ namespace Veilheim.AssetUtils
                 }
             }
         }
+
+        /// <summary>
+        /// Initialize and register all loaded items to the <see cref="ObjectDB"/> in <see cref="FejdStartup"/> (no recipes and pieces needed)
+        /// </summary>
+        public static void AddToObjectDBFejd(ObjectDB instance)
+        {
+            if (instance == null || instance.m_items.Count == 0)
+            {
+                return;
+            }
+
+            Instance.TryRegisterItems(instance, false);
+        }
+
         /// <summary>
         /// Initialize and register all loaded items and pieces to the current instance of the <see cref="ObjectDB"/>.
         /// </summary>
@@ -142,13 +197,42 @@ namespace Veilheim.AssetUtils
                 return;
             }
 
-            Instance.TryRegisterItems(instance);
+            Instance.TryRegisterItems(instance, true);
             Instance.TryRegisterPieces(instance);
         }
 
-        public void ResetCraftingStations()
+        /// <summary>
+        /// Setup languages for all registered <see cref="AssetLocalization"/>s
+        /// </summary>
+        /// <param name="language"></param>
+        public static void SetupLanguage(string language)
         {
-            CraftingStations = null;
+            foreach (var localization in Instance.RegisteredLocalizations)
+            {
+                localization.SetupLanguage(language);
+            }
+        }
+
+        /// <summary>
+        /// Try to translate a string in all registered <see cref="AssetLocalization"/>s. First to translate wins.
+        /// </summary>
+        /// <param name="word"></param>
+        /// <param name="translated"></param>
+        public static bool TryTranslate(string word, out string translated)
+        {
+            bool isTranslated = false;
+            string _translated = "";
+            
+            // first translation wins
+            foreach (var localization in Instance.RegisteredLocalizations)
+            {
+                isTranslated = localization.TryTranslate(word, out _translated);
+                if (isTranslated) break;
+            }
+
+            translated = isTranslated ? _translated : $"[{word}]";
+
+            return isTranslated;
         }
 
         private void InitCraftingStations(ObjectDB instance)
@@ -194,7 +278,7 @@ namespace Veilheim.AssetUtils
             }
         }
 
-        private void TryRegisterItems(ObjectDB instance)
+        private void TryRegisterItems(ObjectDB instance, bool createRecipes)
         {
             Logger.LogMessage($"Registering custom items in ObjectDB {instance}");
 
@@ -232,18 +316,21 @@ namespace Veilheim.AssetUtils
 
                 Logger.LogInfo($"Registered item {prefab.name}");
 
-                // Create the Recipe for this item, defined in ItemDef
-                var recipe = CreateRecipe(instance, prefab, itemDef);
-
-                // Add the Recipe to the ObjectDB, remove one with the same name first
-                var removed = instance.m_recipes.RemoveAll(x => x.name == recipe.name);
-                if (removed > 0)
+                if (createRecipes)
                 {
-                    Logger.LogDebug($"Removed recipes ({recipe.name}): {removed}");
-                }
+                    // Create the Recipe for this item, defined in ItemDef
+                    var recipe = CreateRecipe(instance, prefab, itemDef);
 
-                instance.m_recipes.Add(recipe);
-                Logger.LogInfo($"Added recipe: {recipe.name}");
+                    // Add the Recipe to the ObjectDB, remove one with the same name first
+                    var removed = instance.m_recipes.RemoveAll(x => x.name == recipe.name);
+                    if (removed > 0)
+                    {
+                        Logger.LogDebug($"Removed recipes ({recipe.name}): {removed}");
+                    }
+
+                    instance.m_recipes.Add(recipe);
+                    Logger.LogInfo($"Added recipe: {recipe.name}");
+                }
             }
 
             // If we registered items, update their hashes
@@ -358,7 +445,13 @@ namespace Veilheim.AssetUtils
 
                 if (piece == null)
                 {
-                    Logger.LogError($"GameObject {prefab} has no Piece attached");
+                    Logger.LogError("GameObject has no Piece attached");
+                    continue;
+                }
+
+                if (pieceDef == null)
+                {
+                    Logger.LogError("No PieceDef available");
                     continue;
                 }
 
@@ -376,7 +469,7 @@ namespace Veilheim.AssetUtils
                 }
                 pieceTable.m_pieces.Add(prefab);
 
-                // Assign the needed CraftingStation for this piece, if needed
+                // Assign the CraftingStation for this piece, if needed
                 if (!string.IsNullOrEmpty(pieceDef.CraftingStation))
                 {
                     var pieceStation = CraftingStations.GetValueSafe(pieceDef.CraftingStation);
