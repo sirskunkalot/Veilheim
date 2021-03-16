@@ -151,10 +151,11 @@ namespace Veilheim.AssetUtils
         }
 
         /// <summary>
-        /// Add all registered prefabs to the namedPrefabs in <see cref="ZNetScene"/>.
+        /// Add all registered prefabs to the namedPrefabs in <see cref="ZNetScene"/>.<br />
+        /// Has a low priority (1000), so other hooks can register their prefabs before they get added.
         /// </summary>
         /// <param name="instance"></param>
-        [PatchEvent(typeof(ZNetScene), nameof(ZNetScene.Awake), PatchEventType.Prefix)]
+        [PatchEvent(typeof(ZNetScene), nameof(ZNetScene.Awake), PatchEventType.Prefix, 1000)]
         public static void AddToZNetScene(ZNetScene instance)
         {
             if (instance == null)
@@ -177,9 +178,10 @@ namespace Veilheim.AssetUtils
         }
 
         /// <summary>
-        /// Initialize and register all loaded items to the <see cref="ObjectDB"/> in <see cref="FejdStartup"/> (no recipes and pieces needed)
+        /// Initialize and register all loaded items to the <see cref="ObjectDB"/> in <see cref="FejdStartup"/> (no recipes and pieces needed).<br />
+        /// Has a low priority (1000), so other hooks can register their prefabs before they get added to the game.
         /// </summary>
-        [PatchEvent(typeof(ObjectDB), nameof(ObjectDB.CopyOtherDB), PatchEventType.Postfix)]
+        [PatchEvent(typeof(ObjectDB), nameof(ObjectDB.CopyOtherDB), PatchEventType.Postfix, 1000)]
         public static void AddToObjectDBFejd(ObjectDB instance)
         {
             if (instance == null || instance.m_items.Count == 0)
@@ -191,9 +193,10 @@ namespace Veilheim.AssetUtils
         }
 
         /// <summary>
-        /// Initialize and register all loaded items and pieces to the current instance of the <see cref="ObjectDB"/>.
+        /// Initialize and register all loaded items and pieces to the current instance of the <see cref="ObjectDB"/>.<br />
+        /// Has a low priority (1000), so other hooks can register their prefabs before they get added to the game.
         /// </summary>
-        [PatchEvent(typeof(ObjectDB), nameof(ObjectDB.Awake), PatchEventType.Postfix)]
+        [PatchEvent(typeof(ObjectDB), nameof(ObjectDB.Awake), PatchEventType.Postfix, 1000)]
         public static void AddToObjectDB(ObjectDB instance)
         {
             if (instance == null || instance.m_items.Count == 0)
@@ -206,7 +209,8 @@ namespace Veilheim.AssetUtils
         }
 
         /// <summary>
-        /// Setup languages for all registered <see cref="AssetLocalization"/>s
+        /// Setup languages for all registered <see cref="AssetLocalization"/>s<br />
+        /// Has a low priority (1000), so other hooks can register their Localizations before they get added to the game.
         /// </summary>
         /// <param name="language"></param>
         [PatchEvent(typeof(Localization), nameof(Localization.SetupLanguage), PatchEventType.Postfix)]
