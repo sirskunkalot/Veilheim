@@ -11,11 +11,11 @@ using Object = UnityEngine.Object;
 
 namespace Veilheim.Blueprints
 {
-    public class FlattenTerrain
+    internal class FlattenTerrain
     {
         public static void Flatten(Transform transform, Vector2 floorSize, List<PieceEntry> pieces)
         {
-            Debug.Log($"Entered FlattenTerrain {transform} / {floorSize} with {pieces.Count}");
+            Logger.LogDebug($"Entered FlattenTerrain {transform} / {floorSize} with {pieces.Count}");
 
             var groundPrefab = ZNetScene.instance.GetPrefab("raise");
             if (groundPrefab)

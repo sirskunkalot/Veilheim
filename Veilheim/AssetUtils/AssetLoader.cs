@@ -9,78 +9,26 @@ namespace Veilheim.AssetUtils
 {
     //TODO: dont hardcode prefab and bundle names
 
-    internal class AssetLoader : IDestroyable
+    internal static class AssetLoader
     {
-        public static AssetLoader Instance;
+        public static void LoadAssets()
+        {
+            AssetBundle assetBundle;
 
-        public AssetLoader()
-        {
-            Instance = this;
-        }
-
-        public void Destroy()
-        {
-            Logger.LogDebug("Destroying AssetLoader");
-        }
-        
-        public void LoadAssets()
-        {
-            var assetBundle = LoadAssetBundleFromResources("veilheim");
-            LoadItemPrefab(assetBundle, "SkunkAxe", new ItemDef
+            assetBundle = LoadAssetBundleFromResources("blueprintrune");
+            LoadItemPrefab(assetBundle, "BlueprintRune", new ItemDef()
             {
+                Amount = 1,
                 CraftingStation = "piece_workbench",
-                RepairStation = "piece_workbench",
-                Resources = new List<RequirementDef>
-                {
-                    new RequirementDef { Item = "Wood", Amount = 1 }
-                }
-            });
-            LoadItemPrefab(assetBundle, "SkunkHammer", new ItemDef()
-            {
-                CraftingStation = "piece_workbench",
-                RepairStation = "piece_workbench",
-                Resources = new List<RequirementDef>
-                {
-                    new RequirementDef { Item = "Wood", Amount = 1 }
-                }
-            });
-            LoadPiecePrefab(assetBundle, "piece_trashcan", new PieceDef()
-            {
-                PieceTable = "_HammerPieceTable",
-                //CraftingStation = "piece_workbench",  // no need to have a station?
                 Resources = new List<RequirementDef>
                 {
                     new RequirementDef { Item = "Stone", Amount = 1 }
                 }
             });
+            LoadPrefab(assetBundle, "piece_blueprint");
+            LoadLocalization(assetBundle);
             assetBundle.Unload(false);
 
-            assetBundle = LoadAssetBundleFromResources("skunkitems");
-            LoadItemPrefab(assetBundle, "SkunkBroadFireSword", new ItemDef()
-            {
-                Amount = 1,
-                CraftingStation = "piece_workbench",
-                RepairStation = "piece_workbench",
-                Resources = new List<RequirementDef>
-                {
-                    new RequirementDef { Item = "Wood", Amount = 1 }
-                }
-            });
-            LoadItemPrefab(assetBundle, "SkunkSword", new ItemDef()
-            {
-                Amount = 1,
-                CraftingStation = "piece_workbench",
-                RepairStation = "piece_workbench",
-                Resources = new List<RequirementDef>
-                {
-                    new RequirementDef { Item = "Wood", Amount = 1 }
-                }
-            });
-            LoadPiecePrefab(assetBundle, "Terrain", new PieceDef()
-            {
-                PieceTable = "_HoePieceTable"
-            });
-            assetBundle.Unload(false);
         }
 
         /// <summary>
@@ -89,7 +37,7 @@ namespace Veilheim.AssetUtils
         /// </summary>
         /// <param name="fileName"></param>
         /// <returns></returns>
-        private string GetFilePath(string fileName)
+        private static string GetFilePath(string fileName)
         {
             var filePath = Path.Combine(Paths.PluginPath, VeilheimPlugin.PluginName, fileName);
             if (!File.Exists(filePath))
@@ -106,7 +54,7 @@ namespace Veilheim.AssetUtils
             return filePath;
         }
 
-        public Sprite LoadSpriteFromFile(string spritePath)
+        public static Sprite LoadSpriteFromFile(string spritePath)
         {
             byte[] fileData = File.ReadAllBytes(GetFilePath(spritePath));
             Texture2D tex = new Texture2D(20, 20);
@@ -123,7 +71,7 @@ namespace Veilheim.AssetUtils
         /// </summary>
         /// <param name="bundleName">Name of the bundle</param>
         /// <returns></returns>
-        public AssetBundle LoadAssetBundleFromResources(string bundleName)
+        public static AssetBundle LoadAssetBundleFromResources(string bundleName)
         {
             var execAssembly = Assembly.GetExecutingAssembly();
 
@@ -150,7 +98,7 @@ namespace Veilheim.AssetUtils
         /// </summary>
         /// <param name="fileName">Filename of the bundle</param>
         /// <returns></returns>
-        public AssetBundle LoadAssetBundleFromFile(string fileName)
+        public static AssetBundle LoadAssetBundleFromFile(string fileName)
         {
             var assetBundlePath = GetFilePath(fileName);
             return AssetBundle.LoadFromFile(assetBundlePath);
@@ -161,10 +109,10 @@ namespace Veilheim.AssetUtils
         /// </summary>
         /// <param name="assetBundle"></param>
         /// <param name="assetName"></param>
-        public void LoadPrefab(AssetBundle assetBundle, string assetName)
+        public static void LoadPrefab(AssetBundle assetBundle, string assetName)
         {
             var prefab = assetBundle.LoadAsset<GameObject>(assetName);
-            AssetManager.AddPrefab(prefab);
+            AssetManager.RegisterPrefab(prefab);
         }
 
         /// <summary>
@@ -173,11 +121,10 @@ namespace Veilheim.AssetUtils
         /// <param name="assetBundle"></param>
         /// <param name="assetName"></param>
         /// <param name="itemDef"></param>
-        public void LoadItemPrefab(AssetBundle assetBundle, string assetName, ItemDef itemDef)
+        public static void LoadItemPrefab(AssetBundle assetBundle, string assetName, ItemDef itemDef)
         {
             var prefab = assetBundle.LoadAsset<GameObject>(assetName);
-            AssetManager.AddtemPrefab(prefab, itemDef);
-            AssetManager.AddPrefab(prefab);
+            AssetManager.RegisterItemPrefab(prefab, itemDef);
         }
 
         /// <summary>
@@ -186,11 +133,26 @@ namespace Veilheim.AssetUtils
         /// <param name="assetBundle"></param>
         /// <param name="assetName"></param>
         /// <param name="pieceDef"></param>
-        public void LoadPiecePrefab(AssetBundle assetBundle, string assetName, PieceDef pieceDef)
+        public static void LoadPiecePrefab(AssetBundle assetBundle, string assetName, PieceDef pieceDef)
         {
             var prefab = assetBundle.LoadAsset<GameObject>(assetName);
-            AssetManager.AddPiecePrefab(prefab, pieceDef);
-            AssetManager.AddPrefab(prefab);
+            AssetManager.RegisterPiecePrefab(prefab, pieceDef);
         }
+
+        /// <summary>
+        /// Load the localization <see cref="TextAsset"/> from a bundle. Asset name must be "localization".
+        /// </summary>
+        /// <param name="assetBundle"></param>
+        public static void LoadLocalization(AssetBundle assetBundle)
+        {
+            var asset = assetBundle.LoadAsset<TextAsset>("localization");
+
+            if (asset != null)
+            {
+                var localization = new AssetLocalization(assetBundle.name, asset);
+                AssetManager.RegisterLocalization(localization);
+            }
+        }
+
     }
 }

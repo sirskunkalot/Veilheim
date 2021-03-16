@@ -16,12 +16,19 @@ namespace Veilheim.Configurations
     // Configuration implementation part
     public partial class Configuration
     {
-        public static string ConfigIniPath = Path.Combine(Path.GetDirectoryName(Paths.BepInExConfigPath), VeilheimPlugin.PluginName);
+        public static string ConfigIniPath { get; }
 
         internal static readonly List<PropertyInfo> propertyCache;
 
         static Configuration()
         {
+            // Create dir if not existant
+            ConfigIniPath = Path.Combine(Path.GetDirectoryName(Paths.BepInExConfigPath), VeilheimPlugin.PluginName);
+            if (!Directory.Exists(ConfigIniPath))
+            {
+                Directory.CreateDirectory(ConfigIniPath);
+            }
+
             // Fill property cache
             propertyCache = typeof(Configuration).GetProperties(BindingFlags.Public | BindingFlags.Instance).ToList();
         }

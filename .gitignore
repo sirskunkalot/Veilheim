@@ -367,3 +367,6 @@ FodyWeavers.xsd
 # not the libraries folder
 !libraries/*
 .idea/
+
+# no unity at all for now
+VeilheimUnity/

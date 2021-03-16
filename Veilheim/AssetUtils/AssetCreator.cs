@@ -29,7 +29,7 @@ namespace Veilheim.AssetUtils
             // Create basic Components
             var znet = RequireComponent<ZNetView>(ret);
             znet.m_persistent = true;
-            znet.m_type = ZDO.ObjectType.Solid;
+            znet.m_type = ZDO.ObjectType.Default;
 
             var piece = RequireComponent<Piece>(ret);
 

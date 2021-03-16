@@ -355,8 +355,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssetUtils\AssetCreator.cs" />
-    <Compile Include="AssetUtils\AssetHooks.cs" />
     <Compile Include="AssetUtils\AssetLoader.cs" />
+    <Compile Include="AssetUtils\AssetLocalization.cs" />
     <Compile Include="AssetUtils\AssetManager.cs" />
     <Compile Include="Blueprints\Blueprint.cs" />
     <Compile Include="Blueprints\FlattenTerrain.cs" />
@@ -380,6 +380,7 @@
     <Compile Include="PatchEvents\PatchEventType.cs" />
     <Compile Include="PatchEvents\PatchStubs\Console_Patches.cs" />
     <Compile Include="PatchEvents\PatchStubs\Game_Patches.cs" />
+    <Compile Include="PatchEvents\PatchStubs\Localization_Patches.cs" />
     <Compile Include="PatchEvents\PatchStubs\Minimap_Patches.cs" />
     <Compile Include="PatchEvents\PatchStubs\ObjectDB_Patches.cs" />
     <Compile Include="PatchEvents\PatchStubs\Player_Patches.cs" />
@@ -416,15 +417,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Assets\skunkitems" />
-    <EmbeddedResource Include="Assets\veilheim" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="FodyWeavers.xml" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
-    <None Include="packages.config" />
+    <EmbeddedResource Include="Assets\blueprintrune" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

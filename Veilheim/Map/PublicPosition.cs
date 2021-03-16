@@ -21,7 +21,7 @@ namespace Veilheim.Map
         [PatchEvent(typeof(ZNet), nameof(ZNet.SetPublicReferencePosition), PatchEventType.Postfix)]
         public static void PreventDisablePublicPosition(ZNet instance)
         {
-            if (Configuration.Current.MapServer.IsEnabled && Configuration.Current.MapServer.preventPlayerFromTurningOffPublicPosition)
+            if (Configuration.Current.MapServer.IsEnabled && Configuration.Current.MapServer.preventPlayerFromTurningOffPublicPosition)  //isn't there a limit to identifiers in c#?
             {
                 instance.m_publicReferencePosition = true;
             }

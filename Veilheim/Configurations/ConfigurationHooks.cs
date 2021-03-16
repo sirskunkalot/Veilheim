@@ -1,6 +1,4 @@
-﻿using HarmonyLib;
-using System;
-using System.Configuration.Internal;
+﻿using System;
 using Veilheim.PatchEvents;
 
 namespace Veilheim.Configurations
@@ -49,7 +47,8 @@ namespace Veilheim.Configurations
         }
 
         /// <summary>
-        /// Load configuration files when creating/joining a game (e.g. instantiating a new ZNet)
+        /// Load configuration files when creating/joining a game (i.e. instantiating a new ZNet).<br />
+        /// Has a high priority (0), so it is assured, that the configuration is loaded before any other hooked code is executed.
         /// </summary>
         /// <param name="instance"></param>
         [PatchEvent(typeof(ZNet), nameof(ZNet.Awake), PatchEventType.Postfix, 500)]
