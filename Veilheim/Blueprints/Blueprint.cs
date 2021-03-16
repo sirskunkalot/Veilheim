@@ -66,7 +66,6 @@ namespace Veilheim.Blueprints
         [PatchEvent(typeof(ZNet), nameof(ZNet.Awake), PatchEventType.Postfix)]
         public static void LoadKnownBlueprints(ZNet instance)
         {
-
             // Client only
             if (!instance.IsServerInstance())
             {
@@ -99,10 +98,14 @@ namespace Veilheim.Blueprints
             {
                 Logger.LogMessage("Registering known blueprints");
 
+                var assetBundle = AssetLoader.LoadAssetBundleFromResources("blueprintrune");
+                var baseObject = assetBundle.LoadAsset<GameObject>("piece_blueprint");
+
                 // Register all known blueprint
                 foreach (var bp in m_blueprints)
                 {
-                    var go = AssetCreator.CreatePiece(bp.Key);
+                    var go = UnityEngine.Object.Instantiate(baseObject);
+                    go.GetComponent<Piece>().name = bp.Key;
                     AssetManager.RegisterPiecePrefab(go, new PieceDef()
                     {
                         PieceTable = "_BlueprintPieceTable"
