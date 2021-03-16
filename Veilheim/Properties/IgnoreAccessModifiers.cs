@@ -1,4 +1,10 @@
-﻿using System.Security.Permissions;
+﻿// Veilheim
+// a Valheim mod
+// 
+// File:    IgnoreAccessModifiers.cs
+// Project: Veilheim
+
+using System.Security.Permissions;
 
 // SecurityPermision set to minimum
 // for skipping access modifiers check from the mono JIT

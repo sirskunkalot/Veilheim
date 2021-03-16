@@ -1,12 +1,13 @@
 ﻿// Veilheim
+// a Valheim mod
+// 
+// File:    FlattenTerrain.cs
+// Project: Veilheim
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Xml;
-using Steamworks;
 using UnityEngine;
-using Veilheim.ConsoleCommands;
 using Object = UnityEngine.Object;
 
 namespace Veilheim.Blueprints
@@ -31,15 +32,16 @@ namespace Veilheim.Blueprints
                     var right = 0f;
                     while (right < floorSize.x)
                     {
-
-
-                        var lowestAtPosition = pieces.OrderBy(x => x.posY).FirstOrDefault(x => (Math.Abs(x.posX - forward) < 4f) && (Math.Abs(x.posZ - right) < 4f));
+                        var lowestAtPosition = pieces.OrderBy(x => x.posY)
+                            .FirstOrDefault(x => Math.Abs(x.posX - forward) < 4f && Math.Abs(x.posZ - right) < 4f);
                         if (lowestAtPosition != null)
                         {
                             Debug.Log("Lowest: " + lowestAtPosition.posY);
 
-                            Object.Instantiate(groundPrefab, startPosition + transform.forward * forward + transform.right * right + new Vector3(0, lowestAtPosition.posY, 0), rotation);
+                            Object.Instantiate(groundPrefab,
+                                startPosition + transform.forward * forward + transform.right * right + new Vector3(0, lowestAtPosition.posY, 0), rotation);
                         }
+
                         right++;
                     }
 

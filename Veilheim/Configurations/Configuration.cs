@@ -1,4 +1,10 @@
-﻿using Veilheim.Configurations.Sections;
+﻿// Veilheim
+// a Valheim mod
+// 
+// File:    Configuration.cs
+// Project: Veilheim
+
+using Veilheim.Configurations.Sections;
 
 namespace Veilheim.Configurations
 {

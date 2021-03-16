@@ -1,4 +1,8 @@
 ﻿// Veilheim
+// a Valheim mod
+// 
+// File:    ProductionInputAmounts.cs
+// Project: Veilheim
 
 using Veilheim.Configurations;
 using Veilheim.PatchEvents;
@@ -7,13 +11,12 @@ namespace Veilheim.Patches
 {
     public class ProductionInputAmounts : Payload
     {
-
         [PatchEvent(typeof(Smelter), nameof(Smelter.Awake), PatchEventType.Postfix)]
         public static void SetSmelterInputAmounts(Smelter instance)
         {
             if (Configuration.Current.ProductionInputAmounts.IsEnabled)
             {
-                string prefab = instance.m_nview.GetPrefabName();
+                var prefab = instance.m_nview.GetPrefabName();
                 if (prefab == "piece_spinningwheel")
                 {
                     instance.m_maxOre = Configuration.Current.ProductionInputAmounts.spinningWheelFlachsAmount;

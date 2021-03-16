@@ -1,4 +1,10 @@
-﻿using System;
+﻿// Veilheim
+// a Valheim mod
+// 
+// File:    ConfigurationExtra.cs
+// Project: Veilheim
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -16,8 +22,6 @@ namespace Veilheim.Configurations
     // Configuration implementation part
     public partial class Configuration
     {
-        public static string ConfigIniPath { get; }
-
         internal static readonly List<PropertyInfo> propertyCache;
 
         static Configuration()
@@ -47,6 +51,8 @@ namespace Veilheim.Configurations
             }
         }
 
+        public static string ConfigIniPath { get; }
+
         // Loaded configuration
         public static Configuration Current { get; private set; }
 
@@ -64,12 +70,12 @@ namespace Veilheim.Configurations
                     Directory.CreateDirectory(iniPath);
                 }
             }
-            
+
             return Path.Combine(iniPath, property.Name + ".ini");
         }
 
         /// <summary>
-        /// Load configuration from ini files. 
+        ///     Load configuration from ini files.
         /// </summary>
         /// <returns>true if successful</returns>
         public static bool LoadConfiguration()
@@ -90,9 +96,7 @@ namespace Veilheim.Configurations
                     // Server just reads syncable, client just base and local both sections
                     var needsSync = typeof(ISyncableSection).IsAssignableFrom(property.PropertyType);
 
-                    if (ZNet.instance.IsLocalInstance() ||
-                        (ZNet.instance.IsClientInstance() && !needsSync) ||
-                        (ZNet.instance.IsServerInstance() && needsSync))
+                    if (ZNet.instance.IsLocalInstance() || ZNet.instance.IsClientInstance() && !needsSync || ZNet.instance.IsServerInstance() && needsSync)
                     {
                         // Load section from ini or create ini with default values
                         var iniPath = GetIniFilePath(property);
@@ -126,7 +130,7 @@ namespace Veilheim.Configurations
         }
 
         /// <summary>
-        /// Get all section which need to synced with clients
+        ///     Get all section which need to synced with clients
         /// </summary>
         /// <returns></returns>
         public string GetSyncableSections()
@@ -142,7 +146,7 @@ namespace Veilheim.Configurations
 
 
         /// <summary>
-        /// Save full config
+        ///     Save full config
         /// </summary>
         public void SaveConfiguration()
         {
@@ -153,7 +157,7 @@ namespace Veilheim.Configurations
         }
 
         /// <summary>
-        /// Save configuration section to its ini file
+        ///     Save configuration section to its ini file
         /// </summary>
         /// <param name="property">PropertyInfo representing a config section</param>
         private void SaveConfiguration(PropertyInfo property)
@@ -162,9 +166,7 @@ namespace Veilheim.Configurations
             var section = property.GetValue(Current, null);
             var needsSync = section is ISyncableSection;
 
-            if (ZNet.instance.IsLocalInstance() ||
-                (ZNet.instance.IsClientInstance() && !needsSync) ||
-                (ZNet.instance.IsServerInstance() && needsSync))
+            if (ZNet.instance.IsLocalInstance() || ZNet.instance.IsClientInstance() && !needsSync || ZNet.instance.IsServerInstance() && needsSync)
             {
                 var iniPath = GetIniFilePath(property);
 
@@ -176,7 +178,7 @@ namespace Veilheim.Configurations
         }
 
         /// <summary>
-        ///  Generate ini section as string
+        ///     Generate ini section as string
         /// </summary>
         /// <param name="property">Configuration property</param>
         /// <param name="section">section object</param>
@@ -220,7 +222,7 @@ namespace Veilheim.Configurations
                 var valueAsString = value.ToString();
                 if (value is float)
                 {
-                    valueAsString = ((float)value).ToString(CultureInfo.InvariantCulture.NumberFormat);
+                    valueAsString = ((float) value).ToString(CultureInfo.InvariantCulture.NumberFormat);
                 }
 
                 // Special case 'IsEnabled' is already handled above
@@ -265,7 +267,7 @@ namespace Veilheim.Configurations
 
                 if (method != null)
                 {
-                    var result = method.Invoke(null, new object[] { configdata, keyName });
+                    var result = method.Invoke(null, new object[] {configdata, keyName});
                     property.SetValue(config, result, null);
                 }
             }
@@ -305,7 +307,7 @@ namespace Veilheim.Configurations
                     if (ini.Sections.ContainsSection(property.Name))
                     {
                         var result = property.PropertyType.GetMethod("LoadIni", BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
-                            ?.Invoke(null, new object[] { ini, property.Name });
+                            ?.Invoke(null, new object[] {ini, property.Name});
                         if (result == null)
                         {
                             throw new Exception($"LoadIni method not found on Type {property.PropertyType.Name}");
@@ -354,7 +356,7 @@ namespace Veilheim.Configurations
 
         public static bool GetBool(this KeyDataCollection data, string key)
         {
-            var truevals = new[] { "y", "yes", "true" };
+            var truevals = new[] {"y", "yes", "true"};
             return truevals.Contains(data[key].ToLower());
         }
 

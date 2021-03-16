@@ -1,4 +1,10 @@
-﻿using System;
+﻿// Veilheim
+// a Valheim mod
+// 
+// File:    BaseConsoleCommand.cs
+// Project: Veilheim
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -8,6 +14,7 @@ namespace Veilheim.ConsoleCommands
 {
     public class BaseConsoleCommand
     {
+        internal static List<BaseConsoleCommand> consoleCommandInstances = new List<BaseConsoleCommand>();
         public string HelpText { get; internal set; }
         public string CommandName { get; internal set; }
 
@@ -15,8 +22,6 @@ namespace Veilheim.ConsoleCommands
         {
             return false;
         }
-
-        internal static List<BaseConsoleCommand> consoleCommandInstances = new List<BaseConsoleCommand>();
 
         public static void InitializeCommand<T>() where T : BaseConsoleCommand, new()
         {
@@ -33,8 +38,8 @@ namespace Veilheim.ConsoleCommands
                 return false;
             }
 
-            string[] split = input.Split(' ');
-            BaseConsoleCommand command = consoleCommandInstances.FirstOrDefault(x => String.Equals(x.CommandName, split[0], StringComparison.CurrentCultureIgnoreCase));
+            var split = input.Split(' ');
+            var command = consoleCommandInstances.FirstOrDefault(x => string.Equals(x.CommandName, split[0], StringComparison.CurrentCultureIgnoreCase));
 
             if (command != null)
             {
@@ -66,12 +71,12 @@ namespace Veilheim.ConsoleCommands
 
         protected static bool GetBool(string input)
         {
-            return new[] { "true", "y", "yes" }.Contains(input.ToLower());
+            return new[] {"true", "y", "yes"}.Contains(input.ToLower());
         }
 
         protected static KeyCode GetKeyCode(string input)
         {
-            if (System.Enum.TryParse<KeyCode>(input, out var result))
+            if (Enum.TryParse<KeyCode>(input, out var result))
             {
                 return result;
             }

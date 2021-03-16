@@ -1,4 +1,10 @@
-﻿using System;
+﻿// Veilheim
+// a Valheim mod
+// 
+// File:    SetConfigurationValue.cs
+// Project: Veilheim
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -82,7 +88,7 @@ namespace Veilheim.ConsoleCommands
                     foreach (var prop in BaseConfig.GetProps(sectProperty.PropertyType))
                     {
                         var val = prop.GetValue(sectValue, null);
-                        var valDefault = ((BaseConfig)sectValue).GetDefault(sectProperty.PropertyType, prop.Name);
+                        var valDefault = ((BaseConfig) sectValue).GetDefault(sectProperty.PropertyType, prop.Name);
                         Console.instance.AddString($"{prop.Name} {prop.PropertyType.Name} ({val}, default:{valDefault})");
                     }
                 }
@@ -259,9 +265,10 @@ namespace Veilheim.ConsoleCommands
             {
                 Logger.LogInfo("RPC_SetConfigurationValue LOCAL");
                 var input = inputPkg.ReadString();
-                string inputCopy = (input + " ").Trim();
+                var inputCopy = (input + " ").Trim();
                 TryExecuteCommand(ref input, true);
             }
+
             if (ZNet.instance.IsServerInstance()) // Server
             {
                 var peer = ZNet.instance.GetPeer(sender);
@@ -277,11 +284,12 @@ namespace Veilheim.ConsoleCommands
                 if (ZNet.instance.m_adminList.Contains(steamId))
                 {
                     var input = inputPkg.ReadString();
-                    string inputCopy = (input + " ").Trim();
+                    var inputCopy = (input + " ").Trim();
                     TryExecuteCommand(ref input, true);
                     foreach (var peerEntry in ZNet.instance.m_peers)
                     {
                         Logger.LogDebug($"SENDING {inputCopy}");
+
                         // Send same back to all clients to actually also set the value on the client
                         ZRoutedRpc.instance.InvokeRoutedRPC(peerEntry.m_uid, nameof(RPC_SetConfigurationValue), inputPkg);
                     }
@@ -291,11 +299,10 @@ namespace Veilheim.ConsoleCommands
             {
                 Logger.LogInfo("RPC_SetConfigurationValue CLIENT");
                 var input = inputPkg.ReadString();
-                string inputCopy = (input + " ").Trim();
+                var inputCopy = (input + " ").Trim();
                 TryExecuteCommand(ref input, true);
                 Console.instance.AddString($"Command '{inputCopy}' executed");
             }
         }
     }
-
 }

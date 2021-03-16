@@ -1,4 +1,10 @@
-﻿namespace Veilheim.Configurations
+﻿// Veilheim
+// a Valheim mod
+// 
+// File:    ActivationTime.cs
+// Project: Veilheim
+
+namespace Veilheim.Configurations
 {
     public enum ActivationTime
     {

@@ -1,6 +1,12 @@
-﻿namespace Veilheim
+﻿// Veilheim
+// a Valheim mod
+// 
+// File:    IDestroyable.cs
+// Project: Veilheim
+
+namespace Veilheim
 {
-    interface IDestroyable
+    internal interface IDestroyable
     {
         void Destroy();
     }

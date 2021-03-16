@@ -1,14 +1,18 @@
-﻿using System;
+﻿// Veilheim
+// a Valheim mod
+// 
+// File:    PortalList.cs
+// Project: Veilheim
+
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using UnityEngine;
 
 namespace Veilheim.Map
 {
     /// <summary>
-    /// Portal meta struct. Holds a portals coordinates,
-    /// its tag and if it is connected to another portal or not.
+    ///     Portal meta struct. Holds a portals coordinates,
+    ///     its tag and if it is connected to another portal or not.
     /// </summary>
     public struct Portal
     {
@@ -32,7 +36,7 @@ namespace Veilheim.Map
     public class PortalList : List<Portal>
     {
         /// <summary>
-        /// Get the current list of <see cref="Portal"/> ZDOs
+        ///     Get the current list of <see cref="Portal" /> ZDOs
         /// </summary>
         /// <returns></returns>
         public static PortalList GetPortals()
@@ -75,6 +79,7 @@ namespace Veilheim.Map
                 Logger.LogDebug(portal);
                 ret.Add(portal);
             }
+
             Logger.LogDebug("Unconnected Portals");
             foreach (var entry in unconnected.OrderBy(x => x.Value.GetString("tag")))
             {
@@ -82,11 +87,12 @@ namespace Veilheim.Map
                 Logger.LogDebug(portal);
                 ret.Add(portal);
             }
+
             return ret;
         }
 
         /// <summary>
-        /// Create a <see cref="Portal"/> list from a <see cref="ZPackage"/>
+        ///     Create a <see cref="Portal" /> list from a <see cref="ZPackage" />
         /// </summary>
         /// <param name="zpkg"></param>
         /// <returns></returns>
@@ -95,7 +101,7 @@ namespace Veilheim.Map
             Logger.LogDebug("Deserializing portal list from ZPackage");
 
             var ret = new PortalList();
-            
+
             var numConnectedPortals = zpkg.ReadInt();
 
             while (numConnectedPortals > 0)
@@ -126,7 +132,7 @@ namespace Veilheim.Map
         }
 
         /// <summary>
-        /// Create a <see cref="ZPackage"/> of this portal list
+        ///     Create a <see cref="ZPackage" /> of this portal list
         /// </summary>
         /// <returns></returns>
         public ZPackage ToZPackage()
@@ -144,7 +150,7 @@ namespace Veilheim.Map
                 package.Write(connectedPortal.m_pos);
                 package.Write(connectedPortal.m_tag);
             }
-            
+
             var unconnected = this.Where(x => !x.m_con);
 
             package.Write(unconnected.Count());
@@ -157,6 +163,5 @@ namespace Veilheim.Map
 
             return package;
         }
-
     }
 }

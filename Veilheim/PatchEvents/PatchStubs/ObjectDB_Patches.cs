@@ -1,4 +1,8 @@
 ﻿// Veilheim
+// a Valheim mod
+// 
+// File:    ObjectDB_Patches.cs
+// Project: Veilheim
 
 using System;
 using HarmonyLib;

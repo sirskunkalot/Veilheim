@@ -1,4 +1,10 @@
-﻿using System.Collections.Generic;
+﻿// Veilheim
+// a Valheim mod
+// 
+// File:    PrefabCreator.cs
+// Project: Veilheim
+
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Veilheim.Util
@@ -96,12 +102,9 @@ namespace Veilheim.Util
                     continue;
                 }
 
-                reqs.Add(new Piece.Requirement()
-                {
-                    m_amount = requirement.amount,
-                    m_resItem = reqPrefab.GetComponent<ItemDrop>()
-                });
+                reqs.Add(new Piece.Requirement {m_amount = requirement.amount, m_resItem = reqPrefab.GetComponent<ItemDrop>()});
             }
+
             newRecipe.m_resources = reqs.ToArray();
 
             return newRecipe;
@@ -115,6 +118,7 @@ namespace Veilheim.Util
                 Debug.LogError($"[PrefabCreator] Failed to create recipe ({name})");
                 return null;
             }
+
             return AddNewRecipe(recipe);
         }
 

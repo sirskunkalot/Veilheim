@@ -1,7 +1,10 @@
-﻿using BepInEx;
+﻿// Veilheim
+// a Valheim mod
+// 
+// File:    AssetCreator.cs
+// Project: Veilheim
+
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using UnityEngine;
 
 namespace Veilheim.AssetUtils
@@ -24,7 +27,7 @@ namespace Veilheim.AssetUtils
         public static GameObject CreatePiece(string name)
         {
             var ret = new GameObject(name);
-            GameObject.DontDestroyOnLoad(ret);
+            Object.DontDestroyOnLoad(ret);
 
             // Create basic Components
             var znet = RequireComponent<ZNetView>(ret);
@@ -45,8 +48,8 @@ namespace Veilheim.AssetUtils
                 return null;
             }
 
-            GameObject clone = new GameObject(name);
-            GameObject.DontDestroyOnLoad(clone);
+            var clone = new GameObject(name);
+            Object.DontDestroyOnLoad(clone);
 
             //TODO: clone all needed values
             var origPiece = orig.GetComponent<Piece>();

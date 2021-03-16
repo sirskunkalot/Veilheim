@@ -1,17 +1,22 @@
-﻿using HarmonyLib;
+﻿// Veilheim
+// a Valheim mod
+// 
+// File:    PortalSelectionGUI.cs
+// Project: Veilheim
+
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
-using Veilheim.Configurations;
 
 namespace Veilheim.Map
 {
     /// <summary>
-    /// When renaming/tagging a portal read all tags from unconnected portals in the world and make a list of them to tag it.
-    /// Coded by https://github.com/Algorithman
+    ///     When renaming/tagging a portal read all tags from unconnected portals in the world and make a list of them to tag
+    ///     it.
+    ///     Coded by https://github.com/Algorithman
     /// </summary>
-    class PortalSelectionGUI
+    internal class PortalSelectionGUI
     {
         public static RectTransform portalRect;
 
@@ -45,7 +50,7 @@ namespace Veilheim.Map
                 {
                     if (oldbt != null)
                     {
-                        GameObject.Destroy(oldbt);
+                        Object.Destroy(oldbt);
                     }
                 }
 
@@ -53,6 +58,7 @@ namespace Veilheim.Map
                 teleporterButtons.Clear();
 
                 var idx = 0;
+
                 // calculate number of lines
                 var lines = singlePortals.Count() / 3;
 
@@ -71,13 +77,13 @@ namespace Veilheim.Map
                     foreach (var portal in singlePortals)
                     {
                         // Skip if it is the selected teleporter
-                        if ((portal.m_tag == currentTag) || (currentTag == "<unnamed>" && string.IsNullOrEmpty(portal.m_tag)))
+                        if (portal.m_tag == currentTag || currentTag == "<unnamed>" && string.IsNullOrEmpty(portal.m_tag))
                         {
                             continue;
                         }
 
                         // clone button
-                        var newButton = GameObject.Instantiate(originalButton, buttonList.GetComponent<RectTransform>());
+                        var newButton = Object.Instantiate(originalButton, buttonList.GetComponent<RectTransform>());
                         newButton.name = "TP" + idx;
 
                         // set position
@@ -127,7 +133,7 @@ namespace Veilheim.Map
         }
 
         /// <summary>
-        /// Clones the original valheim <see cref="InventoryGui"/> background <see cref="GameObject"/>
+        ///     Clones the original valheim <see cref="InventoryGui" /> background <see cref="GameObject" />
         /// </summary>
         /// <returns></returns>
         private static RectTransform GetOrCreateBackground()
@@ -137,7 +143,7 @@ namespace Veilheim.Map
             if (flag)
             {
                 var background = InventoryGui.instance.m_playerGrid.transform.parent.Find("Bkg").gameObject;
-                var newBackground = GameObject.Instantiate(background, background.transform.parent.parent.parent.parent);
+                var newBackground = Object.Instantiate(background, background.transform.parent.parent.parent.parent);
                 newBackground.name = nameof(portalRect);
                 newBackground.transform.SetSiblingIndex(background.transform.GetSiblingIndex() + 1);
                 transform = newBackground.transform;
@@ -148,7 +154,7 @@ namespace Veilheim.Map
         }
 
         /// <summary>
-        /// Creates the base canvas for the portal buttons
+        ///     Creates the base canvas for the portal buttons
         /// </summary>
         /// <returns></returns>
         private static RectTransform GenerateGUI()
@@ -160,7 +166,7 @@ namespace Veilheim.Map
             if (TeleporterListScrollbar == null)
             {
                 // instantiate clone of scrollbar
-                TeleporterListScrollbar = GameObject.Instantiate(InventoryGui.instance.m_containerGrid.m_scrollbar.gameObject, portalRect);
+                TeleporterListScrollbar = Object.Instantiate(InventoryGui.instance.m_containerGrid.m_scrollbar.gameObject, portalRect);
                 TeleporterListScrollbar.name = nameof(TeleporterListScrollbar);
                 var scrollBarRect = TeleporterListScrollbar.GetComponent<RectTransform>();
 

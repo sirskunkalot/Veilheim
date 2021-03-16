@@ -1,4 +1,8 @@
 ﻿// Veilheim
+// a Valheim mod
+// 
+// File:    Player_Patches.cs
+// Project: Veilheim
 
 using System;
 using HarmonyLib;
@@ -6,7 +10,7 @@ using HarmonyLib;
 namespace Veilheim.PatchEvents.PatchStubs
 {
     /// <summary>
-    /// Patch Player.PlacePiece
+    ///     Patch Player.PlacePiece
     /// </summary>
     [HarmonyPatch(typeof(Player), nameof(Player.PlacePiece), typeof(Piece))]
     public class Player_PlacePiece_Patch

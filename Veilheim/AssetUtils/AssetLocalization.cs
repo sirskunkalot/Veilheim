@@ -1,16 +1,22 @@
-﻿using System.IO;
-using System.Text;
+﻿// Veilheim
+// a Valheim mod
+// 
+// File:    AssetLocalization.cs
+// Project: Veilheim
+
 using System.Collections.Generic;
+using System.IO;
+using System.Text;
 using UnityEngine;
 
 namespace Veilheim.AssetUtils
 {
     /// <summary>
-    /// Handles translation of asset bundle content.
+    ///     Handles translation of asset bundle content.
     /// </summary>
     internal class AssetLocalization
     {
-        private string m_assetBundleName;
+        private readonly string m_assetBundleName;
         private TextAsset m_localization;
         private Dictionary<string, string> m_translations = new Dictionary<string, string>();
 
@@ -22,7 +28,7 @@ namespace Veilheim.AssetUtils
 
         public void Destroy()
         {
-            UnityEngine.Object.Destroy(m_localization);
+            Object.Destroy(m_localization);
             m_localization = null;
             m_translations.Clear();
             m_translations = null;
@@ -37,10 +43,10 @@ namespace Veilheim.AssetUtils
                 return;
             }
 
-            StringReader reader = new StringReader(m_localization.text);
-            string[] strArray = reader.ReadLine().Split(',');
-            int index1 = -1;
-            for (int index2 = 0; index2 < strArray.Length; ++index2)
+            var reader = new StringReader(m_localization.text);
+            var strArray = reader.ReadLine().Split(',');
+            var index1 = -1;
+            for (var index2 = 0; index2 < strArray.Length; ++index2)
             {
                 if (strArray[index2] == language)
                 {
@@ -48,25 +54,31 @@ namespace Veilheim.AssetUtils
                     break;
                 }
             }
+
             if (index1 == -1)
             {
                 Logger.LogWarning($"Failed to find language: {language} in AssetBundle {m_assetBundleName}");
                 return;
             }
-            foreach (List<string> stringList in DoQuoteLineSplit(reader))
+
+            foreach (var stringList in DoQuoteLineSplit(reader))
             {
                 if (stringList.Count != 0)
                 {
-                    string key = stringList[0];
+                    var key = stringList[0];
                     if (!key.StartsWith("//") && key.Length != 0 && stringList.Count > index1)
                     {
-                        string text = stringList[index1];
+                        var text = stringList[index1];
                         if (string.IsNullOrEmpty(text) || text[0] == '\r')
+                        {
                             text = stringList[1];
+                        }
+
                         AddWord(key, text);
                     }
                 }
             }
+
             Logger.LogInfo($"Loaded localization {language} for AssetBundle {m_assetBundleName}");
         }
 
@@ -98,13 +110,13 @@ namespace Veilheim.AssetUtils
 
         private List<List<string>> DoQuoteLineSplit(TextReader reader)
         {
-            List<List<string>> stringListList = new List<List<string>>();
-            List<string> stringList = new List<string>();
-            StringBuilder stringBuilder = new StringBuilder();
-            bool flag = false;
+            var stringListList = new List<List<string>>();
+            var stringList = new List<string>();
+            var stringBuilder = new StringBuilder();
+            var flag = false;
             while (true)
             {
-                int num = reader.Read();
+                var num = reader.Read();
                 switch (num)
                 {
                     case -1:
@@ -119,6 +131,7 @@ namespace Veilheim.AssetUtils
                             stringBuilder.Length = 0;
                             continue;
                         }
+
                         if (num == 10 && !flag)
                         {
                             stringList.Add(stringBuilder.ToString());
@@ -127,11 +140,13 @@ namespace Veilheim.AssetUtils
                             stringList = new List<string>();
                             continue;
                         }
-                        stringBuilder.Append((char)num);
+
+                        stringBuilder.Append((char) num);
                         continue;
                 }
             }
-        label_2:
+
+            label_2:
             stringList.Add(stringBuilder.ToString());
             stringListList.Add(stringList);
             return stringListList;

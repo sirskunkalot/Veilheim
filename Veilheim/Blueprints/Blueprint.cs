@@ -1,4 +1,10 @@
-﻿using System;
+﻿// Veilheim
+// a Valheim mod
+// 
+// File:    Blueprint.cs
+// Project: Veilheim
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,6 +14,7 @@ using UnityEngine;
 using Veilheim.AssetUtils;
 using Veilheim.Configurations;
 using Veilheim.PatchEvents;
+using Object = UnityEngine.Object;
 
 namespace Veilheim.Blueprints
 {
@@ -52,6 +59,15 @@ namespace Veilheim.Blueprints
     {
         private static readonly Dictionary<string, Blueprint> m_blueprints = new Dictionary<string, Blueprint>();
 
+        private readonly string m_name;
+
+        private PieceEntry[] m_pieceEntries;
+
+        public Blueprint(string name)
+        {
+            m_name = name;
+        }
+
         public static string GetBlueprintPath()
         {
             //TODO: save per profile or world or global?
@@ -60,6 +76,7 @@ namespace Veilheim.Blueprints
             {
                 Directory.CreateDirectory(path);
             }
+
             return path;
         }
 
@@ -104,23 +121,11 @@ namespace Veilheim.Blueprints
                 // Register all known blueprint
                 foreach (var bp in m_blueprints)
                 {
-                    var go = UnityEngine.Object.Instantiate(baseObject);
+                    var go = Object.Instantiate(baseObject);
                     go.GetComponent<Piece>().name = bp.Key;
-                    AssetManager.RegisterPiecePrefab(go, new PieceDef()
-                    {
-                        PieceTable = "_BlueprintPieceTable"
-                    });
+                    AssetManager.RegisterPiecePrefab(go, new PieceDef {PieceTable = "_BlueprintPieceTable"});
                 }
             }
-        }
-
-        private string m_name;
-
-        private PieceEntry[] m_pieceEntries;
-
-        public Blueprint(string name)
-        {
-            m_name = name;
         }
 
         public bool Capture(float radiusDelta)
@@ -190,8 +195,8 @@ namespace Veilheim.Blueprints
             var bottomleft = new Vector3(minX, minY, minZ);
 
             // select and order instance piece entries
-            var pieces = collected.Where(x => x.IsPlacedByPlayer() && x.m_category != Piece.PieceCategory.Misc)
-                    .OrderBy(x => x.transform.position.y).ThenBy(x => x.transform.position.x).ThenBy(x => x.transform.position.z);
+            var pieces = collected.Where(x => x.IsPlacedByPlayer() && x.m_category != Piece.PieceCategory.Misc).OrderBy(x => x.transform.position.y)
+                .ThenBy(x => x.transform.position.x).ThenBy(x => x.transform.position.z);
 
             if (m_pieceEntries == null)
             {
@@ -200,7 +205,7 @@ namespace Veilheim.Blueprints
             else if (m_pieceEntries.Length > 0)
             {
                 Array.Clear(m_pieceEntries, 0, m_pieceEntries.Length - 1);
-                Array.Resize<PieceEntry>(ref m_pieceEntries, pieces.Count());
+                Array.Resize(ref m_pieceEntries, pieces.Count());
             }
 
             uint i = 0;
@@ -211,9 +216,10 @@ namespace Veilheim.Blueprints
 
                 var q = piece.m_nview.GetZDO().m_rotation;
                 q.eulerAngles = new Vector3(0, q.eulerAngles.y, 0);
-                
+
                 var line = string.Join(";", piece.name.Split('(')[0], piece.m_category.ToString(), v1.x.ToString("F5"), v1.y.ToString("F5"),
-                    v1.z.ToString("F5"), q.x.ToString("F5"), q.y.ToString("F5"), q.z.ToString("F5"), q.w.ToString("F5"), q.eulerAngles.x.ToString("F5"), q.eulerAngles.y.ToString("F5"), q.eulerAngles.z.ToString("F5"));
+                    v1.z.ToString("F5"), q.x.ToString("F5"), q.y.ToString("F5"), q.z.ToString("F5"), q.w.ToString("F5"), q.eulerAngles.x.ToString("F5"),
+                    q.eulerAngles.y.ToString("F5"), q.eulerAngles.z.ToString("F5"));
                 m_pieceEntries[i++] = new PieceEntry(line);
             }
 
@@ -257,6 +263,7 @@ namespace Veilheim.Blueprints
                     {
                         tw.WriteLine(piece.line);
                     }
+
                     Logger.LogDebug("Wrote " + m_pieceEntries.Length + " pieces to " + Path.Combine(path, m_name + ".blueprint"));
                 }
             }
@@ -277,7 +284,7 @@ namespace Veilheim.Blueprints
             else if (m_pieceEntries.Length > 0)
             {
                 Array.Clear(m_pieceEntries, 0, m_pieceEntries.Length - 1);
-                Array.Resize<PieceEntry>(ref m_pieceEntries, lines.Count());
+                Array.Resize(ref m_pieceEntries, lines.Count());
             }
 
             uint i = 0;
@@ -296,9 +303,9 @@ namespace Veilheim.Blueprints
             var maxZ = pieces.Max(x => x.posZ);
 
             var startPosition = Player.m_localPlayer.GetTransform();
-            Transform tf = startPosition;
+            var tf = startPosition;
             tf.rotation = Camera.main.transform.rotation;
-            Quaternion q = new Quaternion();
+            var q = new Quaternion();
             q.eulerAngles = new Vector3(0, tf.rotation.eulerAngles.y, 0);
             tf.SetPositionAndRotation(tf.position, q);
             tf.position -= tf.right * (maxX / 2f);
@@ -334,10 +341,10 @@ namespace Veilheim.Blueprints
             var pos = startPosition.position + startPosition.right * piece.GetPosition().x + startPosition.forward * piece.GetPosition().z +
                       new Vector3(0, piece.GetPosition().y, 0);
 
-            Quaternion q = new Quaternion();
+            var q = new Quaternion();
             q.eulerAngles = new Vector3(0, startPosition.transform.rotation.eulerAngles.y + piece.GetRotation().eulerAngles.y);
 
-            var toBuild = UnityEngine.Object.Instantiate(prefabs[piece.name], pos, q);
+            var toBuild = Object.Instantiate(prefabs[piece.name], pos, q);
 
             var component = toBuild.GetComponent<Piece>();
             if (component)
@@ -347,7 +354,5 @@ namespace Veilheim.Blueprints
 
             return toBuild;
         }
-
-
     }
 }

@@ -1,4 +1,8 @@
 ﻿// Veilheim
+// a Valheim mod
+// 
+// File:    Game_Patches.cs
+// Project: Veilheim
 
 using System;
 using HarmonyLib;

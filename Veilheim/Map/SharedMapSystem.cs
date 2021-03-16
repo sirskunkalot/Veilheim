@@ -1,4 +1,8 @@
 ﻿// Veilheim
+// a Valheim mod
+// 
+// File:    SharedMapSystem.cs
+// Project: Veilheim
 
 using System;
 using System.Collections.Generic;
@@ -341,25 +345,25 @@ namespace Veilheim.Map
         }
 
         /// <summary>
-        /// Create compressed byte array 
+        ///     Create compressed byte array
         /// </summary>
         /// <returns>compressed data</returns>
         public static byte[] CreateExplorationData()
         {
-            MemoryStream result = new MemoryStream();
-            using (ZlibStream gz = new ZlibStream(result, CompressionMode.Compress, CompressionLevel.BestCompression))
+            var result = new MemoryStream();
+            using (var gz = new ZlibStream(result, CompressionMode.Compress, CompressionLevel.BestCompression))
             {
-                using (BinaryWriter binaryWriter = new BinaryWriter(gz))
+                using (var binaryWriter = new BinaryWriter(gz))
                 {
-                    int idx = 0;
+                    var idx = 0;
 
-                    bool state = Minimap.instance.m_explored[0];
+                    var state = Minimap.instance.m_explored[0];
 
                     binaryWriter.Write(state);
-                    int count = 0;
+                    var count = 0;
 
 
-                    int length = Minimap.instance.m_explored.Length;
+                    var length = Minimap.instance.m_explored.Length;
                     while (idx < length)
                     {
                         while (idx < length && state == Minimap.instance.m_explored[idx])
@@ -376,9 +380,9 @@ namespace Veilheim.Map
                     binaryWriter.Flush();
                     gz.Flush();
                 }
+
                 return result.ToArray();
             }
         }
-
     }
 }

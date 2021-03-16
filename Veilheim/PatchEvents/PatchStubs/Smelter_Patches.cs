@@ -1,4 +1,8 @@
 ﻿// Veilheim
+// a Valheim mod
+// 
+// File:    Smelter_Patches.cs
+// Project: Veilheim
 
 using System;
 using HarmonyLib;
@@ -6,7 +10,7 @@ using HarmonyLib;
 namespace Veilheim.PatchEvents.PatchStubs
 {
     /// <summary>
-    /// Patch Smelter.Awake
+    ///     Patch Smelter.Awake
     /// </summary>
     [HarmonyPatch(typeof(Smelter), nameof(Smelter.Awake))]
     public class Smelter_Awake_Patch

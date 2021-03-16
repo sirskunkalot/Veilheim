@@ -1,4 +1,10 @@
-﻿using System;
+﻿// Veilheim
+// a Valheim mod
+// 
+// File:    ConfigurationAttribute.cs
+// Project: Veilheim
+
+using System;
 
 namespace Veilheim.Configurations
 {

@@ -1,15 +1,19 @@
-using HarmonyLib;
+// Veilheim
+// a Valheim mod
+// 
+// File:    MapHooks.cs
+// Project: Veilheim
+
 using UnityEngine;
 using Veilheim.Configurations;
 using Veilheim.PatchEvents;
 
 namespace Veilheim.Map
 {
-
     public class Map_Patches : Payload
     {
         /// <summary>
-        /// CLIENT SIDE: Destroy the <see cref="PortalSelectionGUI"/> when active
+        ///     CLIENT SIDE: Destroy the <see cref="PortalSelectionGUI" /> when active
         /// </summary>
         /// <param name="instance">TextInput instance</param>
         [PatchEvent(typeof(TextInput), nameof(TextInput.Hide), PatchEventType.Postfix)]
@@ -19,6 +23,7 @@ namespace Veilheim.Map
             {
                 return;
             }
+
             if (PortalSelectionGUI.portalRect != null)
             {
                 if (PortalSelectionGUI.portalRect.gameObject.activeSelf)
@@ -37,7 +42,7 @@ namespace Veilheim.Map
         }
 
         /// <summary>
-        /// CLIENT SIDE: Creates a <see cref="PortalSelectionGUI"/> when interacting with a portal
+        ///     CLIENT SIDE: Creates a <see cref="PortalSelectionGUI" /> when interacting with a portal
         /// </summary>
         /// <param name="instance">Teleporter instance</param>
         /// <param name="human">unused</param>
@@ -50,13 +55,15 @@ namespace Veilheim.Map
             {
                 return;
             }
+
             // must be enabled
             if (!Configuration.Current.Map.IsEnabled || !Configuration.Current.Map.showPortalSelection)
             {
                 return;
             }
+
             // i like my personal space
-            if (!PrivateArea.CheckAccess(instance.transform.position, 0f, true) || hold)
+            if (!PrivateArea.CheckAccess(instance.transform.position) || hold)
             {
                 return;
             }

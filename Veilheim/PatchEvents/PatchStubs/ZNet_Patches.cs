@@ -1,4 +1,8 @@
 ﻿// Veilheim
+// a Valheim mod
+// 
+// File:    ZNet_Patches.cs
+// Project: Veilheim
 
 using System;
 using HarmonyLib;
@@ -266,7 +270,7 @@ namespace Veilheim.PatchEvents.PatchStubs
     }
 
     /// <summary>
-    /// Patch ZNet.SetPublicReferencePosition
+    ///     Patch ZNet.SetPublicReferencePosition
     /// </summary>
     [HarmonyPatch(typeof(ZNet), nameof(ZNet.SetPublicReferencePosition))]
     public class ZNet_SetPublicReferencePosition_Patch

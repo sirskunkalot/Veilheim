@@ -1,64 +1,69 @@
-﻿using HarmonyLib;
+﻿// Veilheim
+// a Valheim mod
+// 
+// File:    AssetManager.cs
+// Project: Veilheim
+
 using System.Collections.Generic;
 using System.Linq;
+using HarmonyLib;
 using UnityEngine;
 using Veilheim.PatchEvents;
 
 namespace Veilheim.AssetUtils
 {
     /// <summary>
-    /// A wrapper class representing <see cref="Piece.Requirement"/>s as primitives.
-    /// Valheim objects are instantiated and referenced at runtime.
+    ///     A wrapper class representing <see cref="Piece.Requirement" />s as primitives.
+    ///     Valheim objects are instantiated and referenced at runtime.
     /// </summary>
     internal class RequirementDef
     {
-        public string Item;
         public int Amount = 1;
+        public string Item;
     }
 
     /// <summary>
-    /// A wrapper class representing certain references to Valheim objects for a <see cref="Piece"/>
-    /// as primitives. Must be instantiated for every <see cref="Piece"/> from an <see cref="AssetBundle"/>
-    /// that you want to register. The actual objects are instantiated and referenced at runtime.
+    ///     A wrapper class representing certain references to Valheim objects for a <see cref="Piece" />
+    ///     as primitives. Must be instantiated for every <see cref="Piece" /> from an <see cref="AssetBundle" />
+    ///     that you want to register. The actual objects are instantiated and referenced at runtime.
     /// </summary>
     internal class PieceDef
     {
-        public string PieceTable = string.Empty;
         public string CraftingStation = string.Empty;
         public string ExtendStation = string.Empty;
+        public string PieceTable = string.Empty;
         public List<RequirementDef> Resources = new List<RequirementDef>();
     }
 
     /// <summary>
-    /// A wrapper class representing certain references to Valheim objects and attributes of 
-    /// <see cref="ItemDrop"/>s and <see cref="Recipe"/>s as primitives. Must be instantiated 
-    /// for every item prefab that you want to register. 
-    /// The actual objects are instantiated and referenced at runtime.
+    ///     A wrapper class representing certain references to Valheim objects and attributes of
+    ///     <see cref="ItemDrop" />s and <see cref="Recipe" />s as primitives. Must be instantiated
+    ///     for every item prefab that you want to register.
+    ///     The actual objects are instantiated and referenced at runtime.
     /// </summary>
     internal class ItemDef
     {
-        public bool Enabled = true;
         public int Amount = 1;
-        public int MinStationLevel = 1;
         public string CraftingStation = string.Empty;
+        public bool Enabled = true;
+        public int MinStationLevel = 1;
         public string RepairStation = string.Empty;
         public List<RequirementDef> Resources = new List<RequirementDef>();
     }
 
     /// <summary>
-    /// Central class for loading and importing custom <see cref="AssetBundle"/>s into Valheim. 
-    /// Code inspired by <a href="https://github.com/RandyKnapp/ValheimMods"/>
+    ///     Central class for loading and importing custom <see cref="AssetBundle" />s into Valheim.
+    ///     Code inspired by <a href="https://github.com/RandyKnapp/ValheimMods" />
     /// </summary>
     internal class AssetManager : Payload, IDestroyable
     {
-        private readonly List<GameObject> RegisteredPrefabs = new List<GameObject>();
-        private readonly List<AssetLocalization> RegisteredLocalizations = new List<AssetLocalization>();
+        public static AssetManager Instance;
         private readonly Dictionary<GameObject, ItemDef> RegisteredItems = new Dictionary<GameObject, ItemDef>();
+        private readonly List<AssetLocalization> RegisteredLocalizations = new List<AssetLocalization>();
         private readonly Dictionary<GameObject, PieceDef> RegisteredPieces = new Dictionary<GameObject, PieceDef>();
+        private readonly List<GameObject> RegisteredPrefabs = new List<GameObject>();
 
         private Dictionary<string, CraftingStation> CraftingStations;
-
-        public static AssetManager Instance;
 
         public AssetManager()
         {
@@ -74,13 +79,15 @@ namespace Veilheim.AssetUtils
                 localization.Destroy();
                 Logger.LogDebug($"Localization {localization} destroyed");
             }
+
             RegisteredLocalizations.Clear();
 
             foreach (var prefab in RegisteredPrefabs)
             {
-                UnityEngine.Object.Destroy(prefab);
+                Object.Destroy(prefab);
                 Logger.LogDebug($"Prefab {prefab.name} destroyed");
             }
+
             RegisteredPrefabs.Clear();
             RegisteredItems.Clear();
             RegisteredPieces.Clear();
@@ -91,8 +98,8 @@ namespace Veilheim.AssetUtils
         }
 
         /// <summary>
-        /// Register an "untyped" prefab.<br />
-        /// The "untyped" prefabs are added to the current <see cref="ZNetScene"/> on initialization.
+        ///     Register an "untyped" prefab.<br />
+        ///     The "untyped" prefabs are added to the current <see cref="ZNetScene" /> on initialization.
         /// </summary>
         /// <param name="prefab"></param>
         public static void RegisterPrefab(GameObject prefab)
@@ -104,10 +111,11 @@ namespace Veilheim.AssetUtils
         }
 
         /// <summary>
-        /// Register an <see cref="ItemDrop"/> prefab.<br />
-        /// The item prefabs are added to the current <see cref="ObjectDB"/> and <see cref="ZNetScene"/> on initialization.<br />
-        /// A <see cref="Recipe"/> is created and added automatically, when a <see cref="CraftingStation"/> and the 
-        /// <see cref="Piece.Requirement"/>s are defined in the <see cref="ItemDef"/>.
+        ///     Register an <see cref="ItemDrop" /> prefab.<br />
+        ///     The item prefabs are added to the current <see cref="ObjectDB" /> and <see cref="ZNetScene" /> on initialization.
+        ///     <br />
+        ///     A <see cref="Recipe" /> is created and added automatically, when a <see cref="CraftingStation" /> and the
+        ///     <see cref="Piece.Requirement" />s are defined in the <see cref="ItemDef" />.
         /// </summary>
         /// <param name="prefab"></param>
         /// <param name="itemDef"></param>
@@ -121,10 +129,12 @@ namespace Veilheim.AssetUtils
         }
 
         /// <summary>
-        /// Register a <see cref="Piece"/> prefab.<br />
-        /// The piece prefabs are added to the current <see cref="ZNetScene"/> on initialization.<br />
-        /// The <see cref="Piece"/> is added to the <see cref="PieceTable"/> defined in <see cref="PieceDef"/> automatically.<br />
-        /// When ExtensionStation is defined in <see cref="PieceDef"/>, the <see cref="Piece"/> is added as a <see cref="StationExtension"/> to that station.
+        ///     Register a <see cref="Piece" /> prefab.<br />
+        ///     The piece prefabs are added to the current <see cref="ZNetScene" /> on initialization.<br />
+        ///     The <see cref="Piece" /> is added to the <see cref="PieceTable" /> defined in <see cref="PieceDef" />
+        ///     automatically.<br />
+        ///     When ExtensionStation is defined in <see cref="PieceDef" />, the <see cref="Piece" /> is added as a
+        ///     <see cref="StationExtension" /> to that station.
         /// </summary>
         /// <param name="prefab"></param>
         /// <param name="pieceDef"></param>
@@ -138,7 +148,7 @@ namespace Veilheim.AssetUtils
         }
 
         /// <summary>
-        /// Register an <see cref="AssetLocalization"/>.<br />
+        ///     Register an <see cref="AssetLocalization" />.<br />
         /// </summary>
         /// <param name="localization"></param>
         public static void RegisterLocalization(AssetLocalization localization)
@@ -151,8 +161,8 @@ namespace Veilheim.AssetUtils
         }
 
         /// <summary>
-        /// Add all registered prefabs to the namedPrefabs in <see cref="ZNetScene"/>.<br />
-        /// Has a low priority (1000), so other hooks can register their prefabs before they get added.
+        ///     Add all registered prefabs to the namedPrefabs in <see cref="ZNetScene" />.<br />
+        ///     Has a low priority (1000), so other hooks can register their prefabs before they get added.
         /// </summary>
         /// <param name="instance"></param>
         [PatchEvent(typeof(ZNetScene), nameof(ZNetScene.Awake), PatchEventType.Prefix, 1000)]
@@ -178,8 +188,9 @@ namespace Veilheim.AssetUtils
         }
 
         /// <summary>
-        /// Initialize and register all loaded items to the <see cref="ObjectDB"/> in <see cref="FejdStartup"/> (no recipes and pieces needed).<br />
-        /// Has a low priority (1000), so other hooks can register their prefabs before they get added to the game.
+        ///     Initialize and register all loaded items to the <see cref="ObjectDB" /> in <see cref="FejdStartup" /> (no recipes
+        ///     and pieces needed).<br />
+        ///     Has a low priority (1000), so other hooks can register their prefabs before they get added to the game.
         /// </summary>
         [PatchEvent(typeof(ObjectDB), nameof(ObjectDB.CopyOtherDB), PatchEventType.Postfix, 1000)]
         public static void AddToObjectDBFejd(ObjectDB instance)
@@ -193,8 +204,8 @@ namespace Veilheim.AssetUtils
         }
 
         /// <summary>
-        /// Initialize and register all loaded items and pieces to the current instance of the <see cref="ObjectDB"/>.<br />
-        /// Has a low priority (1000), so other hooks can register their prefabs before they get added to the game.
+        ///     Initialize and register all loaded items and pieces to the current instance of the <see cref="ObjectDB" />.<br />
+        ///     Has a low priority (1000), so other hooks can register their prefabs before they get added to the game.
         /// </summary>
         [PatchEvent(typeof(ObjectDB), nameof(ObjectDB.Awake), PatchEventType.Postfix, 1000)]
         public static void AddToObjectDB(ObjectDB instance)
@@ -209,8 +220,8 @@ namespace Veilheim.AssetUtils
         }
 
         /// <summary>
-        /// Setup languages for all registered <see cref="AssetLocalization"/>s<br />
-        /// Has a low priority (1000), so other hooks can register their Localizations before they get added to the game.
+        ///     Setup languages for all registered <see cref="AssetLocalization" />s<br />
+        ///     Has a low priority (1000), so other hooks can register their Localizations before they get added to the game.
         /// </summary>
         /// <param name="language"></param>
         [PatchEvent(typeof(Localization), nameof(Localization.SetupLanguage), PatchEventType.Postfix)]
@@ -223,21 +234,24 @@ namespace Veilheim.AssetUtils
         }
 
         /// <summary>
-        /// Try to translate a string in all registered <see cref="AssetLocalization"/>s. First to translate wins.
+        ///     Try to translate a string in all registered <see cref="AssetLocalization" />s. First to translate wins.
         /// </summary>
         /// <param name="word"></param>
         /// <param name="translated"></param>
         [PatchEvent(typeof(Localization), nameof(Localization.Translate), PatchEventType.Postfix)]
         public static bool TryTranslate(string word, out string translated)
         {
-            bool isTranslated = false;
-            string _translated = "";
-            
+            var isTranslated = false;
+            var _translated = "";
+
             // first translation wins
             foreach (var localization in Instance.RegisteredLocalizations)
             {
                 isTranslated = localization.TryTranslate(word, out _translated);
-                if (isTranslated) break;
+                if (isTranslated)
+                {
+                    break;
+                }
             }
 
             translated = isTranslated ? _translated : $"[{word}]";
@@ -266,8 +280,7 @@ namespace Veilheim.AssetUtils
                 var craftingStations = new List<CraftingStation>();
                 foreach (var pieceTable in pieceTables)
                 {
-                    foreach (var station in pieceTable.m_pieces
-                        .Where(x => x.GetComponent<CraftingStation>() != null)
+                    foreach (var station in pieceTable.m_pieces.Where(x => x.GetComponent<CraftingStation>() != null)
                         .Select(x => x.GetComponent<CraftingStation>()))
                     {
                         if (!CraftingStations.ContainsKey(station.name))
@@ -293,7 +306,7 @@ namespace Veilheim.AssetUtils
             Logger.LogMessage($"Registering custom items in ObjectDB {instance}");
 
             Instance.InitCraftingStations(instance);
-            
+
             // Go through all registered Items and try to obtain references
             // to the actual objects defined as strings in ItemDef
             foreach (var entry in RegisteredItems)
@@ -310,19 +323,15 @@ namespace Veilheim.AssetUtils
                     Logger.LogError($"GameObject {prefab.name} has no ItemDrop attached");
                     continue;
                 }
-                else
+
+                if (instance.m_itemByHash.ContainsKey(prefab.name.GetStableHashCode()))
                 {
-                    if (instance.m_itemByHash.ContainsKey(prefab.name.GetStableHashCode()))
-                    {
-                        Logger.LogWarning("Item already added to ObjectDB");
-                        continue;
-                    }
-                    else
-                    {
-                        itemDrop.m_itemData.m_dropPrefab = prefab;
-                        instance.m_items.Add(prefab);
-                    }
+                    Logger.LogWarning("Item already added to ObjectDB");
+                    continue;
                 }
+
+                itemDrop.m_itemData.m_dropPrefab = prefab;
+                instance.m_items.Add(prefab);
 
                 Logger.LogInfo($"Registered item {prefab.name}");
 
@@ -352,11 +361,14 @@ namespace Veilheim.AssetUtils
         }
 
         /// <summary>
-        /// Create a <see cref="Recipe"/> for a prefab based on the <see cref="ItemDef"/> of this custom item
+        ///     Create a <see cref="Recipe" /> for a prefab based on the <see cref="ItemDef" /> of this custom item
         /// </summary>
         /// <param name="prefab">The item for which the recipe will be created</param>
         /// <param name="itemDef"></param>
-        /// <param name="craftingStations">List of stations which are allowed to act as the crafting and repair station for this item</param>
+        /// <param name="craftingStations">
+        ///     List of stations which are allowed to act as the crafting and repair station for this
+        ///     item
+        /// </param>
         /// <returns></returns>
         private Recipe CreateRecipe(ObjectDB instance, GameObject prefab, ItemDef itemDef)
         {
@@ -410,19 +422,16 @@ namespace Veilheim.AssetUtils
                     continue;
                 }
 
-                reqs.Add(new Piece.Requirement()
-                {
-                    m_amount = requirement.Amount,
-                    m_resItem = reqPrefab.GetComponent<ItemDrop>()
-                });
+                reqs.Add(new Piece.Requirement {m_amount = requirement.Amount, m_resItem = reqPrefab.GetComponent<ItemDrop>()});
             }
+
             newRecipe.m_resources = reqs.ToArray();
 
             return newRecipe;
         }
 
         /// <summary>
-        /// Register our custom building pieces to their respective ingame items or stations
+        ///     Register our custom building pieces to their respective ingame items or stations
         /// </summary>
         private void TryRegisterPieces(ObjectDB instance)
         {
@@ -472,11 +481,13 @@ namespace Veilheim.AssetUtils
                     Logger.LogWarning($"Could not find piecetable: {pieceDef.PieceTable}");
                     continue;
                 }
+
                 if (pieceTable.m_pieces.Contains(prefab))
                 {
                     Logger.LogDebug($"Piece already added to PieceTable {pieceDef.PieceTable}");
                     continue;
                 }
+
                 pieceTable.m_pieces.Add(prefab);
 
                 // Assign the CraftingStation for this piece, if needed
@@ -506,12 +517,9 @@ namespace Veilheim.AssetUtils
                         continue;
                     }
 
-                    resources.Add(new Piece.Requirement()
-                    {
-                        m_resItem = resourcePrefab.GetComponent<ItemDrop>(),
-                        m_amount = resource.Amount
-                    });
+                    resources.Add(new Piece.Requirement {m_resItem = resourcePrefab.GetComponent<ItemDrop>(), m_amount = resource.Amount});
                 }
+
                 piece.m_resources = resources.ToArray();
 
                 // Try to assign the effect prefabs of another extension defined in ExtendStation
@@ -535,6 +543,7 @@ namespace Veilheim.AssetUtils
                         piece.m_placeEffect.m_effectPrefabs = otherPiece.m_placeEffect.m_effectPrefabs.ToArray();
                     }
                 }
+
                 // Otherwise just copy the effect prefabs of any piece within the table
                 else
                 {

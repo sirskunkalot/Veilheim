@@ -1,4 +1,8 @@
 ﻿// Veilheim
+// a Valheim mod
+// 
+// File:    Localization_Patches.cs
+// Project: Veilheim
 
 using System;
 using HarmonyLib;
@@ -6,7 +10,7 @@ using HarmonyLib;
 namespace Veilheim.PatchEvents.PatchStubs
 {
     /// <summary>
-    /// Patch Localization.SetupLanguage
+    ///     Patch Localization.SetupLanguage
     /// </summary>
     [HarmonyPatch(typeof(Localization), nameof(Localization.SetupLanguage))]
     public class Localization_SetupLanguage_Patch
@@ -29,7 +33,7 @@ namespace Veilheim.PatchEvents.PatchStubs
     }
 
     /// <summary>
-    /// Patch Localization.Translate
+    ///     Patch Localization.Translate
     /// </summary>
     [HarmonyPatch(typeof(Localization), nameof(Localization.Translate))]
     public class Localization_Translate_Patch
@@ -38,15 +42,15 @@ namespace Veilheim.PatchEvents.PatchStubs
 
         public static event PostfixHandler PostfixEvent;
 
-        static string Postfix(string result, string word)
+        private static string Postfix(string result, string word)
         {
-            string failed = string.Format("[{0}]", word);
+            var failed = string.Format("[{0}]", word);
             if (result != failed)
             {
                 return result;
             }
 
-            if (PostfixEvent.Invoke(word, out string translated))
+            if (PostfixEvent.Invoke(word, out var translated))
             {
                 return translated;
             }

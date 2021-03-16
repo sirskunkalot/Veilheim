@@ -1,23 +1,31 @@
-using UnityEngine;
+// Veilheim
+// a Valheim mod
+// 
+// File:    BaseConfig.cs
+// Project: Veilheim
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using IniParser.Model;
 using System.Linq;
 using System.Reflection;
+using IniParser.Model;
+using UnityEngine;
 
 namespace Veilheim.Configurations
 {
     public interface IConfig
     {
-        void LoadIniData(KeyDataCollection data);
         bool IsEnabled { get; set; }
+        void LoadIniData(KeyDataCollection data);
     }
 
     public abstract class BaseConfig : INotifyPropertyChanged
     {
         public static readonly Dictionary<Type, List<PropertyInfo>> propertyCache = new Dictionary<Type, List<PropertyInfo>>();
         public static readonly Dictionary<Type, Dictionary<string, object>> defaultValueCache = new Dictionary<Type, Dictionary<string, object>>();
+
+        public event PropertyChangedEventHandler PropertyChanged;
 
         internal static IEnumerable<PropertyInfo> GetProps<T>()
         {
@@ -28,7 +36,7 @@ namespace Veilheim.Configurations
         {
             if (!propertyCache.ContainsKey(t))
             {
-                propertyCache.Add(t,t.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy).ToList());
+                propertyCache.Add(t, t.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy).ToList());
             }
 
             foreach (var property in propertyCache[t])
@@ -37,21 +45,19 @@ namespace Veilheim.Configurations
             }
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-
         public void SetValue<T>(string propertyName, object value)
         {
-            PropertyInfo p = GetProps(typeof(T)).FirstOrDefault(x => x.Name == propertyName);
+            var p = GetProps(typeof(T)).FirstOrDefault(x => x.Name == propertyName);
             if (p == null)
             {
                 throw new ArgumentException($"Property {propertyName} does not exist in {typeof(T).Name}");
             }
 
-            object oldValue = p.GetValue(this, null);
+            var oldValue = p.GetValue(this, null);
             p.SetValue(this, value, null);
             if (oldValue != value)
             {
-                PropertyChanged?.Invoke(this,new PropertyChangedEventArgs(p.Name));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(p.Name));
             }
         }
 
@@ -72,7 +78,7 @@ namespace Veilheim.Configurations
                 return;
             }
 
-            Dictionary<string, object> temp = new Dictionary<string, object>();
+            var temp = new Dictionary<string, object>();
             foreach (var p in GetProps(GetType()))
             {
                 temp.Add(p.Name, p.GetValue(this, null));
@@ -84,6 +90,12 @@ namespace Veilheim.Configurations
 
     public abstract class BaseConfig<T> : BaseConfig, IConfig where T : IConfig, INotifyPropertyChanged, new()
     {
+        public static IniData iniUpdated = null;
+        private bool _isEnabled;
+
+
+        public EventHandler<SectionStatusChangeEventArgs> SectionStatusChangedEvent;
+
         public bool IsEnabled
         {
             get => _isEnabled;
@@ -93,32 +105,9 @@ namespace Veilheim.Configurations
                 {
                     SectionStatusChangedEvent?.Invoke(this, new SectionStatusChangeEventArgs(value));
                 }
+
                 _isEnabled = value;
             }
-        }
-
-
-        public EventHandler<SectionStatusChangeEventArgs> SectionStatusChangedEvent;
-
-        public static IniData iniUpdated = null;
-        private bool _isEnabled = false;
-
-        public static T LoadIni(IniData data, string section)
-        {
-            var n = new T();
-
-            Logger.LogInfo($"Loading config section {section}");
-            if (data[section] != null)
-            {
-                n.LoadIniData(data[section]);
-            }
-            if (data[section] == null || data[section][nameof(IsEnabled)] == null || !data[section].GetBool(nameof(IsEnabled)))
-            {
-                n.IsEnabled = false;
-                Logger.LogInfo(" Section not enabled");
-            }
-
-            return n;
         }
 
         public void LoadIniData(KeyDataCollection data)
@@ -140,7 +129,7 @@ namespace Veilheim.Configurations
 
                 if (prop.PropertyType == typeof(float))
                 {
-                    this.SetValue<T>(keyName, data.GetFloat(keyName, (float) existingValue));
+                    SetValue<T>(keyName, data.GetFloat(keyName, (float) existingValue));
                     continue;
                 }
 
@@ -158,17 +147,35 @@ namespace Veilheim.Configurations
 
                 if (prop.PropertyType == typeof(KeyCode))
                 {
-                    SetValue<T>(keyName, data.GetKeyCode(keyName, (KeyCode)existingValue));
+                    SetValue<T>(keyName, data.GetKeyCode(keyName, (KeyCode) existingValue));
                     continue;
                 }
 
                 Logger.LogWarning($" Could not load data of type {prop.PropertyType} for key {keyName}");
             }
         }
+
+        public static T LoadIni(IniData data, string section)
+        {
+            var n = new T();
+
+            Logger.LogInfo($"Loading config section {section}");
+            if (data[section] != null)
+            {
+                n.LoadIniData(data[section]);
+            }
+
+            if (data[section] == null || data[section][nameof(IsEnabled)] == null || !data[section].GetBool(nameof(IsEnabled)))
+            {
+                n.IsEnabled = false;
+                Logger.LogInfo(" Section not enabled");
+            }
+
+            return n;
+        }
     }
 
     public abstract class ServerSyncConfig<T> : BaseConfig<T>, ISyncableSection where T : class, IConfig, INotifyPropertyChanged, new()
     {
-
     }
 }

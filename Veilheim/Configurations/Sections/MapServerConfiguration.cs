@@ -1,4 +1,10 @@
-﻿namespace Veilheim.Configurations.Sections
+﻿// Veilheim
+// a Valheim mod
+// 
+// File:    MapServerConfiguration.cs
+// Project: Veilheim
+
+namespace Veilheim.Configurations.Sections
 {
     [ConfigurationSection("Map Settings Server")]
     public class MapServerConfiguration : ServerSyncConfig<MapServerConfiguration>

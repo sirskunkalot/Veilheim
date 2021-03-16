@@ -1,4 +1,8 @@
 ﻿// Veilheim
+// a Valheim mod
+// 
+// File:    ProductionInputAmountServerConfiguration.cs
+// Project: Veilheim
 
 namespace Veilheim.Configurations.Sections
 {

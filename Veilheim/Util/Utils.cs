@@ -1,7 +1,10 @@
-﻿using System;
-using System.IO;
+﻿// Veilheim
+// a Valheim mod
+// 
+// File:    Utils.cs
+// Project: Veilheim
+
 using System.Linq;
-using BepInEx;
 using UnityEngine;
 
 namespace Veilheim.Util
@@ -23,7 +26,7 @@ namespace Veilheim.Util
         public static string GetObjectString(object obj, string indent)
         {
             var output = "";
-            Type type = obj.GetType();
+            var type = obj.GetType();
             var publicFields = type.GetFields().Where(f => f.IsPublic);
             foreach (var f in publicFields)
             {

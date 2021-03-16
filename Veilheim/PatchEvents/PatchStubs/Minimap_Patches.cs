@@ -1,4 +1,8 @@
 ﻿// Veilheim
+// a Valheim mod
+// 
+// File:    Minimap_Patches.cs
+// Project: Veilheim
 
 using System;
 using HarmonyLib;
@@ -214,7 +218,6 @@ namespace Veilheim.PatchEvents.PatchStubs
     }
 
 
-
     /// <summary>
     ///     Patch Minimap.SetMapData
     /// </summary>
@@ -266,5 +269,4 @@ namespace Veilheim.PatchEvents.PatchStubs
             }
         }
     }
-
 }

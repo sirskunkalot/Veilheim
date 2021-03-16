@@ -1,4 +1,10 @@
-﻿using System;
+﻿// Veilheim
+// a Valheim mod
+// 
+// File:    ConsumablesConfig.cs
+// Project: Veilheim
+
+using System;
 using System.Collections.Generic;
 
 namespace Veilheim.Util
@@ -6,17 +12,17 @@ namespace Veilheim.Util
     [Serializable]
     public class ConsumableItemConfig
     {
-        public string id;
         public string basePrefab;
-        public string displayName;
-        public string[] icons;
         public string description;
-        public int maxStackSize;
+        public string displayName;
         public int food;
-        public int foodStamina;
-        public int foodRegen;
         public int foodBurnTime;
         public string foodColor;
+        public int foodRegen;
+        public int foodStamina;
+        public string[] icons;
+        public string id;
+        public int maxStackSize;
         public RecipeConfig RecipeConfig = new RecipeConfig();
     }
 

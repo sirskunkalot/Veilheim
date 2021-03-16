@@ -1,4 +1,8 @@
 ﻿// Veilheim
+// a Valheim mod
+// 
+// File:    SaveBlueprintCommand.cs
+// Project: Veilheim
 
 using System.Linq;
 using Veilheim.Blueprints;
@@ -38,10 +42,12 @@ namespace Veilheim.ConsoleCommands
             {
                 return false;
             }
+
             if (!blueprint.Save())
             {
                 return false;
             }
+
             blueprint.RecordFrame();
             return true;
         }

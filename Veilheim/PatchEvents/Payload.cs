@@ -1,4 +1,8 @@
 ﻿// Veilheim
+// a Valheim mod
+// 
+// File:    Payload.cs
+// Project: Veilheim
 
 namespace Veilheim.PatchEvents
 {

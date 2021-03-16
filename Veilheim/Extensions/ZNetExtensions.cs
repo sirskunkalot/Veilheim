@@ -1,3 +1,9 @@
+// Veilheim
+// a Valheim mod
+// 
+// File:    ZNetExtensions.cs
+// Project: Veilheim
+
 public static class ZNetExtensions
 {
     public enum ZNetInstanceType
@@ -27,14 +33,13 @@ public static class ZNetExtensions
         if (znet.IsLocalInstance())
         {
             return ZNetInstanceType.Local;
-        } 
-        else if (znet.IsClientInstance())
+        }
+
+        if (znet.IsClientInstance())
         {
             return ZNetInstanceType.Client;
         }
-        else
-        {
-            return ZNetInstanceType.Server;
-        }
+
+        return ZNetInstanceType.Server;
     }
 }

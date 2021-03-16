@@ -1,4 +1,8 @@
 ﻿// Veilheim
+// a Valheim mod
+// 
+// File:    PortalsOnMap.cs
+// Project: Veilheim
 
 using System;
 using System.Collections.Generic;

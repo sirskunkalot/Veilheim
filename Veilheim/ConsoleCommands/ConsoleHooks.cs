@@ -1,4 +1,8 @@
 // Veilheim
+// a Valheim mod
+// 
+// File:    ConsoleHooks.cs
+// Project: Veilheim
 
 using System;
 using System.Linq;
@@ -10,7 +14,7 @@ namespace Veilheim.ConsoleCommands
     public class ConsoleCommandPatches : Payload
     {
         /// <summary>
-        /// Route user input through our command instances. If 'help' is issued, amend own commands to the output first.
+        ///     Route user input through our command instances. If 'help' is issued, amend own commands to the output first.
         /// </summary>
         /// <param name="instance"></param>
         [PatchEvent(typeof(Console), nameof(Console.InputText), PatchEventType.Postfix)]
@@ -36,7 +40,7 @@ namespace Veilheim.ConsoleCommands
         }
 
         /// <summary>
-        /// Register new commands and RPC calls for that commands if needed
+        ///     Register new commands and RPC calls for that commands if needed
         /// </summary>
         /// <param name="instance"></param>
         [PatchEvent(typeof(Game), nameof(Game.Start), PatchEventType.Prefix)]

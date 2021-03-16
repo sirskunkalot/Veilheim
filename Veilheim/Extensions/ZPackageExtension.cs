@@ -1,29 +1,28 @@
 ﻿// Veilheim
+// a Valheim mod
+// 
+// File:    ZPackageExtension.cs
+// Project: Veilheim
 
-using System;
-using System.Diagnostics;
 using System.IO;
-using System.Text;
-using Ionic.Zlib;
-using Steamworks;
 
 namespace Veilheim.Extensions
 {
     public static class ZPackageExtension
     {
         /// <summary>
-        /// Read ZPackage from file
+        ///     Read ZPackage from file
         /// </summary>
         /// <param name="filename"></param>
         /// <returns></returns>
         public static ZPackage ReadFromFile(string filename)
         {
             ZPackage package;
-            using (FileStream fs = File.OpenRead(filename))
+            using (var fs = File.OpenRead(filename))
             {
-                using (BinaryReader br = new BinaryReader(fs))
+                using (var br = new BinaryReader(fs))
                 {
-                    int count = br.ReadInt32();
+                    var count = br.ReadInt32();
                     package = new ZPackage(br.ReadBytes(count));
                 }
             }
@@ -32,17 +31,17 @@ namespace Veilheim.Extensions
         }
 
         /// <summary>
-        /// Write ZPackage to file
+        ///     Write ZPackage to file
         /// </summary>
         /// <param name="package"></param>
         /// <param name="filename"></param>
         public static void WriteToFile(this ZPackage package, string filename)
         {
-            using (FileStream fs = File.Create(filename))
+            using (var fs = File.Create(filename))
             {
-                using (BinaryWriter bw = new BinaryWriter(fs))
+                using (var bw = new BinaryWriter(fs))
                 {
-                    byte[] data = package.GetArray();
+                    var data = package.GetArray();
                     bw.Write(data.Length);
                     bw.Write(data);
                 }
