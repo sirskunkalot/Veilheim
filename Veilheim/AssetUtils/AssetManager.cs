@@ -58,10 +58,10 @@ namespace Veilheim.AssetUtils
     internal class AssetManager : Payload, IDestroyable
     {
         public static AssetManager Instance;
-        private readonly Dictionary<GameObject, ItemDef> RegisteredItems = new Dictionary<GameObject, ItemDef>();
-        private readonly List<AssetLocalization> RegisteredLocalizations = new List<AssetLocalization>();
-        private readonly Dictionary<GameObject, PieceDef> RegisteredPieces = new Dictionary<GameObject, PieceDef>();
         private readonly List<GameObject> RegisteredPrefabs = new List<GameObject>();
+        private readonly Dictionary<GameObject, ItemDef> RegisteredItems = new Dictionary<GameObject, ItemDef>();
+        private readonly Dictionary<GameObject, PieceDef> RegisteredPieces = new Dictionary<GameObject, PieceDef>();
+        private readonly List<AssetLocalization> RegisteredLocalizations = new List<AssetLocalization>();
 
         private Dictionary<string, CraftingStation> CraftingStations;
 
@@ -173,16 +173,19 @@ namespace Veilheim.AssetUtils
                 return;
             }
 
-            Logger.LogMessage("Adding custom prefabs to ZNetScene");
-
-            foreach (var prefab in Instance.RegisteredPrefabs)
+            if (Instance.RegisteredPrefabs.Count() > 0)
             {
-                Logger.LogDebug($"GameObject: {prefab.name}");
+                Logger.LogMessage("Adding custom prefabs to ZNetScene");
 
-                if (!instance.m_namedPrefabs.ContainsKey(prefab.name.GetStableHashCode()))
+                foreach (var prefab in Instance.RegisteredPrefabs)
                 {
-                    instance.m_namedPrefabs.Add(prefab.name.GetStableHashCode(), prefab);
-                    Logger.LogInfo($"Added {prefab.name}");
+                    Logger.LogDebug($"GameObject: {prefab.name}");
+
+                    if (!instance.m_namedPrefabs.ContainsKey(prefab.name.GetStableHashCode()))
+                    {
+                        instance.m_namedPrefabs.Add(prefab.name.GetStableHashCode(), prefab);
+                        Logger.LogInfo($"Added {prefab.name}");
+                    }
                 }
             }
         }
@@ -200,7 +203,12 @@ namespace Veilheim.AssetUtils
                 return;
             }
 
-            Instance.TryRegisterItems(instance, false);
+            if (Instance.RegisteredItems.Count() > 0)
+            {
+                Logger.LogMessage("Adding custom items to ObjectDB");
+
+                Instance.TryRegisterItems(instance, false);
+            }
         }
 
         /// <summary>
@@ -215,13 +223,35 @@ namespace Veilheim.AssetUtils
                 return;
             }
 
-            Instance.TryRegisterItems(instance, true);
-            Instance.TryRegisterPieces(instance);
+
+            if (Instance.RegisteredItems.Count() > 0 || Instance.RegisteredPieces.Count() > 0)
+            {
+                Logger.LogMessage($"Registering custom items in ObjectDB {instance}");
+
+                Instance.TryRegisterItems(instance, true);
+                Instance.TryRegisterPieces(instance);
+            }
+        }
+
+        [PatchEvent(typeof(Player), nameof(Player.OnSpawned), PatchEventType.Postfix)]
+        public static void UpdateKnownRecipes(Player instance)
+        {
+            if (Player.m_localPlayer == null)
+            {
+                return;
+            }
+
+            if (Instance.RegisteredItems.Count() > 0 || Instance.RegisteredPieces.Count() > 0)
+            {
+                Logger.LogMessage($"Registering custom items and pieces in ObjectDB {instance}");
+
+                Player.m_localPlayer.UpdateKnownRecipesList();
+                Player.m_localPlayer.UpdateAvailablePiecesList();
+            }
         }
 
         /// <summary>
-        ///     Setup languages for all registered <see cref="AssetLocalization" />s<br />
-        ///     Has a low priority (1000), so other hooks can register their Localizations before they get added to the game.
+        ///     Setup languages for all registered <see cref="AssetLocalization" />
         /// </summary>
         /// <param name="language"></param>
         [PatchEvent(typeof(Localization), nameof(Localization.SetupLanguage), PatchEventType.Postfix)]
@@ -303,8 +333,6 @@ namespace Veilheim.AssetUtils
 
         private void TryRegisterItems(ObjectDB instance, bool createRecipes)
         {
-            Logger.LogMessage($"Registering custom items in ObjectDB {instance}");
-
             Instance.InitCraftingStations(instance);
 
             // Go through all registered Items and try to obtain references
@@ -435,8 +463,6 @@ namespace Veilheim.AssetUtils
         /// </summary>
         private void TryRegisterPieces(ObjectDB instance)
         {
-            Logger.LogMessage($"Registering custom pieces in ObjectDB {instance}");
-
             // Get CraftingStations if necessary
             Instance.InitCraftingStations(instance);
 
