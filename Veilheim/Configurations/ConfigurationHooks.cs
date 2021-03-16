@@ -9,7 +9,7 @@ using Veilheim.PatchEvents;
 
 namespace Veilheim.Configurations
 {
-    public class ConfigurationPatches : Payload
+    public class ConfigurationPatches : PatchEventConsumer
     {
         /// <summary>
         ///     Save configuration after a save command is issued

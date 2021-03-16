@@ -15,7 +15,7 @@ using Veilheim.PatchEvents;
 
 namespace Veilheim.Map
 {
-    public class PortalsOnMap : Payload
+    public class PortalsOnMap : PatchEventConsumer
     {
         /// <summary>
         ///     Holder for our pins, these get drawn to the map

@@ -391,7 +391,7 @@
     <Compile Include="PatchEvents\PatchStubs\World_Patches.cs" />
     <Compile Include="PatchEvents\PatchStubs\ZNetScene_Patches.cs" />
     <Compile Include="PatchEvents\PatchStubs\ZNet_Patches.cs" />
-    <Compile Include="PatchEvents\Payload.cs" />
+    <Compile Include="PatchEvents\PatchEventConsumer.cs" />
     <Compile Include="Properties\IgnoreAccessModifiers.cs" />
     <Compile Include="Util\CommandLinePasswordPatch.cs" />
     <Compile Include="Util\ConsumablesConfig.cs" />

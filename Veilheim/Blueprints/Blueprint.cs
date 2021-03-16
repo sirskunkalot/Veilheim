@@ -55,7 +55,7 @@ namespace Veilheim.Blueprints
         }
     }
 
-    internal class Blueprint : Payload
+    internal class Blueprint : PatchEventConsumer
     {
         private static readonly Dictionary<string, Blueprint> m_blueprints = new Dictionary<string, Blueprint>();
 
@@ -359,18 +359,21 @@ namespace Veilheim.Blueprints
             // Client only
             if (!instance.IsServerInstance())
             {
-                Logger.LogMessage("Registering known blueprints");
+                /*Logger.LogMessage("Registering known blueprints");
 
                 var assetBundle = AssetLoader.LoadAssetBundleFromResources("blueprintrune");
-                var baseObject = assetBundle.LoadAsset<GameObject>("piece_blueprint");
 
                 // Register all known blueprint
-                /*foreach (var bp in m_blueprints)
+                foreach (var bp in m_blueprints)
                 {
-                    var go = Object.Instantiate(baseObject);
+                    Logger.LogDebug($"{bp.Key}.blueprint");
+                    var go = assetBundle.LoadAsset<GameObject>("piece_blueprint");
+                    go.name = bp.Key;
                     go.GetComponent<Piece>().name = bp.Key;
                     AssetManager.RegisterPiecePrefab(go, new PieceDef {PieceTable = "_BlueprintPieceTable"});
-                }*/
+                }
+
+                assetBundle.Unload(false);*/
             }
         }
 

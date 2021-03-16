@@ -55,7 +55,7 @@ namespace Veilheim.AssetUtils
     ///     Central class for loading and importing custom <see cref="AssetBundle" />s into Valheim.
     ///     Code inspired by <a href="https://github.com/RandyKnapp/ValheimMods" />
     /// </summary>
-    internal class AssetManager : Payload, IDestroyable
+    internal class AssetManager : PatchEventConsumer, IDestroyable
     {
         public static AssetManager Instance;
         private readonly List<GameObject> RegisteredPrefabs = new List<GameObject>();

@@ -11,7 +11,7 @@ using Veilheim.PatchEvents;
 
 namespace Veilheim.ConsoleCommands
 {
-    public class ConsoleCommandPatches : Payload
+    public class ConsoleCommandPatches : PatchEventConsumer
     {
         /// <summary>
         ///     Route user input through our command instances. If 'help' is issued, amend own commands to the output first.

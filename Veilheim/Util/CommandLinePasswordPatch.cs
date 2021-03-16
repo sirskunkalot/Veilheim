@@ -10,7 +10,7 @@ using Veilheim.PatchEvents;
 
 namespace Veilheim.Util
 {
-    public class CommandLinePassword : Payload
+    public class CommandLinePassword : PatchEventConsumer
     {
         /// <summary>
         ///     Adding +password «password» to the commandline works now as intended
