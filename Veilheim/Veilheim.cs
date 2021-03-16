@@ -28,9 +28,7 @@ namespace Veilheim
 
             m_destroyables.Add(new AssetManager());
 
-            var assets = new AssetLoader();
-            assets.LoadAssets();
-            m_destroyables.Add(assets);
+            AssetLoader.LoadAssets();
 
             PatchDispatcher.Init();
 

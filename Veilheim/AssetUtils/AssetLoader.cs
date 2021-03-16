@@ -9,21 +9,9 @@ namespace Veilheim.AssetUtils
 {
     //TODO: dont hardcode prefab and bundle names
 
-    internal class AssetLoader : IDestroyable
+    internal static class AssetLoader
     {
-        public static AssetLoader Instance;
-
-        public AssetLoader()
-        {
-            Instance = this;
-        }
-
-        public void Destroy()
-        {
-            Logger.LogDebug("Destroying AssetLoader");
-        }
-        
-        public void LoadAssets()
+        public static void LoadAssets()
         {
             AssetBundle assetBundle;
 
@@ -37,6 +25,7 @@ namespace Veilheim.AssetUtils
                     new RequirementDef { Item = "Stone", Amount = 1 }
                 }
             });
+            LoadPrefab(assetBundle, "piece_blueprint");
             LoadLocalization(assetBundle);
             assetBundle.Unload(false);
 
@@ -48,7 +37,7 @@ namespace Veilheim.AssetUtils
         /// </summary>
         /// <param name="fileName"></param>
         /// <returns></returns>
-        private string GetFilePath(string fileName)
+        private static string GetFilePath(string fileName)
         {
             var filePath = Path.Combine(Paths.PluginPath, VeilheimPlugin.PluginName, fileName);
             if (!File.Exists(filePath))
@@ -65,7 +54,7 @@ namespace Veilheim.AssetUtils
             return filePath;
         }
 
-        public Sprite LoadSpriteFromFile(string spritePath)
+        public static Sprite LoadSpriteFromFile(string spritePath)
         {
             byte[] fileData = File.ReadAllBytes(GetFilePath(spritePath));
             Texture2D tex = new Texture2D(20, 20);
@@ -82,7 +71,7 @@ namespace Veilheim.AssetUtils
         /// </summary>
         /// <param name="bundleName">Name of the bundle</param>
         /// <returns></returns>
-        public AssetBundle LoadAssetBundleFromResources(string bundleName)
+        public static AssetBundle LoadAssetBundleFromResources(string bundleName)
         {
             var execAssembly = Assembly.GetExecutingAssembly();
 
@@ -109,7 +98,7 @@ namespace Veilheim.AssetUtils
         /// </summary>
         /// <param name="fileName">Filename of the bundle</param>
         /// <returns></returns>
-        public AssetBundle LoadAssetBundleFromFile(string fileName)
+        public static AssetBundle LoadAssetBundleFromFile(string fileName)
         {
             var assetBundlePath = GetFilePath(fileName);
             return AssetBundle.LoadFromFile(assetBundlePath);
@@ -120,7 +109,7 @@ namespace Veilheim.AssetUtils
         /// </summary>
         /// <param name="assetBundle"></param>
         /// <param name="assetName"></param>
-        public void LoadPrefab(AssetBundle assetBundle, string assetName)
+        public static void LoadPrefab(AssetBundle assetBundle, string assetName)
         {
             var prefab = assetBundle.LoadAsset<GameObject>(assetName);
             AssetManager.RegisterPrefab(prefab);
@@ -132,7 +121,7 @@ namespace Veilheim.AssetUtils
         /// <param name="assetBundle"></param>
         /// <param name="assetName"></param>
         /// <param name="itemDef"></param>
-        public void LoadItemPrefab(AssetBundle assetBundle, string assetName, ItemDef itemDef)
+        public static void LoadItemPrefab(AssetBundle assetBundle, string assetName, ItemDef itemDef)
         {
             var prefab = assetBundle.LoadAsset<GameObject>(assetName);
             AssetManager.RegisterItemPrefab(prefab, itemDef);
@@ -144,7 +133,7 @@ namespace Veilheim.AssetUtils
         /// <param name="assetBundle"></param>
         /// <param name="assetName"></param>
         /// <param name="pieceDef"></param>
-        public void LoadPiecePrefab(AssetBundle assetBundle, string assetName, PieceDef pieceDef)
+        public static void LoadPiecePrefab(AssetBundle assetBundle, string assetName, PieceDef pieceDef)
         {
             var prefab = assetBundle.LoadAsset<GameObject>(assetName);
             AssetManager.RegisterPiecePrefab(prefab, pieceDef);
@@ -154,7 +143,7 @@ namespace Veilheim.AssetUtils
         /// Load the localization <see cref="TextAsset"/> from a bundle. Asset name must be "localization".
         /// </summary>
         /// <param name="assetBundle"></param>
-        public void LoadLocalization(AssetBundle assetBundle)
+        public static void LoadLocalization(AssetBundle assetBundle)
         {
             var asset = assetBundle.LoadAsset<TextAsset>("localization");
 
