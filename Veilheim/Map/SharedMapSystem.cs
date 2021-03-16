@@ -15,8 +15,6 @@ using Veilheim.Extensions;
 using Veilheim.PatchEvents;
 using CompressionLevel = Ionic.Zlib.CompressionLevel;
 
-// ToDo add packet system to convey map markers
-
 namespace Veilheim.Map
 {
     public class SharedMapPatches : Payload
