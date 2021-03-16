@@ -62,7 +62,6 @@ namespace Veilheim.Map
             {
                 if (ZNet.instance.IsServerInstance())
                 {
-                    Logger.LogError($"Minimap Texture size: {Minimap.instance.m_textureSize}");
                     Minimap.instance.m_explored = new bool[Minimap.instance.m_textureSize * Minimap.instance.m_textureSize];
                     if (File.Exists(Path.Combine(Configuration.ConfigIniPath, ZNet.instance.GetWorldUID().ToString(), "Explorationdata.bin")))
                     {
@@ -176,7 +175,7 @@ namespace Veilheim.Map
         public static void SaveExplorationData(ZNet instance)
         {
             // Save exploration data only on the server
-            if (ZNet.instance.IsServerInstance())
+            if (ZNet.instance.IsServerInstance() && Configuration.Current.MapServer.IsEnabled && Configuration.Current.MapServer.shareMapProgression)
             {
                 var mapData = new ZPackage(CreateExplorationData().ToArray());
                 mapData.WriteToFile(Path.Combine(Configuration.ConfigIniPath, ZNet.instance.GetWorldUID().ToString(), "Explorationdata.bin"));
@@ -214,9 +213,13 @@ namespace Veilheim.Map
         [PatchEvent(typeof(Minimap), nameof(Minimap.SetMapData), PatchEventType.Postfix)]
         public static void InitialSendRequest(Minimap instance)
         {
-            // After login, send map data to server (and get new map data back)
-            var pkg = new ZPackage(CreateExplorationData().ToArray());
-            ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(RPC_ReceiveExploration), pkg);
+            if (Configuration.Current.MapServer.IsEnabled && Configuration.Current.MapServer.shareMapProgression)
+            {
+                // After login, send map data to server (and get new map data back)
+                var pkg = new ZPackage(CreateExplorationData().ToArray());
+                ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(RPC_ReceiveExploration), pkg);
+            } 
+
             isInSetMapData = false;
         }
 
