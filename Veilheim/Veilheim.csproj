@@ -75,6 +75,9 @@
     <Reference Include="BepInEx.Preloader, Version=5.4.8.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\libraries\BepInEx\BepInEx.Preloader.dll</HintPath>
     </Reference>
+    <Reference Include="DotNetZip, Version=1.15.0.0, Culture=neutral, PublicKeyToken=6583c7c814667745, processorArchitecture=MSIL">
+      <HintPath>..\packages\DotNetZip.1.15.0\lib\net40\DotNetZip.dll</HintPath>
+    </Reference>
     <Reference Include="HarmonyXInterop, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\libraries\BepInEx\HarmonyXInterop.dll</HintPath>
     </Reference>
@@ -384,6 +387,7 @@
     <Compile Include="PatchEvents\PatchStubs\TeleportWorld_Patches.cs" />
     <Compile Include="PatchEvents\PatchStubs\TextInput_Patches.cs" />
     <Compile Include="PatchEvents\PatchStubs\WearNTear_Patches.cs" />
+    <Compile Include="PatchEvents\PatchStubs\World_Patches.cs" />
     <Compile Include="PatchEvents\PatchStubs\ZNetScene_Patches.cs" />
     <Compile Include="PatchEvents\PatchStubs\ZNet_Patches.cs" />
     <Compile Include="PatchEvents\Payload.cs" />
@@ -394,6 +398,7 @@
     <Compile Include="Util\PrefabCreator.cs" />
     <Compile Include="Util\RecipeConfig.cs" />
     <Compile Include="Util\Utils.cs" />
+    <Compile Include="Extensions\ZPackageExtension.cs" />
     <Compile Include="Veilheim.cs" />
     <Compile Include="Configurations\ActivationTime.cs" />
     <Compile Include="Configurations\BaseConfig.cs" />
@@ -417,7 +422,10 @@
   <ItemGroup>
     <Content Include="FodyWeavers.xml" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>powershell.exe -ExecutionPolicy RemoteSigned -File "$(SolutionDir)publish.ps1" -Target "$(ConfigurationName)" -TargetPath "$(TargetDir.TrimEnd('\'))" -TargetAssembly "$(TargetFileName)" -ValheimPath "$(ValheimDir.TrimEnd('\'))"</PostBuildEvent>

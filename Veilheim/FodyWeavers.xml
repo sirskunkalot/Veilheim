@@ -2,6 +2,7 @@
 	<Costura>
 		<IncludeAssemblies>
 			INIFileParser
+			DotNetZip
 		</IncludeAssemblies>
 	</Costura>
 </Weavers>
