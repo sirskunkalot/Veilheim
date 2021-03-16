@@ -42,8 +42,17 @@ namespace Veilheim.Map
                     portalRect = GenerateGUI();
                 }
 
+                IEnumerable<Portal> singlePortals;
                 // Generate list of unconnected portals from ZDOMan
-                var singlePortals = PortalList.GetPortals().Where(x => !x.m_con);
+                if (ZNet.instance.IsLocalInstance())
+                {
+                    singlePortals = PortalList.GetPortals().Where(x => !x.m_con);
+                }
+                // or from PortalsOnMap.portalsFromServer, if it is a real client
+                else
+                {
+                    singlePortals = PortalsOnMap.portalsFromServer.Where(x => !x.m_con);
+                }
 
                 // remove all buttons from earlier calls
                 foreach (var oldbt in teleporterButtons)

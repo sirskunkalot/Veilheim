@@ -23,6 +23,11 @@ namespace Veilheim.Map
         public static List<Minimap.PinData> portalPins = new List<Minimap.PinData>();
 
         /// <summary>
+        ///     Holder for portals on distant (not localinstance) clients
+        /// </summary>
+        public static PortalList portalsFromServer;
+
+        /// <summary>
         ///     Create PinData objects without adding them to the map directly
         /// </summary>
         public static Minimap.PinData CreatePinData(Vector3 pos, Minimap.PinType type, string name, bool save, bool isChecked)
@@ -167,7 +172,6 @@ namespace Veilheim.Map
                 }
 
                 var package = portals.ToZPackage();
-
                 ZRoutedRpc.instance.InvokeRoutedRPC(sender, nameof(RPC_TeleporterSyncInit), package);
             }
 
@@ -179,9 +183,9 @@ namespace Veilheim.Map
                     // Read package and create pins from portal list
                     Logger.LogInfo("Received portal data from server");
 
-                    var portals = PortalList.FromZPackage(teleporterZPackage);
+                    portalsFromServer = PortalList.FromZPackage(teleporterZPackage);
 
-                    UpdatePins(portals);
+                    UpdatePins(portalsFromServer);
                 }
             }
         }
@@ -226,9 +230,9 @@ namespace Veilheim.Map
                     // Read package and create pins from portal list
                     Logger.LogInfo("Received portal data from server");
 
-                    var portals = PortalList.FromZPackage(teleporterZPackage);
+                    portalsFromServer = PortalList.FromZPackage(teleporterZPackage);
 
-                    UpdatePins(portals);
+                    UpdatePins(portalsFromServer);
                 }
             }
         }
