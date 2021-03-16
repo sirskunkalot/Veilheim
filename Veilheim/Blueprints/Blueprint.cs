@@ -5,7 +5,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
+using Veilheim.AssetUtils;
 using Veilheim.Configurations;
+using Veilheim.PatchEvents;
 
 namespace Veilheim.Blueprints
 {
@@ -46,22 +48,68 @@ namespace Veilheim.Blueprints
         }
     }
 
-    internal class Blueprint
+    internal class Blueprint : Payload
     {
-        public static string BlueprintPath { get; }
+        private static readonly Dictionary<string, Blueprint> m_blueprints = new Dictionary<string, Blueprint>();
 
-        static Blueprint() 
+        public static string GetBlueprintPath()
         {
-            BlueprintPath = Path.Combine(Configuration.ConfigIniPath, ZNet.instance.GetWorldUID().ToString(), "blueprints");
-            if (!Directory.Exists(BlueprintPath))
+            //TODO: save per profile or world or global?
+            var path = Path.Combine(Configuration.ConfigIniPath, "blueprints");
+            if (!Directory.Exists(path))
             {
-                Directory.CreateDirectory(BlueprintPath);
+                Directory.CreateDirectory(path);
+            }
+            return path;
+        }
+
+        [PatchEvent(typeof(ZNet), nameof(ZNet.Awake), PatchEventType.Postfix)]
+        public static void LoadKnownBlueprints(ZNet instance)
+        {
+
+            // Client only
+            if (!instance.IsServerInstance())
+            {
+                Logger.LogMessage("Loading known blueprints");
+
+                // Try to load all saved blueprints
+                foreach (var name in Directory.EnumerateFiles(GetBlueprintPath(), "*.blueprint").Select(Path.GetFileNameWithoutExtension))
+                {
+                    if (!m_blueprints.ContainsKey(name))
+                    {
+                        var bp = new Blueprint(name);
+                        if (bp.Load())
+                        {
+                            m_blueprints.Add(name, bp);
+                        }
+                        else
+                        {
+                            Logger.LogWarning($"Could not load blueprint {name}");
+                        }
+                    }
+                }
             }
         }
 
-        public static Blueprint Current { get; private set; }
+        [PatchEvent(typeof(ZNet), nameof(ZNet.Awake), PatchEventType.Postfix)]
+        public static void RegisterKnownBlueprints(ZNet instance)
+        {
+            // Client only
+            if (!instance.IsServerInstance())
+            {
+                Logger.LogMessage("Registering known blueprints");
 
-        public static readonly Dictionary<string, Blueprint> m_blueprints = new Dictionary<string, Blueprint>();
+                // Register all known blueprint
+                foreach (var bp in m_blueprints)
+                {
+                    var go = AssetCreator.CreatePiece(bp.Key);
+                    AssetManager.RegisterPiecePrefab(go, new PieceDef()
+                    {
+                        PieceTable = "_BlueprintPieceTable"
+                    });
+                }
+            }
+        }
 
         private string m_name;
 
@@ -70,9 +118,6 @@ namespace Veilheim.Blueprints
         public Blueprint(string name)
         {
             m_name = name;
-            Current = this;
-
-            //TODO: blueprint known? load blueprints on init (global)?
         }
 
         public bool Capture(float radiusDelta)
@@ -187,7 +232,7 @@ namespace Veilheim.Blueprints
                 Hud.instance.Update();
                 Thread.Sleep(100);
 
-                ScreenCapture.CaptureScreenshot(Path.Combine(BlueprintPath, m_name + ".png"));
+                ScreenCapture.CaptureScreenshot(Path.Combine(GetBlueprintPath(), m_name + ".png"));
 
                 Hud.instance.m_userHidden = oldHud;
             });
@@ -195,19 +240,21 @@ namespace Veilheim.Blueprints
 
         public bool Save()
         {
+            var path = GetBlueprintPath();
+
             if (m_pieceEntries == null)
             {
                 Logger.LogWarning("No pieces stored to save");
             }
             else
             {
-                using (TextWriter tw = new StreamWriter(Path.Combine(BlueprintPath, m_name + ".blueprint")))
+                using (TextWriter tw = new StreamWriter(Path.Combine(path, m_name + ".blueprint")))
                 {
                     foreach (var piece in m_pieceEntries)
                     {
                         tw.WriteLine(piece.line);
                     }
-                    Logger.LogDebug("Anzahl Zeilen: " + m_pieceEntries.Length + " nach " + Path.Combine(BlueprintPath, m_name + ".blueprint"));
+                    Logger.LogDebug("Wrote " + m_pieceEntries.Length + " pieces to " + Path.Combine(path, m_name + ".blueprint"));
                 }
             }
 
@@ -216,8 +263,9 @@ namespace Veilheim.Blueprints
 
         public bool Load()
         {
-            var lines = File.ReadAllLines(Path.Combine(BlueprintPath, m_name + ".blueprint")).ToList();
-            Logger.LogDebug("Anzahl Zeilen: " + lines.Count + " von " + Path.Combine(BlueprintPath, m_name + ".blueprint"));
+            var path = GetBlueprintPath();
+            var lines = File.ReadAllLines(Path.Combine(path, m_name + ".blueprint")).ToList();
+            Logger.LogDebug("read " + lines.Count + " pieces from " + Path.Combine(path, m_name + ".blueprint"));
 
             if (m_pieceEntries == null)
             {
@@ -296,5 +344,7 @@ namespace Veilheim.Blueprints
 
             return toBuild;
         }
+
+
     }
 }
