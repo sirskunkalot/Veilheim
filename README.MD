@@ -43,7 +43,7 @@ Thanks to mono and unity-mono being open source, we could patch and compile our 
 
 Your own code can be debugged in source with Visual Studio itself. You cannot debug game disassemblies as with dnSpy, though.
 
-1. Install Visual Studio Tools for Unity (can be done in VS via `Extensions` -> `Manage Extensions`)
+1. Install Visual Studio Tools for Unity (can be done in Visual Studio installer via `Individual Components` -> `Visual Studio Tools for Unity`)
 3. Build the project with target `Debug`. The publish.ps1 PowerShell script from this repo...
    * copies the generated mod .dll and .pdb to \<Valheim>\BepInEx\plugins after a successful build
    * automatically generates a Veilheim.dll.mdb file, which is needed for Unity/mono debugging. It should be in \<Valheim>\BepInEx\plugins, too.
