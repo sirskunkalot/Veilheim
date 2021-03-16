@@ -59,15 +59,6 @@ namespace Veilheim.Blueprints
     {
         private static readonly Dictionary<string, Blueprint> m_blueprints = new Dictionary<string, Blueprint>();
 
-        private readonly string m_name;
-
-        private PieceEntry[] m_pieceEntries;
-
-        public Blueprint(string name)
-        {
-            m_name = name;
-        }
-
         public static string GetBlueprintPath()
         {
             //TODO: save per profile or world or global?
@@ -80,63 +71,42 @@ namespace Veilheim.Blueprints
             return path;
         }
 
-        [PatchEvent(typeof(ZNet), nameof(ZNet.Awake), PatchEventType.Postfix)]
-        public static void LoadKnownBlueprints(ZNet instance)
-        {
-            // Client only
-            if (!instance.IsServerInstance())
-            {
-                Logger.LogMessage("Loading known blueprints");
+        /// <summary>
+        /// Name of the blueprint instance. Translates to &lt;m_name&gt;.blueprint in the filesystem
+        /// </summary>
+        private string m_name;
 
-                // Try to load all saved blueprints
-                foreach (var name in Directory.EnumerateFiles(GetBlueprintPath(), "*.blueprint").Select(Path.GetFileNameWithoutExtension))
-                {
-                    if (!m_blueprints.ContainsKey(name))
-                    {
-                        var bp = new Blueprint(name);
-                        if (bp.Load())
-                        {
-                            m_blueprints.Add(name, bp);
-                        }
-                        else
-                        {
-                            Logger.LogWarning($"Could not load blueprint {name}");
-                        }
-                    }
-                }
-            }
+        /// <summary>
+        /// Array of the pieces this blueprint is made of
+        /// </summary>
+        private PieceEntry[] m_pieceEntries;
+
+        /// <summary>
+        /// New "empty" Blueprint with a name but without any pieces. Call Capture() or Load() to add pieces to the blueprint.
+        /// </summary>
+        /// <param name="name"></param>
+        public Blueprint(string name)
+        {
+            m_name = name;
         }
 
-        [PatchEvent(typeof(ZNet), nameof(ZNet.Awake), PatchEventType.Postfix)]
-        public static void RegisterKnownBlueprints(ZNet instance)
+        /// <summary>
+        /// Number of pieces currently stored in this blueprint
+        /// </summary>
+        /// <returns></returns>
+        public int GetPieceCount()
         {
-            // Client only
-            if (!instance.IsServerInstance())
-            {
-                Logger.LogMessage("Registering known blueprints");
-
-                var assetBundle = AssetLoader.LoadAssetBundleFromResources("blueprintrune");
-                var baseObject = assetBundle.LoadAsset<GameObject>("piece_blueprint");
-
-                // Register all known blueprint
-                foreach (var bp in m_blueprints)
-                {
-                    var go = Object.Instantiate(baseObject);
-                    go.GetComponent<Piece>().name = bp.Key;
-                    AssetManager.RegisterPiecePrefab(go, new PieceDef {PieceTable = "_BlueprintPieceTable"});
-                }
-            }
+            return m_pieceEntries.Count();
         }
 
-        public bool Capture(float radiusDelta)
+        public bool Capture(Vector3 startPosition, float startRadius, float radiusDelta)
         {
-            var vec = Player.m_localPlayer.transform.position;
+            var vec = startPosition;
             var rot = Camera.main.transform.rotation.eulerAngles;
             Console.instance.AddString("Collecting piece information");
 
             var numPieces = 0;
             var numLastIteration = -1;
-            var startRadius = 20.0f;
             var collected = new List<Piece>();
             var iteration = 0;
             while (numLastIteration < numPieces)
@@ -353,6 +323,133 @@ namespace Veilheim.Blueprints
             }
 
             return toBuild;
+        }
+
+
+        [PatchEvent(typeof(ZNet), nameof(ZNet.Awake), PatchEventType.Postfix)]
+        public static void LoadKnownBlueprints(ZNet instance)
+        {
+            // Client only
+            if (!instance.IsServerInstance())
+            {
+                Logger.LogMessage("Loading known blueprints");
+
+                // Try to load all saved blueprints
+                foreach (var name in Directory.EnumerateFiles(GetBlueprintPath(), "*.blueprint").Select(Path.GetFileNameWithoutExtension))
+                {
+                    if (!m_blueprints.ContainsKey(name))
+                    {
+                        var bp = new Blueprint(name);
+                        if (bp.Load())
+                        {
+                            m_blueprints.Add(name, bp);
+                        }
+                        else
+                        {
+                            Logger.LogWarning($"Could not load blueprint {name}");
+                        }
+                    }
+                }
+            }
+        }
+
+        [PatchEvent(typeof(ZNet), nameof(ZNet.Awake), PatchEventType.Postfix)]
+        public static void RegisterKnownBlueprints(ZNet instance)
+        {
+            // Client only
+            if (!instance.IsServerInstance())
+            {
+                Logger.LogMessage("Registering known blueprints");
+
+                var assetBundle = AssetLoader.LoadAssetBundleFromResources("blueprintrune");
+                var baseObject = assetBundle.LoadAsset<GameObject>("piece_blueprint");
+
+                // Register all known blueprint
+                /*foreach (var bp in m_blueprints)
+                {
+                    var go = Object.Instantiate(baseObject);
+                    go.GetComponent<Piece>().name = bp.Key;
+                    AssetManager.RegisterPiecePrefab(go, new PieceDef {PieceTable = "_BlueprintPieceTable"});
+                }*/
+            }
+        }
+
+        /// <summary>
+        ///     React to a placement of blueprints
+        /// </summary>
+        /// <param name="instance"></param>
+        /// <param name="piece"></param>
+        /// <param name="successful"></param>
+        [PatchEvent(typeof(Player), nameof(Player.PlacePiece), PatchEventType.Postfix)]
+        public static void AfterPlacingBlueprint(Player instance, Piece piece, bool successful)
+        {
+            if (ZNet.instance.IsServerInstance())
+            {
+                return;
+            }
+
+            // Capture a new blueprint
+            if (successful && !piece.IsCreator() && piece.m_name == "$piece_make_blueprint")
+            {
+                string bpname = "blueprint" + String.Format("{0:000}", m_blueprints.Count() + 1);
+                Logger.LogInfo($"Capturing blueprint {bpname}");
+
+                if (Player.m_localPlayer.m_hoveringPiece != null)
+                {
+                    var bp = new Blueprint(bpname);
+                    if (bp.Capture(Player.m_localPlayer.m_hoveringPiece.transform.position, 2.0f, 1.0f))
+                    {
+                        TextInput.instance.m_queuedSign = new BlueprintSaveGUI(bp);
+                        TextInput.instance.Show($"Save Blueprint ({bp.GetPieceCount()} pieces captured)", bpname, 50);
+                    }
+                    else
+                    {
+                        Logger.LogWarning($"Could not capture blueprint {bpname}");
+                    }
+                }
+                else
+                {
+                    Logger.LogInfo("Not hovering any piece");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Helper class for naming and saving a captured blueprint via GUI
+        /// 
+        /// Implements the Interface <see cref="TextReceiver"/>. SetText is called from <see cref="TextInput"/> upon entering an name for the blueprint.<br />
+        /// Save the actual blueprint and add it to the list of known blueprints.
+        /// </summary>
+        private class BlueprintSaveGUI : TextReceiver
+        {
+            private readonly Blueprint bp;
+
+            public BlueprintSaveGUI(Blueprint bp)
+            {
+                this.bp = bp;
+            }
+
+            public string GetText()
+            {
+                return bp.m_name;
+            }
+
+            public void SetText(string text)
+            {
+                bp.m_name = text;
+                if (bp.Save())
+                {
+                    if (m_blueprints.ContainsKey(bp.m_name))
+                    {
+                        m_blueprints.Remove(bp.m_name);
+                    }
+                    m_blueprints.Add(bp.m_name, bp);
+                    bp.RecordFrame();
+
+                    Logger.LogInfo("Blueprint saved");
+                }
+            }
+
         }
     }
 }

@@ -27,6 +27,7 @@ namespace Veilheim.ConsoleCommands
                 return false;
             }
 
+            var startRadius = 20.0f;
             var radiusDelta = 10.0f;
             if (!float.TryParse(parts[1], out radiusDelta))
             {
@@ -38,7 +39,7 @@ namespace Veilheim.ConsoleCommands
 
             var blueprint = new Blueprint(name);
 
-            if (!blueprint.Capture(radiusDelta))
+            if (!blueprint.Capture(Player.m_localPlayer.transform.position, startRadius, radiusDelta))
             {
                 return false;
             }
