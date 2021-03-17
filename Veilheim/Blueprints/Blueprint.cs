@@ -11,6 +11,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.UI;
 using Veilheim.AssetUtils;
 using Veilheim.Configurations;
 using Veilheim.PatchEvents;
@@ -306,6 +307,60 @@ namespace Veilheim.Blueprints
             return true;
         }
 
+        public bool GhostInstantiate(GameObject baseObject)
+        {
+            try
+            {
+
+                ZNetView.m_ghostInit = true;
+
+                var pieces = new List<PieceEntry>(m_pieceEntries);
+                var maxX = pieces.Max(x => x.posX);
+                var maxZ = pieces.Max(x => x.posZ);
+
+                var tf = baseObject.transform;
+                tf.rotation = Camera.main.transform.rotation;
+                var q = new Quaternion();
+                q.eulerAngles = new Vector3(0, tf.rotation.eulerAngles.y, 0);
+                tf.SetPositionAndRotation(tf.position, q);
+                tf.position -= tf.right * (maxX / 2f);
+                tf.position += tf.forward * 5f;
+
+                var prefabs = new Dictionary<string, GameObject>();
+                foreach (var piece in pieces.GroupBy(x => x.name).Select(x => x.FirstOrDefault()))
+                {
+                    var go = ZNetScene.instance.GetPrefab(piece.name);
+                    go.transform.SetPositionAndRotation(go.transform.position, q);
+                    prefabs.Add(piece.name, go);
+                }
+
+                var nulls = prefabs.Values.Count(x => x == null);
+                Logger.LogWarning($"{nulls} nulls found");
+                if (nulls > 0)
+                {
+                    return false;
+                }
+
+                foreach (var piece in pieces)
+                {
+                    var child = Create(tf, piece, prefabs, maxX, maxZ);
+
+                    child.transform.SetParent(baseObject.transform);
+                }
+
+                baseObject.SetActive(true);
+
+                ZNetView.m_ghostInit = false;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Error while instantiating: {ex}");
+                return false;
+            }
+
+            return true;
+        }
+
         private GameObject Create(Transform startPosition, PieceEntry piece, Dictionary<string, GameObject> prefabs, float maxX, float maxZ)
         {
             var pos = startPosition.position + startPosition.right * piece.GetPosition().x + startPosition.forward * piece.GetPosition().z +
@@ -317,7 +372,7 @@ namespace Veilheim.Blueprints
             var toBuild = Object.Instantiate(prefabs[piece.name], pos, q);
 
             var component = toBuild.GetComponent<Piece>();
-            if (component)
+            if (component && Player.m_localPlayer != null)
             {
                 component.SetCreator(Player.m_localPlayer.GetPlayerID());
             }
@@ -350,30 +405,59 @@ namespace Veilheim.Blueprints
                         }
                     }
                 }
+
+                Logger.LogMessage("Known blueprints loaded");
             }
         }
 
-        [PatchEvent(typeof(ZNet), nameof(ZNet.Awake), PatchEventType.Postfix)]
-        public static void RegisterKnownBlueprints(ZNet instance)
+        [PatchEvent(typeof(ZNetScene), nameof(ZNetScene.Awake), PatchEventType.Postfix)]
+        public static void RegisterKnownBlueprints(ZNetScene instance)
         {
             // Client only
-            if (!instance.IsServerInstance())
+            if (!ZNet.instance.IsServerInstance())
             {
-                /*Logger.LogMessage("Registering known blueprints");
+                Logger.LogMessage("Registering known blueprints");
 
+                // Get prefab stub from bundle
                 var assetBundle = AssetLoader.LoadAssetBundleFromResources("blueprintrune");
+                var stub = assetBundle.LoadAsset<GameObject>("piece_blueprint");
 
-                // Register all known blueprint
+                // Instantiate from stub for all known blueprints
                 foreach (var bp in m_blueprints)
                 {
                     Logger.LogDebug($"{bp.Key}.blueprint");
-                    var go = assetBundle.LoadAsset<GameObject>("piece_blueprint");
-                    go.name = bp.Key;
-                    go.GetComponent<Piece>().name = bp.Key;
-                    AssetManager.RegisterPiecePrefab(go, new PieceDef {PieceTable = "_BlueprintPieceTable"});
+
+                    var piecename = $"piece_blueprint ({bp.Key})";
+
+                    // Instantiate clone from stub
+                    var go = UnityEngine.Object.Instantiate<GameObject>(stub);
+
+                    go.name = piecename;
+                    go.GetComponent<Piece>().name = piecename;
+                    go.GetComponent<Piece>().m_name = bp.Key;
+
+                    // Save way without children / ghost
+                    /*ZNetView.m_ghostInit = true;
+                    go.SetActive(true);
+                    ZNetView.m_ghostInit = false;
+                    
+                    AssetManager.RegisterPiecePrefab(go, new PieceDef { PieceTable = "_BlueprintPieceTable" }); */
+
+                    // Instantiate child objects
+                    if (!bp.Value.GhostInstantiate(go))
+                    {
+                        Logger.LogWarning("Could not instantiate blueprint");
+                    }
+                    else
+                    {
+                        // Register instance with AssetManager
+                        AssetManager.RegisterPiecePrefab(go, new PieceDef { PieceTable = "_BlueprintPieceTable" }); 
+                    }
                 }
 
-                assetBundle.Unload(false);*/
+                assetBundle.Unload(false);
+
+                Logger.LogMessage("Known blueprints registered");
             }
         }
 

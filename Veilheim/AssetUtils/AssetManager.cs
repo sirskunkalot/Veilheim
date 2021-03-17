@@ -173,10 +173,10 @@ namespace Veilheim.AssetUtils
                 return;
             }
 
+            Logger.LogMessage("Adding custom prefabs to ZNetScene");
+
             if (Instance.RegisteredPrefabs.Count() > 0)
             {
-                Logger.LogMessage("Adding custom prefabs to ZNetScene");
-
                 foreach (var prefab in Instance.RegisteredPrefabs)
                 {
                     Logger.LogDebug($"GameObject: {prefab.name}");
@@ -205,7 +205,7 @@ namespace Veilheim.AssetUtils
 
             if (Instance.RegisteredItems.Count() > 0)
             {
-                Logger.LogMessage("Adding custom items to ObjectDB");
+                Logger.LogMessage($"Registering custom items in ObjectDB {instance}");
 
                 Instance.TryRegisterItems(instance, false);
             }
@@ -243,7 +243,7 @@ namespace Veilheim.AssetUtils
 
             if (Instance.RegisteredItems.Count() > 0 || Instance.RegisteredPieces.Count() > 0)
             {
-                Logger.LogMessage($"Registering custom items and pieces in ObjectDB {instance}");
+                Logger.LogMessage($"Updating known recipes and pieces for Player {Player.m_localPlayer}");
 
                 Player.m_localPlayer.UpdateKnownRecipesList();
                 Player.m_localPlayer.UpdateAvailablePiecesList();
