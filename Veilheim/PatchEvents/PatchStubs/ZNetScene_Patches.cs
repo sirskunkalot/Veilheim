@@ -30,6 +30,8 @@ namespace Veilheim.PatchEvents.PatchStubs
 
         private static bool Prefix(ZNetScene __instance)
         {
+            Logger.LogInfo($"{__instance} spawned.");
+
             var cancel = false;
             BlockingPrefixEvent?.Invoke(__instance, ref cancel);
 
@@ -50,6 +52,8 @@ namespace Veilheim.PatchEvents.PatchStubs
 
         private static void Postfix(ZNetScene __instance)
         {
+            Logger.LogInfo($"{__instance} awoken.");
+
             try
             {
                 PostfixEvent?.Invoke(__instance);

@@ -30,6 +30,8 @@ namespace Veilheim.PatchEvents.PatchStubs
 
         private static bool Prefix(ZNet __instance)
         {
+            Logger.LogInfo($"{__instance} spawned.");
+
             var cancel = false;
             BlockingPrefixEvent?.Invoke(__instance, ref cancel);
 
@@ -50,6 +52,64 @@ namespace Veilheim.PatchEvents.PatchStubs
 
         private static void Postfix(ZNet __instance)
         {
+            Logger.LogInfo($"{__instance} awoken.");
+
+            try
+            {
+                PostfixEvent?.Invoke(__instance);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.Message + Environment.NewLine + ex.StackTrace);
+            }
+        }
+    }
+
+    /// <summary>
+    ///     Patch ZNet.OnDestroy
+    /// </summary>
+    [HarmonyPatch(typeof(ZNet), nameof(ZNet.OnDestroy))]
+    public class ZNet_OnDestroy_Patch
+    {
+        public delegate void BlockingPrefixHandler(ZNet instance, ref bool cancel);
+
+        public delegate void PostfixHandler(ZNet instance);
+
+        public delegate void PrefixHandler(ZNet instance);
+
+        public static event PrefixHandler PrefixEvent;
+
+        public static event BlockingPrefixHandler BlockingPrefixEvent;
+
+        public static event PostfixHandler PostfixEvent;
+
+
+        private static bool Prefix(ZNet __instance)
+        {
+            Logger.LogInfo($"{__instance} despawns.");
+
+            var cancel = false;
+            BlockingPrefixEvent?.Invoke(__instance, ref cancel);
+
+            if (!cancel)
+            {
+                try
+                {
+                    PrefixEvent?.Invoke(__instance);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex.Message + Environment.NewLine + ex.StackTrace);
+                }
+            }
+
+            return !cancel;
+        }
+
+        private static void Postfix(ZNet __instance)
+        {
+            Logger.LogInfo($"{__instance} destroyed.");
+
             try
             {
                 PostfixEvent?.Invoke(__instance);
@@ -118,58 +178,6 @@ namespace Veilheim.PatchEvents.PatchStubs
     /// </summary>
     [HarmonyPatch(typeof(ZNet), nameof(ZNet.RPC_PeerInfo))]
     public class ZNet_RPC_PeerInfo_Patch
-    {
-        public delegate void BlockingPrefixHandler(ZNet instance, ref bool cancel);
-
-        public delegate void PostfixHandler(ZNet instance);
-
-        public delegate void PrefixHandler(ZNet instance);
-
-        public static event PrefixHandler PrefixEvent;
-
-        public static event BlockingPrefixHandler BlockingPrefixEvent;
-
-        public static event PostfixHandler PostfixEvent;
-
-
-        private static bool Prefix(ZNet __instance)
-        {
-            var cancel = false;
-            BlockingPrefixEvent?.Invoke(__instance, ref cancel);
-
-            if (!cancel)
-            {
-                try
-                {
-                    PrefixEvent?.Invoke(__instance);
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex.Message + Environment.NewLine + ex.StackTrace);
-                }
-            }
-
-            return !cancel;
-        }
-
-        private static void Postfix(ZNet __instance)
-        {
-            try
-            {
-                PostfixEvent?.Invoke(__instance);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex.Message + Environment.NewLine + ex.StackTrace);
-            }
-        }
-    }
-
-    /// <summary>
-    ///     Patch ZNet.OnDestroy
-    /// </summary>
-    [HarmonyPatch(typeof(ZNet), nameof(ZNet.OnDestroy))]
-    public class ZNet_OnDestroy_Patch
     {
         public delegate void BlockingPrefixHandler(ZNet instance, ref bool cancel);
 

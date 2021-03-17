@@ -243,7 +243,7 @@ namespace Veilheim.AssetUtils
 
             if (Instance.RegisteredItems.Count() > 0 || Instance.RegisteredPieces.Count() > 0)
             {
-                Logger.LogMessage($"Updating known recipes and pieces for Player {Player.m_localPlayer}");
+                Logger.LogMessage($"Updating known recipes and pieces for Player {Player.m_localPlayer.GetPlayerName()}");
 
                 Player.m_localPlayer.UpdateKnownRecipesList();
                 Player.m_localPlayer.UpdateAvailablePiecesList();
