@@ -11,10 +11,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.UI;
-using Veilheim.AssetUtils;
 using Veilheim.Configurations;
-using Veilheim.PatchEvents;
 using Object = UnityEngine.Object;
 
 namespace Veilheim.Blueprints
@@ -442,7 +439,7 @@ namespace Veilheim.Blueprints
             }
 
             // Destroy GameObject
-            Logger.LogInfo("Destroying {m_piecename}");
+            Logger.LogInfo($"Destroying {m_piecename}");
             UnityEngine.Object.DestroyImmediate(m_prefab);
         }
 
@@ -464,6 +461,8 @@ namespace Veilheim.Blueprints
                 tf.SetPositionAndRotation(tf.position, q);
                 tf.position -= tf.right * (maxX / 2f);
                 tf.position += tf.forward * 5f;
+
+                //FlattenTerrain.Flatten(tf, new Vector2(maxX, maxZ), pieces);
 
                 var prefabs = new Dictionary<string, GameObject>();
                 foreach (var piece in pieces.GroupBy(x => x.name).Select(x => x.FirstOrDefault()))

@@ -66,6 +66,62 @@ namespace Veilheim.PatchEvents.PatchStubs
     }
 
     /// <summary>
+    ///     Patch ZNet.Shutdown
+    /// </summary>
+    [HarmonyPatch(typeof(ZNet), nameof(ZNet.Shutdown))]
+    public class ZNet_Shutdown_Patch
+    {
+        public delegate void BlockingPrefixHandler(ZNet instance, ref bool cancel);
+
+        public delegate void PrefixHandler(ZNet instance);
+
+        public delegate void PostfixHandler(ZNet instance);
+
+        public static event BlockingPrefixHandler BlockingPrefixEvent;
+
+        public static event PrefixHandler PrefixEvent;
+
+        public static event PostfixHandler PostfixEvent;
+
+
+        private static bool Prefix(ZNet __instance)
+        {
+            Logger.LogInfo($"{__instance} is about to shut down.");
+
+            var cancel = false;
+            BlockingPrefixEvent?.Invoke(__instance, ref cancel);
+
+            if (!cancel)
+            {
+                try
+                {
+                    PrefixEvent?.Invoke(__instance);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex.Message + Environment.NewLine + ex.StackTrace);
+                }
+            }
+
+            return !cancel;
+        }
+
+        private static void Postfix(ZNet __instance)
+        {
+            Logger.LogInfo($"{__instance} shut down.");
+
+            try
+            {
+                PostfixEvent?.Invoke(__instance);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.Message + Environment.NewLine + ex.StackTrace);
+            }
+        }
+    }
+
+    /// <summary>
     ///     Patch ZNet.OnDestroy
     /// </summary>
     [HarmonyPatch(typeof(ZNet), nameof(ZNet.OnDestroy))]

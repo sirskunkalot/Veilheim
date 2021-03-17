@@ -66,6 +66,25 @@ namespace Veilheim.Blueprints
             }
         }
 
+        [PatchEvent(typeof(ZNet), nameof(ZNet.Shutdown), PatchEventType.Postfix)]
+        public static void DestroyDynamicPrefabs(ZNet instance)
+        {
+            // Client only
+            if (!instance.IsServerInstance())
+            {
+                Logger.LogMessage("Destroying known blueprints");
+
+                // Try to destroy all known blueprints
+                foreach (var bp in Blueprint.m_blueprints)
+                {
+                    Logger.LogInfo($"{bp.Key}.blueprint");
+
+                    bp.Value.Destroy();
+                }
+            }
+        }
+
+
         /// <summary>
         ///     React to a placement of blueprints
         /// </summary>
