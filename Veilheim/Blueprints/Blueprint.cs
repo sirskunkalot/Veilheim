@@ -338,7 +338,7 @@ namespace Veilheim.Blueprints
             m_prefab.name = piecename;
             m_prefab.GetComponent<Piece>().m_name = m_name;
 
-            // Save way without children / ghost
+            // Safe way without children / ghost
             /*ZNetView.m_ghostInit = true;
             go.SetActive(true);
             ZNetView.m_ghostInit = false;
@@ -357,10 +357,11 @@ namespace Veilheim.Blueprints
 
         public bool GhostInstantiate(GameObject baseObject)
         {
+            bool ret = true;
+            ZNetView.m_ghostInit = true;
+
             try
             {
-                ZNetView.m_ghostInit = true;
-
                 var pieces = new List<PieceEntry>(m_pieceEntries);
                 var maxX = pieces.Max(x => x.posX);
                 var maxZ = pieces.Max(x => x.posZ);
@@ -384,8 +385,7 @@ namespace Veilheim.Blueprints
                 var nulls = prefabs.Values.Count(x => x == null);
                 if (nulls > 0)
                 {
-                    Logger.LogWarning($"{nulls} nulls found");
-                    return false;
+                    throw new Exception($"{nulls} nulls found");
                 }
 
                 foreach (var piece in pieces)
@@ -396,16 +396,18 @@ namespace Veilheim.Blueprints
                 }
 
                 baseObject.SetActive(true);
-
-                ZNetView.m_ghostInit = false;
             }
             catch (Exception ex)
             {
                 Logger.LogError($"Error while instantiating: {ex}");
-                return false;
+                ret = false;
+            }
+            finally
+            {
+                ZNetView.m_ghostInit = false;
             }
 
-            return true;
+            return ret;
         }
 
         private GameObject Create(Transform startPosition, PieceEntry piece, Dictionary<string, GameObject> prefabs, float maxX, float maxZ)
