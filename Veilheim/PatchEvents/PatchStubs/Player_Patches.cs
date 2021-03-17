@@ -83,4 +83,57 @@ namespace Veilheim.PatchEvents.PatchStubs
             }
         }
     }
+
+    /// <summary>
+    ///     Patch Player.PlacePiece
+    /// </summary>
+    [HarmonyPatch(typeof(Player), nameof(Player.UpdatePlacement))]
+    public class Player_UpdatePlacement_Patch
+    {
+        public delegate void BlockingPrefixHandler(Player instance, ref bool cancel);
+
+        public delegate void PostfixHandler(Player instance);
+
+        public delegate void PrefixHandler(Player instance);
+
+        public static event PrefixHandler PrefixEvent;
+
+        public static event BlockingPrefixHandler BlockingPrefixEvent;
+
+        public static event PostfixHandler PostfixEvent;
+
+
+        private static bool Prefix(Player __instance)
+        {
+            var cancel = false;
+            BlockingPrefixEvent?.Invoke(__instance, ref cancel);
+
+            if (!cancel)
+            {
+                try
+                {
+                    PrefixEvent?.Invoke(__instance);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex.Message + Environment.NewLine + ex.StackTrace);
+                }
+            }
+
+            return !cancel;
+        }
+
+        private static void Postfix(Player __instance)
+        {
+            try
+            {
+                PostfixEvent?.Invoke(__instance);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.Message + Environment.NewLine + ex.StackTrace);
+            }
+        }
+    }
+
 }

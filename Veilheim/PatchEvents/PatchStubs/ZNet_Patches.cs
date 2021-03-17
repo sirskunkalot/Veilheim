@@ -68,7 +68,7 @@ namespace Veilheim.PatchEvents.PatchStubs
     /// <summary>
     ///     Patch ZNet.OnDestroy
     /// </summary>
-    [HarmonyPatch(typeof(ZNet), nameof(ZNet.OnDestroy))]
+    [HarmonyPatch(typeof(ZNet), nameof(ZNet.Shutdown))]
     public class ZNet_OnDestroy_Patch
     {
         public delegate void BlockingPrefixHandler(ZNet instance, ref bool cancel);

@@ -64,6 +64,8 @@ namespace Veilheim.Blueprints
 
         public static GameObject m_stub;
 
+        public static float selectionRadius = 10.0f;
+
         public static string GetBlueprintPath()
         {
             //TODO: save per profile or world or global?

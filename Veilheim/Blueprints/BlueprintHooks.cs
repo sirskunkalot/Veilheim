@@ -4,6 +4,7 @@ using System.Linq;
 using UnityEngine;
 using Veilheim.AssetUtils;
 using Veilheim.PatchEvents;
+using Object = UnityEngine.Object;
 
 namespace Veilheim.Blueprints
 {
@@ -83,6 +84,12 @@ namespace Veilheim.Blueprints
             // Capture a new blueprint
             if (successful && !piece.IsCreator() && piece.m_name == "$piece_make_blueprint")
             {
+                var circleProjector = Player.m_localPlayer.gameObject.GetComponent<CircleProjector>();
+                if (circleProjector)
+                {
+                    Object.DestroyImmediate(circleProjector, true);
+                }
+
                 string bpname = "blueprint" + String.Format("{0:000}", Blueprint.m_blueprints.Count() + 1);
                 Logger.LogInfo($"Capturing blueprint {bpname}");
 
@@ -114,6 +121,7 @@ namespace Veilheim.Blueprints
                 foreach (var component in piece.GetComponents<Piece>())
                 {
                     component.SetCreator(Game.instance.GetPlayerProfile().GetPlayerID());
+                    Logger.LogError($"{piece.m_name}.{piece.m_category}");
                 }
             }
         }
@@ -131,6 +139,44 @@ namespace Veilheim.Blueprints
                         {
                             instance.transform.position += new Vector3(0, 5.0f, 0);
                         }
+                    }
+                }
+            }
+        }
+
+
+        [PatchEvent(typeof(Player), nameof(Player.UpdatePlacement), PatchEventType.Postfix)]
+        public static void ShowCircleProjector(Player instance)
+        {
+            if (instance.m_placementGhost)
+            {
+                var piece = instance.m_placementGhost.GetComponent<Piece>();
+                if (piece != null)
+                {
+                    if (piece.m_name == "$piece_make_blueprint" && !piece.IsCreator())
+                    {
+                        if (Input.GetAxis("Mouse ScrollWheel") < 0f)
+                        {
+                            Blueprint.selectionRadius -= 2f;
+                            if (Blueprint.selectionRadius < 2f)
+                            {
+                                Blueprint.selectionRadius = 2f;
+                            }
+                        }
+
+                        if (Input.GetAxis("Mouse ScrollWheel") > 0f)
+                        {
+                            Blueprint.selectionRadius += 2f;
+                        }
+
+                        var circleProjector = Player.m_localPlayer.gameObject.GetComponent<CircleProjector>();
+                        if (!circleProjector)
+                        {
+                            circleProjector = Player.m_localPlayer.gameObject.AddComponent<CircleProjector>();
+                        }
+
+                        circleProjector.m_radius = Blueprint.selectionRadius;
+                        Logger.LogMessage($"Changed radius to {Blueprint.selectionRadius}");
                     }
                 }
             }

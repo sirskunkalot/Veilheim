@@ -106,7 +106,7 @@ namespace Veilheim.Map
                 {
                     Logger.LogInfo($"Sending map data to player {player.m_name} #{ZNet.instance.GetPeerByPlayerName(player.m_name)}");
                     ZRoutedRpc.instance.InvokeRoutedRPC(ZNet.instance.GetPeerByPlayerName(player.m_name).m_uid, nameof(RPC_ReceiveExploration),
-                        ZNet.instance.GetServerPeer().m_uid, newMapData);
+                        newMapData);
                 }
             }
 
@@ -171,12 +171,13 @@ namespace Veilheim.Map
         ///     Before ZNet destroy, save data to file on server
         /// </summary>
         /// <param name="instance"></param>
-        [PatchEvent(typeof(ZNet), nameof(ZNet.OnDestroy), PatchEventType.Prefix)]
+        [PatchEvent(typeof(ZNet), nameof(ZNet.Shutdown), PatchEventType.Prefix)]
         public static void SaveExplorationData(ZNet instance)
         {
             // Save exploration data only on the server
             if (ZNet.instance.IsServerInstance() && Configuration.Current.MapServer.IsEnabled && Configuration.Current.MapServer.shareMapProgression)
             {
+                Logger.LogInfo($"Saving shared exploration data");
                 var mapData = new ZPackage(CreateExplorationData().ToArray());
                 mapData.WriteToFile(Path.Combine(Configuration.ConfigIniPath, ZNet.instance.GetWorldUID().ToString(), "Explorationdata.bin"));
             }
@@ -213,8 +214,9 @@ namespace Veilheim.Map
         [PatchEvent(typeof(Minimap), nameof(Minimap.SetMapData), PatchEventType.Postfix)]
         public static void InitialSendRequest(Minimap instance)
         {
-            if (Configuration.Current.MapServer.IsEnabled && Configuration.Current.MapServer.shareMapProgression)
+            // if (Configuration.Current.MapServer.IsEnabled && Configuration.Current.MapServer.shareMapProgression)
             {
+                Logger.LogError("Sending Map data initially to server");
                 // After login, send map data to server (and get new map data back)
                 var pkg = new ZPackage(CreateExplorationData().ToArray());
                 ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(RPC_ReceiveExploration), pkg);
@@ -379,7 +381,7 @@ namespace Veilheim.Map
                     }
 
                     binaryWriter.Flush();
-                    gz.Flush();
+                  //  gz.Flush();
                 }
 
                 return result.ToArray();

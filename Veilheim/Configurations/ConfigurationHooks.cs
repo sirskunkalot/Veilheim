@@ -73,7 +73,7 @@ namespace Veilheim.Configurations
         ///     Save config when the game quits a world normally (e.g. ZNet is destroyed)
         /// </summary>
         /// <param name="instance"></param>
-        [PatchEvent(typeof(ZNet), nameof(ZNet.OnDestroy), PatchEventType.Prefix)]
+        [PatchEvent(typeof(ZNet), nameof(ZNet.Shutdown), PatchEventType.Prefix)]
         public static void SaveConfigurationOnDestroy(ZNet instance)
         {
             Logger.LogInfo("Saving configuration");

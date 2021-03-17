@@ -219,10 +219,62 @@ namespace Veilheim.PatchEvents.PatchStubs
 
 
     /// <summary>
-    ///     Patch Minimap.SetMapData
+    ///     Patch Minimap.Awake
     /// </summary>
     [HarmonyPatch(typeof(Minimap), nameof(Minimap.Awake))]
     public class Minimap_Awake_Patch
+    {
+        public delegate void BlockingPrefixHandler(Minimap instance, ref bool cancel);
+
+        public delegate void PostfixHandler(Minimap instance);
+
+        public delegate void PrefixHandler(Minimap instance);
+
+        public static event PrefixHandler PrefixEvent;
+
+        public static event BlockingPrefixHandler BlockingPrefixEvent;
+
+        public static event PostfixHandler PostfixEvent;
+
+
+        private static bool Prefix(Minimap __instance)
+        {
+            var cancel = false;
+            BlockingPrefixEvent?.Invoke(__instance, ref cancel);
+
+            if (!cancel)
+            {
+                try
+                {
+                    PrefixEvent?.Invoke(__instance);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex.Message + Environment.NewLine + ex.StackTrace);
+                }
+            }
+
+            return !cancel;
+        }
+
+        private static void Postfix(Minimap __instance)
+        {
+            try
+            {
+                PostfixEvent?.Invoke(__instance);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.Message + Environment.NewLine + ex.StackTrace);
+            }
+        }
+    }
+
+    /// <summary>
+    ///     Patch Minimap.OnDestroy
+    /// </summary>
+    [HarmonyPatch(typeof(Minimap), nameof(Minimap.OnDestroy))]
+    public class Minimap_OnDestroy_Patch
     {
         public delegate void BlockingPrefixHandler(Minimap instance, ref bool cancel);
 
