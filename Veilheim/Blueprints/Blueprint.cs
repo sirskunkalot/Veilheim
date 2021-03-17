@@ -439,7 +439,7 @@ namespace Veilheim.Blueprints
             }
 
             // Destroy GameObject
-            Logger.LogInfo($"Destroying {m_piecename}");
+            Logger.LogInfo($"Destroying {m_prefabname}");
             UnityEngine.Object.DestroyImmediate(m_prefab);
         }
 
