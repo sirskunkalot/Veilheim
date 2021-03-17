@@ -17,7 +17,7 @@ using CompressionLevel = Ionic.Zlib.CompressionLevel;
 
 namespace Veilheim.Map
 {
-    public class SharedMapPatches : Payload
+    public class SharedMapPatches : PatchEventConsumer
     {
         private static bool isInSetMapData;
         private static readonly List<int> explorationQueue = new List<int>();

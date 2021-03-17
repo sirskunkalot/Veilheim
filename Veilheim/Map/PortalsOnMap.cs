@@ -15,7 +15,7 @@ using Veilheim.PatchEvents;
 
 namespace Veilheim.Map
 {
-    public class PortalsOnMap : Payload
+    public class PortalsOnMap : PatchEventConsumer
     {
         /// <summary>
         ///     Holder for our pins, these get drawn to the map
@@ -48,7 +48,7 @@ namespace Veilheim.Map
         /// <param name="portals"></param>
         public static void UpdatePins(PortalList portals)
         {
-            Logger.LogDebug("Updating pins of portals on minimap");
+            Logger.LogInfo("Updating pins of portals on minimap");
 
             // prevent MT crashing
             lock (portalPins)
@@ -56,8 +56,6 @@ namespace Veilheim.Map
                 // Add connected portals (separated connected and unconnected, maybe show another icon?)
                 foreach (var portal in portals.FindAll(x => x.m_con))
                 {
-                    Logger.LogDebug(portal);
-
                     // Was pin already added?
                     var foundPin = portalPins.FirstOrDefault(x => x.m_pos == portal.m_pos);
                     if (foundPin != null)
@@ -80,8 +78,6 @@ namespace Veilheim.Map
                 // Add unconnected portals (maybe show another icon / text?)
                 foreach (var portal in portals.FindAll(x => !x.m_con))
                 {
-                    Logger.LogDebug(portal);
-
                     // Was pin already added?
                     var foundPin = portalPins.FirstOrDefault(x => x.m_pos == portal.m_pos);
                     if (foundPin != null)
@@ -162,7 +158,7 @@ namespace Veilheim.Map
             // SERVER SIDE
             if (ZNet.instance.IsServerInstance() || ZNet.instance.IsLocalInstance())
             {
-                Logger.LogInfo($"Sending portal data to peer #{sender}");
+                Logger.LogMessage($"Sending portal data to peer #{sender}");
 
                 var portals = PortalList.GetPortals();
 
@@ -181,7 +177,7 @@ namespace Veilheim.Map
                 if (teleporterZPackage != null && teleporterZPackage.Size() > 0 && sender == ZRoutedRpc.instance.GetServerPeerID())
                 {
                     // Read package and create pins from portal list
-                    Logger.LogInfo("Received portal data from server");
+                    Logger.LogMessage("Received portal data from server");
 
                     portalsFromServer = PortalList.FromZPackage(teleporterZPackage);
 
@@ -200,7 +196,7 @@ namespace Veilheim.Map
             // SERVER SIDE
             if (ZNet.instance.IsServerInstance() || ZNet.instance.IsLocalInstance())
             {
-                Logger.LogInfo("Sending portal data to all peers");
+                Logger.LogMessage("Sending portal data to all peers");
 
                 var portals = PortalList.GetPortals();
 
@@ -228,7 +224,7 @@ namespace Veilheim.Map
                 if (teleporterZPackage != null && teleporterZPackage.Size() > 0 && sender == ZRoutedRpc.instance.GetServerPeerID())
                 {
                     // Read package and create pins from portal list
-                    Logger.LogInfo("Received portal data from server");
+                    Logger.LogMessage("Received portal data from server");
 
                     portalsFromServer = PortalList.FromZPackage(teleporterZPackage);
 
@@ -306,13 +302,13 @@ namespace Veilheim.Map
 
             if (ZNet.instance.IsLocalInstance())
             {
-                Logger.LogInfo("Initializing portals");
+                Logger.LogMessage("Initializing portals");
                 UpdatePins(PortalList.GetPortals());
             }
 
             if (ZNet.instance.IsClientInstance())
             {
-                Logger.LogInfo("Sending portal sync request to server");
+                Logger.LogMessage("Sending portal sync request to server");
                 ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(RPC_TeleporterSyncInit), new ZPackage());
             }
         }
@@ -343,7 +339,7 @@ namespace Veilheim.Map
 
             if (ZNet.instance.IsClientInstance())
             {
-                Logger.LogDebug("Forcing ZDO to server");
+                Logger.LogInfo("Forcing ZDO to server");
 
                 // Force sending ZDO to server
                 var temp = instance.m_nview.GetZDO();

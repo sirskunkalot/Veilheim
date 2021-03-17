@@ -10,6 +10,29 @@ using HarmonyLib;
 namespace Veilheim.PatchEvents.PatchStubs
 {
     /// <summary>
+    ///     Patch Player.OnSpawned
+    /// </summary>
+    [HarmonyPatch(typeof(Player), nameof(Player.OnSpawned))]
+    public class Player_OnSpawned_Patch
+    {
+        public delegate void PostfixHandler(Player instance);
+
+        public static event PostfixHandler PostfixEvent;
+
+        private static void Postfix(Player __instance)
+        {
+            try
+            {
+                PostfixEvent?.Invoke(__instance);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.Message + Environment.NewLine + ex.StackTrace);
+            }
+        }
+    }
+
+    /// <summary>
     ///     Patch Player.PlacePiece
     /// </summary>
     [HarmonyPatch(typeof(Player), nameof(Player.PlacePiece), typeof(Piece))]

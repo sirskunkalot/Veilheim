@@ -34,6 +34,11 @@ namespace Veilheim.AssetUtils
             m_translations = null;
         }
 
+        public override string ToString()
+        {
+            return $"AssetLocalization ({m_assetBundleName})";
+        }
+
         // heavily based on valheims language setup
         public void SetupLanguage(string language)
         {
