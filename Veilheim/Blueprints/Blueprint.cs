@@ -56,9 +56,11 @@ namespace Veilheim.Blueprints
         }
     }
 
-    internal class Blueprint : PatchEventConsumer
+    internal class Blueprint
     {
-        private static readonly Dictionary<string, Blueprint> m_blueprints = new Dictionary<string, Blueprint>();
+        public static readonly Dictionary<string, Blueprint> m_blueprints = new Dictionary<string, Blueprint>();
+
+        public static GameObject m_stub;
 
         public static string GetBlueprintPath()
         {
@@ -81,6 +83,11 @@ namespace Veilheim.Blueprints
         /// Array of the pieces this blueprint is made of
         /// </summary>
         private PieceEntry[] m_pieceEntries;
+
+        /// <summary>
+        /// Dynamically generated prefab for this blueprint
+        /// </summary>
+        private GameObject m_prefab;
 
         /// <summary>
         /// New "empty" Blueprint with a name but without any pieces. Call Capture() or Load() to add pieces to the blueprint.
@@ -307,11 +314,51 @@ namespace Veilheim.Blueprints
             return true;
         }
 
+        public GameObject CreatePrefab()
+        {
+            if (m_prefab != null)
+            {
+                return m_prefab;
+            }
+            if (m_stub == null)
+            {
+                Logger.LogWarning("Stub not loaded");
+                return null;
+            }
+            if (m_pieceEntries == null)
+            {
+                Logger.LogWarning("No pieces loaded");
+                return null;
+            }
+
+            var piecename = $"piece_blueprint ({m_name})";
+
+            // Instantiate clone from stub
+            m_prefab = UnityEngine.Object.Instantiate(m_stub);
+            m_prefab.name = piecename;
+            m_prefab.GetComponent<Piece>().m_name = m_name;
+
+            // Save way without children / ghost
+            /*ZNetView.m_ghostInit = true;
+            go.SetActive(true);
+            ZNetView.m_ghostInit = false;
+
+            AssetManager.RegisterPiecePrefab(go, new PieceDef { PieceTable = "_BlueprintPieceTable" }); */
+
+            // Instantiate child objects
+            if (!GhostInstantiate(m_prefab))
+            {
+                Logger.LogWarning("Could not create prefab");
+                return null;
+            }
+
+            return m_prefab;
+        }
+
         public bool GhostInstantiate(GameObject baseObject)
         {
             try
             {
-
                 ZNetView.m_ghostInit = true;
 
                 var pieces = new List<PieceEntry>(m_pieceEntries);
@@ -335,9 +382,9 @@ namespace Veilheim.Blueprints
                 }
 
                 var nulls = prefabs.Values.Count(x => x == null);
-                Logger.LogWarning($"{nulls} nulls found");
                 if (nulls > 0)
                 {
+                    Logger.LogWarning($"{nulls} nulls found");
                     return false;
                 }
 
@@ -380,134 +427,13 @@ namespace Veilheim.Blueprints
             return toBuild;
         }
 
-
-        [PatchEvent(typeof(ZNet), nameof(ZNet.Awake), PatchEventType.Postfix)]
-        public static void LoadKnownBlueprints(ZNet instance)
-        {
-            // Client only
-            if (!instance.IsServerInstance())
-            {
-                Logger.LogMessage("Loading known blueprints");
-
-                // Try to load all saved blueprints
-                foreach (var name in Directory.EnumerateFiles(GetBlueprintPath(), "*.blueprint").Select(Path.GetFileNameWithoutExtension))
-                {
-                    if (!m_blueprints.ContainsKey(name))
-                    {
-                        var bp = new Blueprint(name);
-                        if (bp.Load())
-                        {
-                            m_blueprints.Add(name, bp);
-                        }
-                        else
-                        {
-                            Logger.LogWarning($"Could not load blueprint {name}");
-                        }
-                    }
-                }
-
-                Logger.LogMessage("Known blueprints loaded");
-            }
-        }
-
-        [PatchEvent(typeof(ZNetScene), nameof(ZNetScene.Awake), PatchEventType.Postfix)]
-        public static void RegisterKnownBlueprints(ZNetScene instance)
-        {
-            // Client only
-            if (!ZNet.instance.IsServerInstance())
-            {
-                Logger.LogMessage("Registering known blueprints");
-
-                // Get prefab stub from bundle
-                var assetBundle = AssetLoader.LoadAssetBundleFromResources("blueprintrune");
-                var stub = assetBundle.LoadAsset<GameObject>("piece_blueprint");
-
-                // Instantiate from stub for all known blueprints
-                foreach (var bp in m_blueprints)
-                {
-                    Logger.LogDebug($"{bp.Key}.blueprint");
-
-                    var piecename = $"piece_blueprint ({bp.Key})";
-
-                    // Instantiate clone from stub
-                    var go = UnityEngine.Object.Instantiate<GameObject>(stub);
-
-                    go.name = piecename;
-                    go.GetComponent<Piece>().name = piecename;
-                    go.GetComponent<Piece>().m_name = bp.Key;
-
-                    // Save way without children / ghost
-                    /*ZNetView.m_ghostInit = true;
-                    go.SetActive(true);
-                    ZNetView.m_ghostInit = false;
-                    
-                    AssetManager.RegisterPiecePrefab(go, new PieceDef { PieceTable = "_BlueprintPieceTable" }); */
-
-                    // Instantiate child objects
-                    if (!bp.Value.GhostInstantiate(go))
-                    {
-                        Logger.LogWarning("Could not instantiate blueprint");
-                    }
-                    else
-                    {
-                        // Register instance with AssetManager
-                        AssetManager.RegisterPiecePrefab(go, new PieceDef { PieceTable = "_BlueprintPieceTable" }); 
-                    }
-                }
-
-                assetBundle.Unload(false);
-
-                Logger.LogMessage("Known blueprints registered");
-            }
-        }
-
-        /// <summary>
-        ///     React to a placement of blueprints
-        /// </summary>
-        /// <param name="instance"></param>
-        /// <param name="piece"></param>
-        /// <param name="successful"></param>
-        [PatchEvent(typeof(Player), nameof(Player.PlacePiece), PatchEventType.Postfix)]
-        public static void AfterPlacingBlueprint(Player instance, Piece piece, bool successful)
-        {
-            if (ZNet.instance.IsServerInstance())
-            {
-                return;
-            }
-
-            // Capture a new blueprint
-            if (successful && !piece.IsCreator() && piece.m_name == "$piece_make_blueprint")
-            {
-                string bpname = "blueprint" + String.Format("{0:000}", m_blueprints.Count() + 1);
-                Logger.LogInfo($"Capturing blueprint {bpname}");
-
-                if (Player.m_localPlayer.m_hoveringPiece != null)
-                {
-                    var bp = new Blueprint(bpname);
-                    if (bp.Capture(Player.m_localPlayer.m_hoveringPiece.transform.position, 2.0f, 1.0f))
-                    {
-                        TextInput.instance.m_queuedSign = new BlueprintSaveGUI(bp);
-                        TextInput.instance.Show($"Save Blueprint ({bp.GetPieceCount()} pieces captured)", bpname, 50);
-                    }
-                    else
-                    {
-                        Logger.LogWarning($"Could not capture blueprint {bpname}");
-                    }
-                }
-                else
-                {
-                    Logger.LogInfo("Not hovering any piece");
-                }
-            }
-        }
-
         /// <summary>
         /// Helper class for naming and saving a captured blueprint via GUI
         /// 
         /// Implements the Interface <see cref="TextReceiver"/>. SetText is called from <see cref="TextInput"/> upon entering an name for the blueprint.<br />
         /// Save the actual blueprint and add it to the list of known blueprints.
         /// </summary>
-        private class BlueprintSaveGUI : TextReceiver
+        internal class BlueprintSaveGUI : TextReceiver
         {
             private readonly Blueprint bp;
 

@@ -359,6 +359,7 @@
     <Compile Include="AssetUtils\AssetLocalization.cs" />
     <Compile Include="AssetUtils\AssetManager.cs" />
     <Compile Include="Blueprints\Blueprint.cs" />
+    <Compile Include="Blueprints\BlueprintHooks.cs" />
     <Compile Include="Blueprints\FlattenTerrain.cs" />
     <Compile Include="Configurations\Sections\ProductionInputAmountServerConfiguration.cs" />
     <Compile Include="ConsoleCommands\ApplyBlueprintCommand.cs" />
