@@ -111,7 +111,7 @@ namespace Veilheim.Blueprints
         {
             var vec = startPosition;
             var rot = Camera.main.transform.rotation.eulerAngles;
-            Console.instance.AddString("Collecting piece information");
+            Logger.LogDebug("Collecting piece information");
 
             var numPieces = 0;
             var numLastIteration = -1;
@@ -138,12 +138,12 @@ namespace Veilheim.Blueprints
                 vec = newStart;
 
                 iteration++;
-                Console.instance.AddString($"Iteration #{iteration} - found {numPieces} pieces in radius {startRadius}");
+                Logger.LogDebug($"Iteration #{iteration} - found {numPieces} pieces in radius {startRadius}");
                 startRadius += radiusDelta;
                 Thread.Sleep(100);
             }
 
-            Console.instance.AddString($"Found {numPieces} in a radius of {startRadius:F2}");
+            Logger.LogDebug($"Found {numPieces} in a radius of {startRadius:F2}");
 
             // Relocate Z
             var minZ = 9999999.9f;
@@ -168,7 +168,7 @@ namespace Veilheim.Blueprints
                 }
             }
 
-            Console.instance.AddString($"{minX} - {minY} - {minZ}");
+            Logger.LogDebug($"{minX} - {minY} - {minZ}");
 
             var bottomleft = new Vector3(minX, minY, minZ);
 
@@ -300,7 +300,7 @@ namespace Veilheim.Blueprints
             }
 
             var nulls = prefabs.Values.Count(x => x == null);
-            Console.instance.AddString($"{nulls} nulls found");
+            Logger.LogDebug($"{nulls} nulls found");
             if (nulls > 0)
             {
                 return false;
@@ -336,7 +336,10 @@ namespace Veilheim.Blueprints
             // Instantiate clone from stub
             m_prefab = UnityEngine.Object.Instantiate(m_stub);
             m_prefab.name = piecename;
-            m_prefab.GetComponent<Piece>().m_name = m_name;
+            
+            var piece = m_prefab.GetComponent<Piece>();
+            piece.m_name = m_name;
+            //piece.m_creator = Game.instance.GetPlayerProfile().GetPlayerID();
 
             // Safe way without children / ghost
             /*ZNetView.m_ghostInit = true;
@@ -421,9 +424,13 @@ namespace Veilheim.Blueprints
             var toBuild = Object.Instantiate(prefabs[piece.name], pos, q);
 
             var component = toBuild.GetComponent<Piece>();
-            if (component && Player.m_localPlayer != null)
+            /*if (component && Player.m_localPlayer != null)
             {
                 component.SetCreator(Player.m_localPlayer.GetPlayerID());
+            }*/
+            if (component)
+            {
+                component.SetCreator(Game.instance.GetPlayerProfile().GetPlayerID());
             }
 
             return toBuild;

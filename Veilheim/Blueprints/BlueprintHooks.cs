@@ -93,7 +93,7 @@ namespace Veilheim.Blueprints
                 if (Player.m_localPlayer.m_hoveringPiece != null)
                 {
                     var bp = new Blueprint(bpname);
-                    if (bp.Capture(Player.m_localPlayer.m_hoveringPiece.transform.position, 2.0f, 1.0f))
+                    if (bp.Capture(Player.m_localPlayer.m_hoveringPiece.transform.position, 3.0f, 1.0f))
                     {
                         TextInput.instance.m_queuedSign = new Blueprint.BlueprintSaveGUI(bp);
                         TextInput.instance.Show($"Save Blueprint ({bp.GetPieceCount()} pieces captured)", bpname, 50);
@@ -112,11 +112,12 @@ namespace Veilheim.Blueprints
             // Place a blueprint
             if (successful && piece.name.StartsWith("piece_blueprint"))
             {
-                piece.SetCreator(Player.m_localPlayer.GetPlayerID());
+                // Do something with this instance
+                piece.SetCreator(Game.instance.GetPlayerProfile().GetPlayerID());
 
-                foreach (var child in piece.GetComponentsInChildren<Piece>())
+                foreach (var component in piece.GetComponents<Piece>())
                 {
-                    child.SetCreator(Player.m_localPlayer.GetPlayerID());
+                    component.SetCreator(Game.instance.GetPlayerProfile().GetPlayerID());
                 }
             }
         }
