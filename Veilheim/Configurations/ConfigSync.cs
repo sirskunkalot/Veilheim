@@ -12,7 +12,7 @@ namespace Veilheim.Configurations
         {
             if (ZNet.m_isServer) //Server
             {
-                Logger.LogInfo($"Sending configuration data to peer #{sender}");
+                Logger.LogMessage($"Sending configuration data to peer #{sender}");
 
                 if (Configuration.Current == null)
                 {
@@ -32,7 +32,7 @@ namespace Veilheim.Configurations
                 if (configPkg != null && configPkg.Size() > 0 && sender == ZRoutedRpc.instance.GetServerPeerID()
                 ) // Validate the message is from the server and not another client.
                 {
-                    Logger.LogInfo("Received configuration data from server.");
+                    Logger.LogMessage("Received configuration data from server.");
 
                     var receivedConfig = new Configuration();
                     Configuration.LoadFromIniString(receivedConfig, configPkg.ReadString());
