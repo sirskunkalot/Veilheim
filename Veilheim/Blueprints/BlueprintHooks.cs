@@ -84,10 +84,11 @@ namespace Veilheim.Blueprints
             // Capture a new blueprint
             if (successful && !piece.IsCreator() && piece.m_name == "$piece_make_blueprint")
             {
-                var circleProjector = Player.m_localPlayer.gameObject.GetComponent<CircleProjector>();
-                if (circleProjector)
+
+                var circleProjector = instance.m_placementGhost.GetComponent<CircleProjector>();
+                if (circleProjector!=null)
                 {
-                    Object.DestroyImmediate(circleProjector, true);
+                    Object.Destroy(circleProjector);
                 }
 
                 string bpname = "blueprint" + String.Format("{0:000}", Blueprint.m_blueprints.Count() + 1);
@@ -146,7 +147,7 @@ namespace Veilheim.Blueprints
 
 
         [PatchEvent(typeof(Player), nameof(Player.UpdatePlacement), PatchEventType.Postfix)]
-        public static void ShowCircleProjector(Player instance)
+        public static void ShowBlueprintRadius(Player instance)
         {
             if (instance.m_placementGhost)
             {
@@ -169,10 +170,12 @@ namespace Veilheim.Blueprints
                             Blueprint.selectionRadius += 2f;
                         }
 
-                        var circleProjector = Player.m_localPlayer.gameObject.GetComponent<CircleProjector>();
-                        if (!circleProjector)
+                        var circleProjector = instance.m_placementGhost.GetComponent<CircleProjector>();
+                        if (circleProjector==null)
                         {
-                            circleProjector = Player.m_localPlayer.gameObject.AddComponent<CircleProjector>();
+                            instance.m_placementGhost.AddComponent<CircleProjector>();
+                            circleProjector = instance.m_placementGhost.GetComponent<CircleProjector>();
+                            circleProjector.m_prefab = ObjectDB.instance.GetItemPrefab("piece_workbench").GetComponent<CircleProjector>().m_prefab;
                         }
 
                         circleProjector.m_radius = Blueprint.selectionRadius;
