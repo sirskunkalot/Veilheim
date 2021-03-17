@@ -33,8 +33,6 @@ namespace Veilheim.Blueprints
                         }
                     }
                 }
-
-                Logger.LogMessage("Known blueprints loaded");
             }
         }
 
@@ -57,16 +55,14 @@ namespace Veilheim.Blueprints
                 // Get prefabs from all known blueprints
                 foreach (var bp in Blueprint.m_blueprints)
                 {
-                    Logger.LogDebug($"{bp.Key}.blueprint");
+                    Logger.LogInfo($"{bp.Key}.blueprint");
 
                     var prefab = bp.Value.CreatePrefab();
                     if (prefab != null)
                     {
-                        AssetManager.RegisterPiecePrefab(prefab, new PieceDef { PieceTable = "_BlueprintPieceTable" });
+                        bp.Value.AddToPieceTable();
                     }
                 }
-
-                Logger.LogMessage("Known blueprints registered");
             }
         }
 
