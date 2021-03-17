@@ -85,6 +85,11 @@ namespace Veilheim.Blueprints
         private PieceEntry[] m_pieceEntries;
 
         /// <summary>
+        /// Name of the generated prefab of the blueprint instance. Is always "piece_blueprint (&lt;m_name&gt;)"
+        /// </summary>
+        private string m_prefabname;
+
+        /// <summary>
         /// Dynamically generated prefab for this blueprint
         /// </summary>
         private GameObject m_prefab;
@@ -96,6 +101,7 @@ namespace Veilheim.Blueprints
         public Blueprint(string name)
         {
             m_name = name;
+            m_prefabname = $"piece_blueprint ({name})";
         }
 
         /// <summary>
@@ -308,7 +314,14 @@ namespace Veilheim.Blueprints
 
             foreach (var piece in pieces)
             {
-                Create(tf, piece, prefabs, maxX, maxZ);
+                var gameobject = Create(tf, piece, prefabs, maxX, maxZ);
+                
+                var component = gameobject.GetComponent<Piece>();
+                if (component)
+                {
+                    component.SetCreator(Player.m_localPlayer.GetPlayerID());
+                }
+
             }
 
             return true;
@@ -331,11 +344,9 @@ namespace Veilheim.Blueprints
                 return null;
             }
 
-            var piecename = $"piece_blueprint ({m_name})";
-
             // Instantiate clone from stub
             m_prefab = UnityEngine.Object.Instantiate(m_stub);
-            m_prefab.name = piecename;
+            m_prefab.name = m_prefabname;
             
             var piece = m_prefab.GetComponent<Piece>();
             piece.m_name = m_name;
@@ -355,10 +366,87 @@ namespace Veilheim.Blueprints
                 return null;
             }
 
+            // Add to known prefabs
+            ZNetScene.instance.m_namedPrefabs.Add(m_prefabname.GetStableHashCode(), m_prefab);
+
+            Logger.LogInfo($"Prefab {m_prefabname} created");
+
             return m_prefab;
         }
 
-        public bool GhostInstantiate(GameObject baseObject)
+        public void AddToPieceTable()
+        {
+            if (m_prefab == null)
+            {
+                Logger.LogWarning("No prefab created");
+                return;
+            }
+
+            var rune = ObjectDB.instance.GetItemPrefab("BlueprintRune");
+            if (rune == null)
+            {
+                Logger.LogWarning("BlueprintRune prefab not found");
+                return;
+            }
+
+            var table = rune.GetComponent<ItemDrop>().m_itemData.m_shared.m_buildPieces;
+            if (table == null)
+            {
+                Logger.LogWarning("BlueprintPieceTable not found");
+                return;
+            }
+
+            if (!table.m_pieces.Contains(m_prefab))
+            {
+                Logger.LogInfo($"Adding {m_prefabname} to BlueprintRune");
+
+                table.m_pieces.Add(m_prefab);
+            }
+        }
+
+        public void Destroy()
+        {
+            if (m_prefab == null)
+            {
+                return;
+            }
+
+            // Remove from PieceTable
+            var rune = ObjectDB.instance.GetItemPrefab("BlueprintRune");
+            if (rune == null)
+            {
+                Logger.LogWarning("BlueprintRune prefab not found");
+                return;
+            }
+
+            var table = rune.GetComponent<ItemDrop>().m_itemData.m_shared.m_buildPieces;
+            if (table == null)
+            {
+                Logger.LogWarning("BlueprintPieceTable not found");
+                return;
+            }
+
+            if (table.m_pieces.Contains(m_prefab))
+            {
+                Logger.LogInfo($"Removing {m_prefabname} from BlueprintRune");
+
+                table.m_pieces.Remove(m_prefab);
+            }
+
+            // Remove from prefabs
+            if (ZNetScene.instance.m_namedPrefabs.ContainsKey(m_prefabname.GetStableHashCode()))
+            {
+                Logger.LogInfo($"Removing {m_prefabname} from ZNetScene");
+
+                ZNetScene.instance.m_namedPrefabs.Remove(m_prefabname.GetStableHashCode());
+            }
+
+            // Destroy GameObject
+            Logger.LogInfo("Destroying {m_piecename}");
+            UnityEngine.Object.DestroyImmediate(m_prefab);
+        }
+
+        private bool GhostInstantiate(GameObject baseObject)
         {
             bool ret = true;
             ZNetView.m_ghostInit = true;
@@ -423,15 +511,15 @@ namespace Veilheim.Blueprints
 
             var toBuild = Object.Instantiate(prefabs[piece.name], pos, q);
 
-            var component = toBuild.GetComponent<Piece>();
+            //var component = toBuild.GetComponent<Piece>();
             /*if (component && Player.m_localPlayer != null)
             {
                 component.SetCreator(Player.m_localPlayer.GetPlayerID());
             }*/
-            if (component)
+            /*if (component)
             {
                 component.SetCreator(Game.instance.GetPlayerProfile().GetPlayerID());
-            }
+            }*/
 
             return toBuild;
         }
@@ -444,32 +532,42 @@ namespace Veilheim.Blueprints
         /// </summary>
         internal class BlueprintSaveGUI : TextReceiver
         {
-            private readonly Blueprint bp;
+            private Blueprint newbp;
 
             public BlueprintSaveGUI(Blueprint bp)
             {
-                this.bp = bp;
+                newbp = bp;
             }
 
             public string GetText()
             {
-                return bp.m_name;
+                return newbp.m_name;
             }
 
             public void SetText(string text)
             {
-                bp.m_name = text;
-                if (bp.Save())
+                newbp.m_name = text;
+                newbp.m_prefabname = $"piece_blueprint ({newbp.m_name})";
+                if (newbp.Save())
                 {
-                    if (m_blueprints.ContainsKey(bp.m_name))
+                    if (m_blueprints.ContainsKey(newbp.m_name))
                     {
-                        m_blueprints.Remove(bp.m_name);
+                        Blueprint oldbp;
+                        m_blueprints.TryGetValue(newbp.m_name, out oldbp);
+                        oldbp.Destroy();
+                        m_blueprints.Remove(newbp.m_name);
                     }
-                    m_blueprints.Add(bp.m_name, bp);
-                    bp.RecordFrame();
 
-                    Logger.LogInfo("Blueprint saved");
+                    newbp.RecordFrame();
+                    newbp.CreatePrefab();
+                    newbp.AddToPieceTable();
+                    Player.m_localPlayer.UpdateKnownRecipesList();
+                    Player.m_localPlayer.UpdateAvailablePiecesList();
+                    m_blueprints.Add(newbp.m_name, newbp);
+
+                    Logger.LogInfo("Blueprint created");
                 }
+                newbp = null;
             }
 
         }
