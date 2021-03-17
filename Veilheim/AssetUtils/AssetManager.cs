@@ -165,7 +165,7 @@ namespace Veilheim.AssetUtils
         ///     Has a low priority (1000), so other hooks can register their prefabs before they get added.
         /// </summary>
         /// <param name="instance"></param>
-        [PatchEvent(typeof(ZNetScene), nameof(ZNetScene.Awake), PatchEventType.Prefix, 1000)]
+        [PatchEvent(typeof(ZNetScene), nameof(ZNetScene.Awake), PatchEventType.Postfix, 1000)]
         public static void AddToZNetScene(ZNetScene instance)
         {
             if (instance == null)
@@ -173,10 +173,10 @@ namespace Veilheim.AssetUtils
                 return;
             }
 
-            Logger.LogMessage("Adding custom prefabs to ZNetScene");
-
             if (Instance.RegisteredPrefabs.Count() > 0)
             {
+                Logger.LogMessage("Adding custom prefabs to ZNetScene");
+
                 foreach (var prefab in Instance.RegisteredPrefabs)
                 {
                     Logger.LogDebug($"GameObject: {prefab.name}");
