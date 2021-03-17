@@ -33,6 +33,7 @@ namespace Veilheim.Blueprints
             rotY = float.Parse(parts[6]);
             rotZ = float.Parse(parts[7]);
             rotW = float.Parse(parts[8]);
+            additionalInfo = parts[9];
         }
 
         public string line { get; set; }
@@ -44,6 +45,7 @@ namespace Veilheim.Blueprints
         public float rotY { get; set; }
         public float rotZ { get; set; }
         public float rotW { get; set; }
+        public string additionalInfo { get; set; }
 
         public Vector3 GetPosition()
         {
@@ -192,12 +194,22 @@ namespace Veilheim.Blueprints
                 var v1 = new Vector3(piece.m_nview.GetZDO().m_position.x - bottomleft.x, piece.m_nview.GetZDO().m_position.y - bottomleft.y,
                     piece.m_nview.GetZDO().m_position.z - bottomleft.z);
 
-                var q = piece.m_nview.GetZDO().m_rotation;
-                q.eulerAngles = new Vector3(0, q.eulerAngles.y, 0);
+                var quat = piece.m_nview.GetZDO().m_rotation;
+                quat.eulerAngles = new Vector3(0, quat.eulerAngles.y, 0);
 
-                var line = string.Join(";", piece.name.Split('(')[0], piece.m_category.ToString(), v1.x.ToString("F5"), v1.y.ToString("F5"),
-                    v1.z.ToString("F5"), q.x.ToString("F5"), q.y.ToString("F5"), q.z.ToString("F5"), q.w.ToString("F5"), q.eulerAngles.x.ToString("F5"),
-                    q.eulerAngles.y.ToString("F5"), q.eulerAngles.z.ToString("F5"));
+                string additionalInfo = (piece.GetComponent<TextReceiver>() != null) ? piece.GetComponent<TextReceiver>().GetText() : "";
+
+                var line = string.Join(";", 
+                    piece.name.Split('(')[0], 
+                    piece.m_category.ToString(), 
+                    v1.x.ToString("F5"), 
+                    v1.y.ToString("F5"),
+                    v1.z.ToString("F5"), 
+                    quat.x.ToString("F5"), 
+                    quat.y.ToString("F5"), 
+                    quat.z.ToString("F5"), 
+                    quat.w.ToString("F5"),
+                    additionalInfo);
                 m_pieceEntries[i++] = new PieceEntry(line);
             }
 
@@ -396,6 +408,7 @@ namespace Veilheim.Blueprints
                     var child = Create(tf, piece, prefabs, maxX, maxZ);
 
                     child.transform.SetParent(baseObject.transform);
+                    child.GetComponent<TextReceiver>()?.SetText(piece.additionalInfo);
                 }
 
                 baseObject.SetActive(true);

@@ -122,5 +122,22 @@ namespace Veilheim.Blueprints
             }
         }
 
+        [PatchEvent(typeof(GameCamera), nameof(GameCamera.UpdateCamera), PatchEventType.Postfix)]
+        public static void AdjustCameraHeight(GameCamera instance)
+        {
+            if (Player.m_localPlayer)
+            {
+                if (Player.m_localPlayer.InPlaceMode())
+                {
+                    if (Player.m_localPlayer.m_placementGhost)
+                    {
+                        if (Player.m_localPlayer.m_placementGhost.name.StartsWith("piece_blueprint"))
+                        {
+                            instance.transform.position += new Vector3(0, 5.0f, 0);
+                        }
+                    }
+                }
+            }
+        }
     }
 }
