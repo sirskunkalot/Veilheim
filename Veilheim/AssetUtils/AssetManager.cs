@@ -65,9 +65,14 @@ namespace Veilheim.AssetUtils
 
         private Dictionary<string, CraftingStation> CraftingStations;
 
-        public AssetManager()
+        private AssetManager() { }
+
+        public static void Init()
         {
-            Instance = this;
+            if (Instance == null)
+            {
+                Instance = new AssetManager();
+            }
         }
 
         public void Destroy()

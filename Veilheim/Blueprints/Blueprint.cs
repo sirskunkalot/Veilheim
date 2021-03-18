@@ -342,7 +342,7 @@ namespace Veilheim.Blueprints
             }
 
             // Instantiate clone from stub
-            m_prefab = UnityEngine.Object.Instantiate(m_stub);
+            m_prefab = Object.Instantiate(m_stub);
             m_prefab.name = m_prefabname;
             
             var piece = m_prefab.GetComponent<Piece>();
@@ -360,6 +360,7 @@ namespace Veilheim.Blueprints
             if (!GhostInstantiate(m_prefab))
             {
                 Logger.LogWarning("Could not create prefab");
+                Object.Destroy(m_prefab);
                 return null;
             }
 
