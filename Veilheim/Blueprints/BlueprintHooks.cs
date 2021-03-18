@@ -105,7 +105,7 @@ namespace Veilheim.Blueprints
             {
 
                 var circleProjector = instance.m_placementGhost.GetComponent<CircleProjector>();
-                if (circleProjector!=null)
+                if (circleProjector != null)
                 {
                     Object.Destroy(circleProjector);
                 }
@@ -175,7 +175,7 @@ namespace Veilheim.Blueprints
                 {
                     if (piece.m_name == "$piece_make_blueprint" && !piece.IsCreator())
                     {
-                        if (Input.GetAxis("Mouse ScrollWheel") < 0f)
+                        if (Input.GetAxis("Mouse ScrollWheel") > 0f)
                         {
                             Blueprint.selectionRadius -= 2f;
                             if (Blueprint.selectionRadius < 2f)
@@ -184,21 +184,37 @@ namespace Veilheim.Blueprints
                             }
                         }
 
-                        if (Input.GetAxis("Mouse ScrollWheel") > 0f)
+                        if (Input.GetAxis("Mouse ScrollWheel") < 0f)
                         {
                             Blueprint.selectionRadius += 2f;
                         }
 
-                        var circleProjector = instance.m_placementGhost.GetComponent<CircleProjector>();
-                        if (circleProjector==null)
+                        if (!instance.m_placementMarkerInstance)
                         {
-                            instance.m_placementGhost.AddComponent<CircleProjector>();
-                            circleProjector = instance.m_placementGhost.GetComponent<CircleProjector>();
-                            circleProjector.m_prefab = ObjectDB.instance.GetItemPrefab("piece_workbench").GetComponent<CircleProjector>().m_prefab;
+                            return;
                         }
 
-                        circleProjector.m_radius = Blueprint.selectionRadius;
-                        Logger.LogMessage($"Changed radius to {Blueprint.selectionRadius}");
+                        CircleProjector circleProjector = instance.m_placementMarkerInstance.GetComponent<CircleProjector>();
+                        if (circleProjector == null)
+                        {
+                            circleProjector = instance.m_placementMarkerInstance.AddComponent<CircleProjector>();
+                            circleProjector.m_prefab = ZNetScene.instance.GetPrefab("piece_workbench").GetComponentInChildren<CircleProjector>().m_prefab;
+                            // Force calculation of segment count
+                            circleProjector.m_radius = -1;
+                            circleProjector.Start();
+                        }
+                        else
+                        {
+                            circleProjector = instance.m_placementMarkerInstance.GetComponent<CircleProjector>();
+                        }
+
+                        if (circleProjector.m_radius != Blueprint.selectionRadius)
+                        {
+                            circleProjector.m_radius = Blueprint.selectionRadius;
+                            circleProjector.m_nrOfSegments = (int)circleProjector.m_radius * 4;
+                            circleProjector.Update();
+                            Logger.LogInfo($"Setting radius to {Blueprint.selectionRadius}");
+                        }
                     }
                 }
             }
