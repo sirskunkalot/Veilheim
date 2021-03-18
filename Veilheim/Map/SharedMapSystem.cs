@@ -216,7 +216,7 @@ namespace Veilheim.Map
         {
             // if (Configuration.Current.MapServer.IsEnabled && Configuration.Current.MapServer.shareMapProgression)
             {
-                Logger.LogError("Sending Map data initially to server");
+                Logger.LogInfo("Sending Map data initially to server");
                 // After login, send map data to server (and get new map data back)
                 var pkg = new ZPackage(CreateExplorationData().ToArray());
                 ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(RPC_ReceiveExploration), pkg);
