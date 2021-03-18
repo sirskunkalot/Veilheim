@@ -116,7 +116,7 @@ namespace Veilheim.Blueprints
                 if (Player.m_localPlayer.m_hoveringPiece != null)
                 {
                     var bp = new Blueprint(bpname);
-                    if (bp.Capture(Player.m_localPlayer.m_hoveringPiece.transform.position, 3.0f, 1.0f))
+                    if (bp.Capture(Player.m_localPlayer.m_hoveringPiece.transform.position, Blueprint.selectionRadius, 1.0f))
                     {
                         TextInput.instance.m_queuedSign = new Blueprint.BlueprintSaveGUI(bp);
                         TextInput.instance.Show($"Save Blueprint ({bp.GetPieceCount()} pieces captured)", bpname, 50);
