@@ -175,7 +175,9 @@ namespace Veilheim.Blueprints
                 {
                     if (piece.m_name == "$piece_make_blueprint" && !piece.IsCreator())
                     {
-                        if (Input.GetAxis("Mouse ScrollWheel") > 0f)
+                        instance.m_maxPlaceDistance = 30;
+
+                        if (Input.GetAxis("Mouse ScrollWheel") < 0f)
                         {
                             Blueprint.selectionRadius -= 2f;
                             if (Blueprint.selectionRadius < 2f)
@@ -184,7 +186,7 @@ namespace Veilheim.Blueprints
                             }
                         }
 
-                        if (Input.GetAxis("Mouse ScrollWheel") < 0f)
+                        if (Input.GetAxis("Mouse ScrollWheel") > 0f)
                         {
                             Blueprint.selectionRadius += 2f;
                         }
