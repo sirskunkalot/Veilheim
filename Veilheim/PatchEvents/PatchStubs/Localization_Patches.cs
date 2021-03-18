@@ -44,7 +44,7 @@ namespace Veilheim.PatchEvents.PatchStubs
 
         private static string Postfix(string result, string word)
         {
-            var failed = string.Format("[{0}]", word);
+            var failed = $"[{word}]";
             if (result != failed)
             {
                 return result;

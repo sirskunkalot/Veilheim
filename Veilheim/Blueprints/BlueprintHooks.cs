@@ -106,7 +106,7 @@ namespace Veilheim.Blueprints
                         Object.Destroy(circleProjector);
                     }
 
-                    string bpname = "blueprint" + String.Format("{0:000}", Blueprint.m_blueprints.Count() + 1);
+                    string bpname = $"blueprint{Blueprint.m_blueprints.Count() + 1:000}";
                     Logger.LogInfo($"Capturing blueprint {bpname}");
 
                     if (Player.m_localPlayer.m_hoveringPiece != null)
