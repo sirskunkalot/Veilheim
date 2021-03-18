@@ -124,30 +124,16 @@ namespace Veilheim.Blueprints
             var numLastIteration = -1;
             var collected = new List<Piece>();
             var iteration = 0;
-            while (numLastIteration < numPieces)
+
+            collected.Clear();
+
+            foreach (var piece in Piece.m_allPieces)
             {
-                collected.Clear();
-                Piece.GetAllPiecesInRadius(vec, startRadius, collected);
-                numLastIteration = numPieces;
-                numPieces = collected.Count(x => x.IsPlacedByPlayer() && x.m_category != Piece.PieceCategory.Misc);
-                var newStart = new Vector3();
-                foreach (var position in collected.Where(x => x.IsPlacedByPlayer() && x.m_category != Piece.PieceCategory.Misc)
-                    .Select(x => x.m_nview.GetZDO().m_position))
+                if (Vector2.Distance(new Vector2(startPosition.x, startPosition.z), new Vector2(piece.transform.position.x, piece.transform.position.z)) <
+                    startRadius)
                 {
-                    newStart.x += position.x;
-                    newStart.y += position.y;
-                    newStart.z += position.z;
+                    collected.Add(piece);
                 }
-
-                newStart.x = newStart.x / (numPieces * 1f);
-                newStart.y = newStart.y / (numPieces * 1f);
-                newStart.z = newStart.z / (numPieces * 1f);
-                vec = newStart;
-
-                iteration++;
-                Logger.LogDebug($"Iteration #{iteration} - found {numPieces} pieces in radius {startRadius}");
-                startRadius += radiusDelta;
-                Thread.Sleep(100);
             }
 
             Logger.LogDebug($"Found {numPieces} in a radius of {startRadius:F2}");
