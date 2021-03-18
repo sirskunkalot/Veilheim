@@ -219,10 +219,6 @@ namespace Veilheim.Blueprints
                             circleProjector.m_radius = -1;
                             circleProjector.Start();
                         }
-                        /*else
-                        {
-                            circleProjector = instance.m_placementMarkerInstance.GetComponent<CircleProjector>();
-                        }*/
 
                         if (circleProjector.m_radius != Blueprint.selectionRadius)
                         {
@@ -234,10 +230,10 @@ namespace Veilheim.Blueprints
                     }
                     else
                     {
-                        var circleProjector = instance.m_placementGhost.GetComponent<CircleProjector>();
-                        if (circleProjector != null)
+                        // Destroy placement marker instance to get rid of the circleprojector
+                        if (instance.m_placementMarkerInstance)
                         {
-                            Object.Destroy(circleProjector);
+                            Object.DestroyImmediate(instance.m_placementMarkerInstance);
                         }
                     }
                 }
