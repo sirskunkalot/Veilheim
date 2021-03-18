@@ -38,11 +38,11 @@ namespace Veilheim.PatchEvents.PatchStubs
     [HarmonyPatch(typeof(Player), nameof(Player.PlacePiece), typeof(Piece))]
     public class Player_PlacePiece_Patch
     {
-        public delegate void BlockingPrefixHandler(Player instance, ref bool cancel);
+        public delegate void BlockingPrefixHandler(Player instance, Piece piece, ref bool cancel);
 
         public delegate void PostfixHandler(Player instance, Piece piece, bool successful);
 
-        public delegate void PrefixHandler(Player instance);
+        public delegate void PrefixHandler(Player instance, Piece piece);
 
         public static event PrefixHandler PrefixEvent;
 
@@ -51,16 +51,16 @@ namespace Veilheim.PatchEvents.PatchStubs
         public static event PostfixHandler PostfixEvent;
 
 
-        private static bool Prefix(Player __instance)
+        private static bool Prefix(Player __instance, Piece piece)
         {
             var cancel = false;
-            BlockingPrefixEvent?.Invoke(__instance, ref cancel);
+            BlockingPrefixEvent?.Invoke(__instance, piece, ref cancel);
 
             if (!cancel)
             {
                 try
                 {
-                    PrefixEvent?.Invoke(__instance);
+                    PrefixEvent?.Invoke(__instance, piece);
                 }
                 catch (Exception ex)
                 {

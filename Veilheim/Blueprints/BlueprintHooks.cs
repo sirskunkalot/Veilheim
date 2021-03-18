@@ -85,6 +85,53 @@ namespace Veilheim.Blueprints
             }
         }
 
+        /// <summary>
+        ///     React to the "placement" of make_blueprint
+        /// </summary>
+        /// <param name="instance"></param>
+        /// <param name="piece"></param>
+        /// <param name="cancel"></param>
+        [PatchEvent(typeof(Player), nameof(Player.PlacePiece), PatchEventType.BlockingPrefix)]
+        public static void BeforeCapturingBlueprint(Player instance, Piece piece, ref bool cancel)
+        {
+            // Client only
+            if (!ZNet.instance.IsServerInstance())
+            {
+                // Capture a new blueprint
+                if (piece.name == "make_blueprint")
+                {
+                    var circleProjector = instance.m_placementGhost.GetComponent<CircleProjector>();
+                    if (circleProjector != null)
+                    {
+                        Object.Destroy(circleProjector);
+                    }
+
+                    string bpname = "blueprint" + String.Format("{0:000}", Blueprint.m_blueprints.Count() + 1);
+                    Logger.LogInfo($"Capturing blueprint {bpname}");
+
+                    if (Player.m_localPlayer.m_hoveringPiece != null)
+                    {
+                        var bp = new Blueprint(bpname);
+                        if (bp.Capture(Player.m_localPlayer.m_hoveringPiece.transform.position, Blueprint.selectionRadius, 1.0f))
+                        {
+                            TextInput.instance.m_queuedSign = new Blueprint.BlueprintSaveGUI(bp);
+                            TextInput.instance.Show($"Save Blueprint ({bp.GetPieceCount()} pieces captured)", bpname, 50);
+                        }
+                        else
+                        {
+                            Logger.LogWarning($"Could not capture blueprint {bpname}");
+                        }
+                    }
+                    else
+                    {
+                        Logger.LogInfo("Not hovering any piece");
+                    }
+
+                    // Don't place the piece and clutter the world with it
+                    cancel = true;
+                }
+            }
+        }
 
         /// <summary>
         ///     React to a placement of blueprints
@@ -95,53 +142,20 @@ namespace Veilheim.Blueprints
         [PatchEvent(typeof(Player), nameof(Player.PlacePiece), PatchEventType.Postfix)]
         public static void AfterPlacingBlueprint(Player instance, Piece piece, bool successful)
         {
-            if (ZNet.instance.IsServerInstance())
+            // Client only
+            if (!ZNet.instance.IsServerInstance())
             {
-                return;
-            }
-
-            // Capture a new blueprint
-            if (successful && !piece.IsCreator() && piece.m_name == "$piece_make_blueprint")
-            {
-
-                var circleProjector = instance.m_placementGhost.GetComponent<CircleProjector>();
-                if (circleProjector != null)
+                // Place a blueprint
+                if (successful && piece.name.StartsWith("piece_blueprint"))
                 {
-                    Object.Destroy(circleProjector);
-                }
+                    // Do something with this instance
+                    piece.SetCreator(Game.instance.GetPlayerProfile().GetPlayerID());
 
-                string bpname = "blueprint" + String.Format("{0:000}", Blueprint.m_blueprints.Count() + 1);
-                Logger.LogInfo($"Capturing blueprint {bpname}");
-
-                if (Player.m_localPlayer.m_hoveringPiece != null)
-                {
-                    var bp = new Blueprint(bpname);
-                    if (bp.Capture(Player.m_localPlayer.m_hoveringPiece.transform.position, Blueprint.selectionRadius, 1.0f))
+                    foreach (var component in piece.GetComponents<Piece>())
                     {
-                        TextInput.instance.m_queuedSign = new Blueprint.BlueprintSaveGUI(bp);
-                        TextInput.instance.Show($"Save Blueprint ({bp.GetPieceCount()} pieces captured)", bpname, 50);
+                        component.SetCreator(Game.instance.GetPlayerProfile().GetPlayerID());
+                        Logger.LogError($"{piece.m_name}.{piece.m_category}");
                     }
-                    else
-                    {
-                        Logger.LogWarning($"Could not capture blueprint {bpname}");
-                    }
-                }
-                else
-                {
-                    Logger.LogInfo("Not hovering any piece");
-                }
-            }
-
-            // Place a blueprint
-            if (successful && piece.name.StartsWith("piece_blueprint"))
-            {
-                // Do something with this instance
-                piece.SetCreator(Game.instance.GetPlayerProfile().GetPlayerID());
-
-                foreach (var component in piece.GetComponents<Piece>())
-                {
-                    component.SetCreator(Game.instance.GetPlayerProfile().GetPlayerID());
-                    Logger.LogError($"{piece.m_name}.{piece.m_category}");
                 }
             }
         }
@@ -173,7 +187,7 @@ namespace Veilheim.Blueprints
                 var piece = instance.m_placementGhost.GetComponent<Piece>();
                 if (piece != null)
                 {
-                    if (piece.m_name == "$piece_make_blueprint" && !piece.IsCreator())
+                    if (piece.name == "make_blueprint" && !piece.IsCreator())
                     {
                         instance.m_maxPlaceDistance = 30;
 
@@ -196,7 +210,7 @@ namespace Veilheim.Blueprints
                             return;
                         }
 
-                        CircleProjector circleProjector = instance.m_placementMarkerInstance.GetComponent<CircleProjector>();
+                        var circleProjector = instance.m_placementMarkerInstance.GetComponent<CircleProjector>();
                         if (circleProjector == null)
                         {
                             circleProjector = instance.m_placementMarkerInstance.AddComponent<CircleProjector>();
@@ -205,17 +219,25 @@ namespace Veilheim.Blueprints
                             circleProjector.m_radius = -1;
                             circleProjector.Start();
                         }
-                        else
+                        /*else
                         {
                             circleProjector = instance.m_placementMarkerInstance.GetComponent<CircleProjector>();
-                        }
+                        }*/
 
                         if (circleProjector.m_radius != Blueprint.selectionRadius)
                         {
                             circleProjector.m_radius = Blueprint.selectionRadius;
                             circleProjector.m_nrOfSegments = (int)circleProjector.m_radius * 4;
                             circleProjector.Update();
-                            Logger.LogInfo($"Setting radius to {Blueprint.selectionRadius}");
+                            Logger.LogDebug($"Setting radius to {Blueprint.selectionRadius}");
+                        }
+                    }
+                    else
+                    {
+                        var circleProjector = instance.m_placementGhost.GetComponent<CircleProjector>();
+                        if (circleProjector != null)
+                        {
+                            Object.Destroy(circleProjector);
                         }
                     }
                 }

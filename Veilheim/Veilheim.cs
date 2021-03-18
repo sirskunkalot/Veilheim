@@ -21,7 +21,7 @@ namespace Veilheim
         public const string PluginName = "Veilheim";
         public const string PluginVersion = "0.0.1";
 
-        private new readonly Logger Logger = new Logger();
+        private new readonly Logger Logger;  // Don't use BepInEx Logger
 
         private readonly List<IDestroyable> m_destroyables = new List<IDestroyable>();
 
@@ -32,7 +32,10 @@ namespace Veilheim
             m_harmony = new Harmony(PluginGUID);
             m_harmony.PatchAll();
 
-            m_destroyables.Add(new AssetManager());
+            Logger.Init();
+
+            AssetManager.Init();
+            m_destroyables.Add(AssetManager.Instance);
 
             AssetLoader.LoadAssets();
 
@@ -66,21 +69,26 @@ namespace Veilheim
 
         private readonly Dictionary<string, ManualLogSource> m_logger = new Dictionary<string, ManualLogSource>();
 
-        public Logger()
+        private Logger() { }
+
+        public static void Init()
         {
-            Instance = this;
+            if (Instance == null)
+            {
+                Instance = new Logger();
+            }
         }
 
-        public void Destroy()
+        public static void Destroy()
         {
             LogDebug("Destroying Logger");
 
-            foreach (var entry in m_logger)
+            foreach (var entry in Instance.m_logger)
             {
                 BepInEx.Logging.Logger.Sources.Remove(entry.Value);
             }
 
-            m_logger.Clear();
+            Instance.m_logger.Clear();
         }
 
         private ManualLogSource GetLogger()
