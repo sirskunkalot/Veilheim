@@ -1,14 +1,18 @@
-﻿using System;
+﻿// Veilheim
+// a Valheim mod
+// 
+// File:    BlueprintHooks.cs
+// Project: Veilheim
+
 using System.IO;
 using System.Linq;
 using UnityEngine;
 using Veilheim.AssetUtils;
 using Veilheim.PatchEvents;
-using Object = UnityEngine.Object;
 
 namespace Veilheim.Blueprints
 {
-    class BlueprintHooks : PatchEventConsumer
+    internal class BlueprintHooks : PatchEventConsumer
     {
         [PatchEvent(typeof(ZNet), nameof(ZNet.Awake), PatchEventType.Postfix)]
         public static void LoadKnownBlueprints(ZNet instance)
@@ -106,7 +110,7 @@ namespace Veilheim.Blueprints
                         Object.Destroy(circleProjector);
                     }
 
-                    string bpname = $"blueprint{Blueprint.m_blueprints.Count() + 1:000}";
+                    var bpname = $"blueprint{Blueprint.m_blueprints.Count() + 1:000}";
                     Logger.LogInfo($"Capturing blueprint {bpname}");
 
                     if (Player.m_localPlayer.m_hoveringPiece != null)
@@ -129,6 +133,29 @@ namespace Veilheim.Blueprints
 
                     // Don't place the piece and clutter the world with it
                     cancel = true;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Flatten terrain if left ctrl is pressed
+        /// </summary>
+        /// <param name="instance"></param>
+        /// <param name="piece"></param>
+        /// <param name="successful"></param>
+        [PatchEvent(typeof(Player), nameof(Player.PlacePiece), PatchEventType.Prefix)]
+        public static void BeforePlacingBlueprint(Player instance, Piece piece)
+        {
+            // Client only
+            if (!ZNet.instance.IsServerInstance())
+            {
+                if (Input.GetKey(KeyCode.LeftControl))
+                {
+                    if (Player.m_localPlayer.m_placementStatus == Player.PlacementStatus.Valid && piece.name.StartsWith("piece_blueprint"))
+                    {
+                        Vector2 extent = Blueprint.m_blueprints.First(x => $"piece_blueprint ({x.Key})" == piece.name).Value.GetExtent();
+                        FlattenTerrain.FlattenForBlueprint(instance.m_placementGhost.transform, extent.x,extent.y);
+                    }
                 }
             }
         }
@@ -160,6 +187,10 @@ namespace Veilheim.Blueprints
             }
         }
 
+        /// <summary>
+        ///     Add some camera height while planting a blueprint
+        /// </summary>
+        /// <param name="instance"></param>
         [PatchEvent(typeof(GameCamera), nameof(GameCamera.UpdateCamera), PatchEventType.Postfix)]
         public static void AdjustCameraHeight(GameCamera instance)
         {
@@ -178,7 +209,10 @@ namespace Veilheim.Blueprints
             }
         }
 
-
+        /// <summary>
+        ///     Show and change blueprint selection radius
+        /// </summary>
+        /// <param name="instance"></param>
         [PatchEvent(typeof(Player), nameof(Player.UpdatePlacement), PatchEventType.Postfix)]
         public static void ShowBlueprintRadius(Player instance)
         {
@@ -215,6 +249,7 @@ namespace Veilheim.Blueprints
                         {
                             circleProjector = instance.m_placementMarkerInstance.AddComponent<CircleProjector>();
                             circleProjector.m_prefab = ZNetScene.instance.GetPrefab("piece_workbench").GetComponentInChildren<CircleProjector>().m_prefab;
+
                             // Force calculation of segment count
                             circleProjector.m_radius = -1;
                             circleProjector.Start();
@@ -234,6 +269,12 @@ namespace Veilheim.Blueprints
                         if (instance.m_placementMarkerInstance)
                         {
                             Object.DestroyImmediate(instance.m_placementMarkerInstance);
+                        }
+
+                        if (!piece.name.StartsWith("piece_blueprint"))
+                        {
+                            // default value, if we introduce config stuff for this, then change it here!
+                            instance.m_maxPlaceDistance = 8;
                         }
                     }
                 }

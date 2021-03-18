@@ -457,19 +457,17 @@ namespace Veilheim.Blueprints
 
                 var tf = baseObject.transform;
                 tf.rotation = Camera.main.transform.rotation;
-                var q = new Quaternion();
-                q.eulerAngles = new Vector3(0, tf.rotation.eulerAngles.y, 0);
-                tf.SetPositionAndRotation(tf.position, q);
+                var quat = new Quaternion();
+                quat.eulerAngles = new Vector3(0, tf.rotation.eulerAngles.y, 0);
+                tf.SetPositionAndRotation(tf.position, quat);
                 tf.position -= tf.right * (maxX / 2f);
                 tf.position += tf.forward * 5f;
-
-                //FlattenTerrain.Flatten(tf, new Vector2(maxX, maxZ), pieces);
 
                 var prefabs = new Dictionary<string, GameObject>();
                 foreach (var piece in pieces.GroupBy(x => x.name).Select(x => x.FirstOrDefault()))
                 {
                     var go = ZNetScene.instance.GetPrefab(piece.name);
-                    go.transform.SetPositionAndRotation(go.transform.position, q);
+                    go.transform.SetPositionAndRotation(go.transform.position, quat);
                     prefabs.Add(piece.name, go);
                 }
 
@@ -523,6 +521,12 @@ namespace Veilheim.Blueprints
             }*/
 
             return toBuild;
+        }
+
+
+        public Vector2 GetExtent()
+        {
+            return new Vector2(m_pieceEntries.Max(x => x.posX), m_pieceEntries.Max(x => x.posZ));
         }
 
         /// <summary>
