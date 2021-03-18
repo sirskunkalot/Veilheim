@@ -10,7 +10,7 @@ using Veilheim.PatchEvents;
 
 namespace Veilheim.Map
 {
-    public class Map_Patches : PatchEventConsumer
+    public class Map_Patches : IPatchEventConsumer
     {
         /// <summary>
         ///     CLIENT SIDE: Destroy the <see cref="PortalSelectionGUI" /> when active

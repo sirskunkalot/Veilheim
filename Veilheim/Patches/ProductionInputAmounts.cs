@@ -9,7 +9,7 @@ using Veilheim.PatchEvents;
 
 namespace Veilheim.Patches
 {
-    public class ProductionInputAmounts : PatchEventConsumer
+    public class ProductionInputAmounts : IPatchEventConsumer
     {
         [PatchEvent(typeof(Smelter), nameof(Smelter.Awake), PatchEventType.Postfix)]
         public static void SetSmelterInputAmounts(Smelter instance)

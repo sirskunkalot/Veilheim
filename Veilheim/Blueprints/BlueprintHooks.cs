@@ -12,7 +12,7 @@ using Veilheim.PatchEvents;
 
 namespace Veilheim.Blueprints
 {
-    internal class BlueprintHooks : PatchEventConsumer
+    internal class BlueprintHooks : IPatchEventConsumer
     {
         [PatchEvent(typeof(ZNet), nameof(ZNet.Awake), PatchEventType.Postfix)]
         public static void LoadKnownBlueprints(ZNet instance)

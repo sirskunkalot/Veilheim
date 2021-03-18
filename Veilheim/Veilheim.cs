@@ -20,9 +20,7 @@ namespace Veilheim
         public const string PluginGUID = "de.sirskunkalot.valheim.veilheim";
         public const string PluginName = "Veilheim";
         public const string PluginVersion = "0.0.1";
-
-        private new readonly Logger Logger;  // Don't use BepInEx Logger
-
+        
         private readonly List<IDestroyable> m_destroyables = new List<IDestroyable>();
 
         private Harmony m_harmony;
@@ -32,7 +30,7 @@ namespace Veilheim
             m_harmony = new Harmony(PluginGUID);
             m_harmony.PatchAll();
 
-            Logger.Init();
+            Veilheim.Logger.Init();
 
             AssetManager.Init();
             m_destroyables.Add(AssetManager.Instance);
@@ -41,19 +39,19 @@ namespace Veilheim
 
             PatchDispatcher.Init();
 
-            Logger.LogInfo("Plugin loaded");
+            Veilheim.Logger.LogInfo("Plugin loaded");
         }
 
         public void OnDestroy()
         {
-            Logger.LogInfo("Destroying plugin");
+            Veilheim.Logger.LogInfo("Destroying plugin");
 
             foreach (var destroyable in m_destroyables)
             {
                 destroyable.Destroy();
             }
 
-            Logger.Destroy();
+            Veilheim.Logger.Destroy();
 
             m_harmony.UnpatchAll(PluginGUID);
         }

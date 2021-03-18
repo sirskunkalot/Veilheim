@@ -9,7 +9,7 @@ using Veilheim.PatchEvents;
 
 namespace Veilheim.Map
 {
-    public class PublicPostion_Patches : PatchEventConsumer
+    public class PublicPostion_Patches : IPatchEventConsumer
     {
         [PatchEvent(typeof(ZNet), nameof(ZNet.Awake), PatchEventType.Postfix, 600)]
         public static void EnablePublicPosition(ZNet instance)

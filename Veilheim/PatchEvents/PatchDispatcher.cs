@@ -74,7 +74,7 @@ namespace Veilheim.PatchEvents
         /// <returns></returns>
         private IEnumerable<Tuple<MethodInfo, PatchEventAttribute>> GetPayloadMethods()
         {
-            foreach (var type in GetType().Assembly.GetTypes().Where(x => x.BaseType == typeof(PatchEventConsumer)))
+            foreach (var type in GetType().Assembly.GetTypes().Where(x => typeof(IPatchEventConsumer).IsAssignableFrom(x)))
             {
                 foreach (var method in type.GetMethods(BindingFlags.Static | BindingFlags.Public)
                     .Where(x => x.GetCustomAttribute<PatchEventAttribute>() != null))
