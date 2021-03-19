@@ -179,8 +179,7 @@ namespace Veilheim.Blueprints
                         }
 
                         // Instantiate a new object with the new prefab
-                        GameObject gameObject2 = Object.Instantiate(prefab, entryPosition, new Quaternion());
-                        gameObject2.GetComponent<Piece>().transform.rotation = entryQuat;
+                        GameObject gameObject2 = Object.Instantiate(prefab, entryPosition, entryQuat);
 
                         CraftingStation componentInChildren = gameObject2.GetComponentInChildren<CraftingStation>();
                         if (componentInChildren)
