@@ -83,7 +83,7 @@ namespace Veilheim.Blueprints
         /// <summary>
         /// Array of the pieces this blueprint is made of
         /// </summary>
-        private PieceEntry[] m_pieceEntries;
+        internal PieceEntry[] m_pieceEntries;
 
         /// <summary>
         /// Name of the generated prefab of the blueprint instance. Is always "piece_blueprint (&lt;m_name&gt;)"
@@ -133,6 +133,7 @@ namespace Veilheim.Blueprints
                     startRadius)
                 {
                     collected.Add(piece);
+                    numPieces++;
                 }
             }
 
@@ -143,7 +144,7 @@ namespace Veilheim.Blueprints
             var minX = 9999999.9f;
             var minY = 9999999.9f;
 
-            foreach (var piece in collected.Where(x => x.IsPlacedByPlayer() && x.m_category != Piece.PieceCategory.Misc))
+            foreach (var piece in collected.Where(x => x.m_category != Piece.PieceCategory.Misc && x.IsPlacedByPlayer()))
             {
                 if (piece.m_nview.GetZDO().m_position.x < minX)
                 {
@@ -187,18 +188,19 @@ namespace Veilheim.Blueprints
 
                 var quat = piece.m_nview.GetZDO().m_rotation;
                 quat.eulerAngles = new Vector3(0, quat.eulerAngles.y, 0);
+                quat.eulerAngles = piece.transform.eulerAngles;
 
                 string additionalInfo = (piece.GetComponent<TextReceiver>() != null) ? piece.GetComponent<TextReceiver>().GetText() : "";
 
-                var line = string.Join(";", 
-                    piece.name.Split('(')[0], 
-                    piece.m_category.ToString(), 
-                    v1.x.ToString("F5"), 
+                var line = string.Join(";",
+                    piece.name.Split('(')[0],
+                    piece.m_category.ToString(),
+                    v1.x.ToString("F5"),
                     v1.y.ToString("F5"),
-                    v1.z.ToString("F5"), 
-                    quat.x.ToString("F5"), 
-                    quat.y.ToString("F5"), 
-                    quat.z.ToString("F5"), 
+                    v1.z.ToString("F5"),
+                    quat.x.ToString("F5"),
+                    quat.y.ToString("F5"),
+                    quat.z.ToString("F5"),
                     quat.w.ToString("F5"),
                     additionalInfo);
                 m_pieceEntries[i++] = new PieceEntry(line);
@@ -312,7 +314,7 @@ namespace Veilheim.Blueprints
             foreach (var piece in pieces)
             {
                 var gameobject = Create(tf, piece, prefabs, maxX, maxZ);
-                
+
                 var component = gameobject.GetComponent<Piece>();
                 if (component)
                 {
@@ -344,7 +346,7 @@ namespace Veilheim.Blueprints
             // Instantiate clone from stub
             m_prefab = Object.Instantiate(m_stub);
             m_prefab.name = m_prefabname;
-            
+
             var piece = m_prefab.GetComponent<Piece>();
             piece.m_name = m_name;
             //piece.m_creator = Game.instance.GetPlayerProfile().GetPlayerID();
