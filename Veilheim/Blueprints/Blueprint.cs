@@ -347,6 +347,7 @@ namespace Veilheim.Blueprints
 
             var piece = m_prefab.GetComponent<Piece>();
             piece.m_name = m_name;
+            piece.m_category = Piece.PieceCategory.Misc;
             //piece.m_creator = Game.instance.GetPlayerProfile().GetPlayerID();
 
             // Safe way without children / ghost
