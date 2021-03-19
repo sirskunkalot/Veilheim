@@ -53,11 +53,12 @@ namespace Veilheim.AssetUtils
 
     /// <summary>
     ///     Central class for loading and importing custom <see cref="AssetBundle" />s into Valheim.
+    ///     Code inspired by <a href="https://github.com/RandyKnapp/ValheimMods" />
     /// </summary>
     internal class AssetManager : IPatchEventConsumer, IDestroyable
     {
-        internal static AssetManager Instance;
-        private readonly Dictionary<string, GameObject> RegisteredPrefabs = new Dictionary<string, GameObject>();
+        public static AssetManager Instance;
+        private readonly List<GameObject> RegisteredPrefabs = new List<GameObject>();
         private readonly Dictionary<GameObject, ItemDef> RegisteredItems = new Dictionary<GameObject, ItemDef>();
         private readonly Dictionary<GameObject, PieceDef> RegisteredPieces = new Dictionary<GameObject, PieceDef>();
         private readonly List<AssetLocalization> RegisteredLocalizations = new List<AssetLocalization>();
@@ -88,8 +89,8 @@ namespace Veilheim.AssetUtils
 
             foreach (var prefab in RegisteredPrefabs)
             {
-                Object.Destroy(prefab.Value);
-                Logger.LogDebug($"Prefab {prefab.Key} destroyed");
+                Object.Destroy(prefab);
+                Logger.LogDebug($"Prefab {prefab.name} destroyed");
             }
 
             RegisteredPrefabs.Clear();
@@ -102,44 +103,15 @@ namespace Veilheim.AssetUtils
         }
 
         /// <summary>
-        /// Returns an existing prefab with given name, or null if none exist.
-        /// </summary>
-        /// <param name="name">Name of the prefab to search for</param>
-        /// <returns></returns>
-        public GameObject GetPrefab(string name)
-        {
-            if (RegisteredPrefabs.ContainsKey(name))
-            {
-                return RegisteredPrefabs[name];
-            }
-
-            if (!ZNetScene.instance)
-            {
-                Debug.LogError("ZNetScene instance null");
-                return null;
-            }
-
-            foreach (GameObject obj in ZNetScene.instance.m_prefabs)
-            {
-                if (obj.name == name)
-                {
-                    return obj;
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
         ///     Register an "untyped" prefab.<br />
         ///     The "untyped" prefabs are added to the current <see cref="ZNetScene" /> on initialization.
         /// </summary>
         /// <param name="prefab"></param>
-        public void RegisterPrefab(GameObject prefab)
+        public static void RegisterPrefab(GameObject prefab)
         {
-            if (!RegisteredPrefabs.ContainsKey(prefab.name))
+            if (!Instance.RegisteredPrefabs.Contains(prefab))
             {
-                RegisteredPrefabs.Add(prefab.name, prefab);
+                Instance.RegisteredPrefabs.Add(prefab);
             }
         }
 
@@ -152,12 +124,12 @@ namespace Veilheim.AssetUtils
         /// </summary>
         /// <param name="prefab"></param>
         /// <param name="itemDef"></param>
-        public void RegisterItemPrefab(GameObject prefab, ItemDef itemDef)
+        public static void RegisterItemPrefab(GameObject prefab, ItemDef itemDef)
         {
-            if (!RegisteredPrefabs.ContainsKey(prefab.name))
+            if (!Instance.RegisteredPrefabs.Contains(prefab))
             {
-                RegisteredPrefabs.Add(prefab.name, prefab);
-                RegisteredItems.Add(prefab, itemDef);
+                Instance.RegisteredPrefabs.Add(prefab);
+                Instance.RegisteredItems.Add(prefab, itemDef);
             }
         }
 
@@ -171,12 +143,12 @@ namespace Veilheim.AssetUtils
         /// </summary>
         /// <param name="prefab"></param>
         /// <param name="pieceDef"></param>
-        public void RegisterPiecePrefab(GameObject prefab, PieceDef pieceDef)
+        public static void RegisterPiecePrefab(GameObject prefab, PieceDef pieceDef)
         {
-            if (!RegisteredPrefabs.ContainsKey(prefab.name))
+            if (!Instance.RegisteredPrefabs.Contains(prefab))
             {
-                RegisteredPrefabs.Add(prefab.name, prefab);
-                RegisteredPieces.Add(prefab, pieceDef);
+                Instance.RegisteredPrefabs.Add(prefab);
+                Instance.RegisteredPieces.Add(prefab, pieceDef);
             }
         }
 
@@ -184,12 +156,12 @@ namespace Veilheim.AssetUtils
         ///     Register an <see cref="AssetLocalization" />.<br />
         /// </summary>
         /// <param name="localization"></param>
-        public void RegisterLocalization(AssetLocalization localization)
+        public static void RegisterLocalization(AssetLocalization localization)
         {
-            if (!RegisteredLocalizations.Contains(localization))
+            if (!Instance.RegisteredLocalizations.Contains(localization))
             {
                 localization.SetupLanguage(Localization.instance.GetSelectedLanguage());
-                RegisteredLocalizations.Add(localization);
+                Instance.RegisteredLocalizations.Add(localization);
             }
         }
 
@@ -212,12 +184,12 @@ namespace Veilheim.AssetUtils
 
                 foreach (var prefab in Instance.RegisteredPrefabs)
                 {
-                    Logger.LogDebug($"GameObject: {prefab.Key}");
+                    Logger.LogDebug($"GameObject: {prefab.name}");
 
-                    if (!instance.m_namedPrefabs.ContainsKey(prefab.Key.GetStableHashCode()))
+                    if (!instance.m_namedPrefabs.ContainsKey(prefab.name.GetStableHashCode()))
                     {
-                        instance.m_namedPrefabs.Add(prefab.Key.GetStableHashCode(), prefab.Value);
-                        Logger.LogInfo($"Added {prefab.Key}");
+                        instance.m_namedPrefabs.Add(prefab.name.GetStableHashCode(), prefab);
+                        Logger.LogInfo($"Added {prefab.name}");
                     }
                 }
             }

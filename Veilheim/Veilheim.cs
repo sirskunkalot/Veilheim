@@ -9,8 +9,6 @@ using System.Diagnostics;
 using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
-using UnityEngine;
-using UnityEngine.SceneManagement;
 using Veilheim.AssetUtils;
 using Veilheim.PatchEvents;
 
@@ -56,15 +54,6 @@ namespace Veilheim
             Veilheim.Logger.Destroy();
 
             m_harmony.UnpatchAll(PluginGUID);
-        }
-
-        private void OnGUI()
-        {
-            // Display version in main menu
-            if (SceneManager.GetActiveScene().name == "start")
-            {
-                GUI.Label(new Rect(Screen.width - 100, 5, 100, 25), "Veilheim v" + PluginVersion);
-            }
         }
     }
 
