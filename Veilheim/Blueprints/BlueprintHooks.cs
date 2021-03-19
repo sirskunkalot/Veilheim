@@ -150,7 +150,7 @@ namespace Veilheim.Blueprints
             if (!ZNet.instance.IsServerInstance())
             {
                 if (Player.m_localPlayer.m_placementStatus == Player.PlacementStatus.Valid && piece.name.StartsWith("piece_blueprint"))
-                { 
+                {
                     if (Input.GetKey(KeyCode.LeftControl))
                     {
                         Vector2 extent = Blueprint.m_blueprints.First(x => $"piece_blueprint ({x.Key})" == piece.name).Value.GetExtent();
@@ -166,10 +166,10 @@ namespace Veilheim.Blueprints
                     {
                         // Final position
                         Vector3 entryPosition = position + transform.forward * entry.posZ + transform.right * entry.posX + new Vector3(0, entry.posY, 0);
-                        
+
                         // Final rotation
                         Quaternion entryQuat = new Quaternion(entry.rotX, entry.rotY, entry.rotZ, entry.rotW);
-                        entryQuat.eulerAngles += rotation.eulerAngles ;
+                        entryQuat.eulerAngles += rotation.eulerAngles;
 
                         // Get the prefab
                         var prefab = ZNetScene.instance.GetPrefab(entry.name);
@@ -200,6 +200,12 @@ namespace Veilheim.Blueprints
                         if (component3)
                         {
                             component3.OnPlaced();
+                        }
+
+                        TextReceiver component4 = gameObject2.GetComponent<TextReceiver>();
+                        if (component4 != null)
+                        {
+                            component4.SetText(entry.additionalInfo);
                         }
 
                         gameObject2.GetComponent<Piece>().m_placeEffect.Create(gameObject2.transform.position, rotation, gameObject2.transform, 1f);
