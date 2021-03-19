@@ -236,7 +236,6 @@ namespace Veilheim.AssetUtils
                 return;
             }
 
-            // Rebuild
             Instance.InitPieceTables(instance);
             Instance.InitCraftingStations(instance);
         }
@@ -348,6 +347,16 @@ namespace Veilheim.AssetUtils
         {
             // Collect all current PieceTables from the items in ObjectDB
             foreach (var itemPrefab in instance.m_items)
+            {
+                var item = itemPrefab.GetComponent<ItemDrop>().m_itemData;
+                if (item.m_shared.m_buildPieces != null && !PieceTables.ContainsKey(item.m_shared.m_buildPieces.name))
+                {
+                    PieceTables.Add(item.m_shared.m_buildPieces.name, item.m_shared.m_buildPieces);
+                }
+            }
+
+            // Collect all PieceTables from our RegisteredPrefabs
+            foreach (var itemPrefab in RegisteredPrefabs.Values)
             {
                 var item = itemPrefab.GetComponent<ItemDrop>().m_itemData;
                 if (item.m_shared.m_buildPieces != null && !PieceTables.ContainsKey(item.m_shared.m_buildPieces.name))
