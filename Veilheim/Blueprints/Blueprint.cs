@@ -340,7 +340,7 @@ namespace Veilheim.Blueprints
             }
 
             // Instantiate clone from stub
-            m_prefab = Object.Instantiate(m_stub);
+            m_prefab = Object.Instantiate(m_stub, m_stub.transform);
             m_prefab.name = m_prefabname;
             
             var piece = m_prefab.GetComponent<Piece>();
@@ -363,6 +363,7 @@ namespace Veilheim.Blueprints
             }
 
             // Add to known prefabs
+            ZNetScene.instance.m_prefabs.Add(m_prefab);
             ZNetScene.instance.m_namedPrefabs.Add(m_prefabname.GetStableHashCode(), m_prefab);
 
             Logger.LogInfo($"Prefab {m_prefabname} created");
