@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Veilheim.PatchEvents;
 
 namespace Veilheim.AssetUtils
@@ -56,15 +57,14 @@ namespace Veilheim.AssetUtils
     /// </summary>
     internal class AssetManager : IPatchEventConsumer, IDestroyable
     {
-        internal static AssetManager Instance;
+        internal static AssetManager Instance { get; private set; }
         private readonly Dictionary<string, GameObject> RegisteredPrefabs = new Dictionary<string, GameObject>();
         private readonly Dictionary<GameObject, ItemDef> RegisteredItems = new Dictionary<GameObject, ItemDef>();
         private readonly Dictionary<GameObject, PieceDef> RegisteredPieces = new Dictionary<GameObject, PieceDef>();
         private readonly List<AssetLocalization> RegisteredLocalizations = new List<AssetLocalization>();
 
-        private Dictionary<string, CraftingStation> CraftingStations;
-
-        private AssetManager() { }
+        private Dictionary<string, CraftingStation> CraftingStations = new Dictionary<string, CraftingStation>();
+        private Dictionary<string, PieceTable> PieceTables = new Dictionary<string, PieceTable>();
 
         public static void Init()
         {
@@ -224,6 +224,24 @@ namespace Veilheim.AssetUtils
         }
 
         /// <summary>
+        ///     Initialize dictionaries of <see cref="CraftingStation"/>s and <see cref="PieceTable"/>s.<br />
+        ///     Has the highest priority (0), so other hooks can use the dictionaries.
+        /// </summary>
+        /// <param name="instance"></param>
+        [PatchEvent(typeof(ObjectDB), nameof(ObjectDB.Awake), PatchEventType.Postfix, 0)]
+        public static void InitBeforeObjectDB(ObjectDB instance)
+        {
+            if (instance == null || instance.m_items.Count() == 0)
+            {
+                return;
+            }
+
+            // Rebuild
+            Instance.InitPieceTables(instance);
+            Instance.InitCraftingStations(instance);
+        }
+
+        /// <summary>
         ///     Initialize and register all loaded items to the <see cref="ObjectDB" /> in <see cref="FejdStartup" /> (no recipes
         ///     and pieces needed).<br />
         ///     Has a low priority (1000), so other hooks can register their prefabs before they get added to the game.
@@ -231,7 +249,7 @@ namespace Veilheim.AssetUtils
         [PatchEvent(typeof(ObjectDB), nameof(ObjectDB.CopyOtherDB), PatchEventType.Postfix, 1000)]
         public static void AddToObjectDBFejd(ObjectDB instance)
         {
-            if (instance == null || instance.m_items.Count == 0)
+            if (SceneManager.GetActiveScene().name != "start")
             {
                 return;
             }
@@ -251,11 +269,10 @@ namespace Veilheim.AssetUtils
         [PatchEvent(typeof(ObjectDB), nameof(ObjectDB.Awake), PatchEventType.Postfix, 1000)]
         public static void AddToObjectDB(ObjectDB instance)
         {
-            if (instance == null || instance.m_items.Count == 0)
+            if (SceneManager.GetActiveScene().name != "main")
             {
                 return;
             }
-
 
             if (Instance.RegisteredItems.Count() > 0 || Instance.RegisteredPieces.Count() > 0)
             {
@@ -266,7 +283,12 @@ namespace Veilheim.AssetUtils
             }
         }
 
-        [PatchEvent(typeof(Player), nameof(Player.OnSpawned), PatchEventType.Postfix)]
+        /// <summary>
+        ///     Update Recipes and Pieces for the local Player if custom prefabs were added.<br />
+        ///     Has a low priority (1000), so other hooks can register their prefabs before they get added to the player.
+        /// </summary>
+        /// <param name="instance"></param>
+        [PatchEvent(typeof(Player), nameof(Player.OnSpawned), PatchEventType.Postfix, 1000)]
         public static void UpdateKnownRecipes(Player instance)
         {
             if (Player.m_localPlayer == null)
@@ -322,52 +344,43 @@ namespace Veilheim.AssetUtils
             return isTranslated;
         }
 
+        private void InitPieceTables(ObjectDB instance)
+        {
+            // Collect all current PieceTables from the items in ObjectDB
+            foreach (var itemPrefab in instance.m_items)
+            {
+                var item = itemPrefab.GetComponent<ItemDrop>().m_itemData;
+                if (item.m_shared.m_buildPieces != null && !PieceTables.ContainsKey(item.m_shared.m_buildPieces.name))
+                {
+                    PieceTables.Add(item.m_shared.m_buildPieces.name, item.m_shared.m_buildPieces);
+                }
+            }
+        }
+
         private void InitCraftingStations(ObjectDB instance)
         {
-            if (CraftingStations == null)
+            // Collect all possible CraftingStations from PieceTables
+            foreach (var station in PieceTables.Where(x => x.Value.GetComponent<CraftingStation>() != null)
+                    .Select(x => x.Value.GetComponent<CraftingStation>()))
             {
-                CraftingStations = new Dictionary<string, CraftingStation>();
-
-                // Collect all current PieceTables from the items in ObjectDB
-                var pieceTables = new List<PieceTable>();
-                foreach (var itemPrefab in instance.m_items)
+                if (!CraftingStations.ContainsKey(station.name))
                 {
-                    var item = itemPrefab.GetComponent<ItemDrop>().m_itemData;
-                    if (item.m_shared.m_buildPieces != null && !pieceTables.Contains(item.m_shared.m_buildPieces))
-                    {
-                        pieceTables.Add(item.m_shared.m_buildPieces);
-                    }
+                    CraftingStations.Add(station.name, station);
                 }
+            }
 
-                // Collect all possible CraftingStations from the collected PieceTables
-                var craftingStations = new List<CraftingStation>();
-                foreach (var pieceTable in pieceTables)
+            // Collect all CraftingStations from the recipes in ObjectDB
+            foreach (var recipe in instance.m_recipes)
+            {
+                if (recipe.m_craftingStation != null && !CraftingStations.ContainsKey(recipe.m_craftingStation.name))
                 {
-                    foreach (var station in pieceTable.m_pieces.Where(x => x.GetComponent<CraftingStation>() != null)
-                        .Select(x => x.GetComponent<CraftingStation>()))
-                    {
-                        if (!CraftingStations.ContainsKey(station.name))
-                        {
-                            CraftingStations.Add(station.name, station);
-                        }
-                    }
-                }
-
-                // Collect all CraftingStations from the recipes in ObjectDB
-                foreach (var recipe in instance.m_recipes)
-                {
-                    if (recipe.m_craftingStation != null && !CraftingStations.ContainsKey(recipe.m_craftingStation.name))
-                    {
-                        CraftingStations.Add(recipe.m_craftingStation.name, recipe.m_craftingStation);
-                    }
+                    CraftingStations.Add(recipe.m_craftingStation.name, recipe.m_craftingStation);
                 }
             }
         }
 
         private void TryRegisterItems(ObjectDB instance, bool createRecipes)
         {
-            Instance.InitCraftingStations(instance);
-
             // Go through all registered Items and try to obtain references
             // to the actual objects defined as strings in ItemDef
             foreach (var entry in RegisteredItems)
@@ -393,6 +406,16 @@ namespace Veilheim.AssetUtils
 
                 itemDrop.m_itemData.m_dropPrefab = prefab;
                 instance.m_items.Add(prefab);
+
+                // Add PieceTable to local cache, if item has a new one
+                var pieceTable = itemDrop.m_itemData.m_shared.m_buildPieces;
+                if (pieceTable != null)
+                {
+                    if (!PieceTables.ContainsKey(pieceTable.name))
+                    {
+                        PieceTables.Add(pieceTable.name, pieceTable);
+                    }
+                }
 
                 Logger.LogInfo($"Registered item {prefab.name}");
 
@@ -496,20 +519,6 @@ namespace Veilheim.AssetUtils
         /// </summary>
         private void TryRegisterPieces(ObjectDB instance)
         {
-            // Get CraftingStations if necessary
-            Instance.InitCraftingStations(instance);
-
-            // Collect all current PieceTables from the items in ObjectDB
-            var pieceTables = new List<PieceTable>();
-            foreach (var itemPrefab in instance.m_items)
-            {
-                var item = itemPrefab.GetComponent<ItemDrop>().m_itemData;
-                if (item.m_shared.m_buildPieces != null && !pieceTables.Contains(item.m_shared.m_buildPieces))
-                {
-                    pieceTables.Add(item.m_shared.m_buildPieces);
-                }
-            }
-
             // Go through all registered Pieces and try to obtain references
             // to the actual objects defined as strings in PieceDef
             foreach (var entry in RegisteredPieces)
@@ -534,7 +543,7 @@ namespace Veilheim.AssetUtils
                 }
 
                 // Assign the piece to the actual PieceTable if not already in there
-                var pieceTable = pieceTables.Find(x => x.name == pieceDef.PieceTable);
+                var pieceTable = PieceTables.GetValueSafe(pieceDef.PieceTable);
                 if (pieceTable == null)
                 {
                     Logger.LogWarning($"Could not find piecetable: {pieceDef.PieceTable}");
