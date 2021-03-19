@@ -154,7 +154,8 @@ namespace Veilheim.Blueprints
                     if (Input.GetKey(KeyCode.LeftControl))
                     {
                         Vector2 extent = Blueprint.m_blueprints.First(x => $"piece_blueprint ({x.Key})" == piece.name).Value.GetExtent();
-                        FlattenTerrain.FlattenForBlueprint(instance.m_placementGhost.transform, extent.x, extent.y);
+                        FlattenTerrain.FlattenForBlueprint(instance.m_placementGhost.transform, extent.x, extent.y,
+                            Blueprint.m_blueprints.First(x => $"piece_blueprint ({x.Key})" == piece.name).Value.m_pieceEntries);
                     }
 
                     Blueprint bp = Blueprint.m_blueprints[piece.m_name];

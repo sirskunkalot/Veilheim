@@ -50,7 +50,7 @@ namespace Veilheim.Blueprints
             }
         }
 
-        public static void FlattenForBlueprint(Transform transform, float maxX, float maxZ)
+        public static void FlattenForBlueprint(Transform transform, float maxX, float maxZ, PieceEntry[] pieces)
         {
             var groundPrefab = ZNetScene.instance.GetPrefab("raise");
             if (groundPrefab)
@@ -61,7 +61,12 @@ namespace Veilheim.Blueprints
                     var right = -1f;
                     while (right < maxX+1f)
                     {
-                        Object.Instantiate(groundPrefab, transform.position + transform.forward * forward + transform.right * right + new Vector3(0, -0.5f, 0), transform.rotation);
+                        if (pieces.Any(x => Vector2.Distance(new Vector2(x.posX, x.posZ), new Vector2(right, forward)) <= 1f))
+                        {
+                            Object.Instantiate(groundPrefab,
+                                transform.position + transform.forward * forward + transform.right * right + new Vector3(0, -0.5f, 0), transform.rotation);
+                        }
+
                         right++;
                     }
 
