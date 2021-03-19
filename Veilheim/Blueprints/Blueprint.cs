@@ -121,9 +121,7 @@ namespace Veilheim.Blueprints
             Logger.LogDebug("Collecting piece information");
 
             var numPieces = 0;
-            var numLastIteration = -1;
             var collected = new List<Piece>();
-            var iteration = 0;
 
             collected.Clear();
 
