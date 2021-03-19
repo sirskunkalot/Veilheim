@@ -6,7 +6,7 @@
 
 namespace Veilheim.PatchEvents
 {
-    // Dummy abstract class to identify classes with patch payloads
+    // Dummy interface to identify classes with patch payloads
     public interface IPatchEventConsumer
     {
     }
