@@ -127,7 +127,7 @@ namespace Veilheim.Blueprints
             foreach (var piece in Piece.m_allPieces)
             {
                 if (Vector2.Distance(new Vector2(startPosition.x, startPosition.z), new Vector2(piece.transform.position.x, piece.transform.position.z)) <
-                    startRadius)
+                    startRadius && piece.transform.position.y>=startPosition.y)
                 {
                     collected.Add(piece);
                     numPieces++;
