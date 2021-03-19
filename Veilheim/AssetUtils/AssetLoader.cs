@@ -116,7 +116,7 @@ namespace Veilheim.AssetUtils
         public static void LoadPrefab(AssetBundle assetBundle, string assetName)
         {
             var prefab = assetBundle.LoadAsset<GameObject>(assetName);
-            AssetManager.RegisterPrefab(prefab);
+            AssetManager.Instance.RegisterPrefab(prefab);
         }
 
         /// <summary>
@@ -128,7 +128,7 @@ namespace Veilheim.AssetUtils
         public static void LoadItemPrefab(AssetBundle assetBundle, string assetName, ItemDef itemDef)
         {
             var prefab = assetBundle.LoadAsset<GameObject>(assetName);
-            AssetManager.RegisterItemPrefab(prefab, itemDef);
+            AssetManager.Instance.RegisterItemPrefab(prefab, itemDef);
         }
 
         /// <summary>
@@ -140,7 +140,7 @@ namespace Veilheim.AssetUtils
         public static void LoadPiecePrefab(AssetBundle assetBundle, string assetName, PieceDef pieceDef)
         {
             var prefab = assetBundle.LoadAsset<GameObject>(assetName);
-            AssetManager.RegisterPiecePrefab(prefab, pieceDef);
+            AssetManager.Instance.RegisterPiecePrefab(prefab, pieceDef);
         }
 
         /// <summary>
@@ -154,7 +154,7 @@ namespace Veilheim.AssetUtils
             if (asset != null)
             {
                 var localization = new AssetLocalization(assetBundle.name, asset);
-                AssetManager.RegisterLocalization(localization);
+                AssetManager.Instance.RegisterLocalization(localization);
             }
         }
     }
