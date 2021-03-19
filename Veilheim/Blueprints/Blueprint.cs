@@ -5,11 +5,10 @@
 // Project: Veilheim
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using UnityEngine;
 using Veilheim.Configurations;
 using Object = UnityEngine.Object;
@@ -63,6 +62,36 @@ namespace Veilheim.Blueprints
 
         public static float selectionRadius = 10.0f;
 
+        /// <summary>
+        ///     Name of the blueprint instance. Translates to &lt;m_name&gt;.blueprint in the filesystem
+        /// </summary>
+        private string m_name;
+
+        /// <summary>
+        ///     Array of the pieces this blueprint is made of
+        /// </summary>
+        internal PieceEntry[] m_pieceEntries;
+
+        /// <summary>
+        ///     Dynamically generated prefab for this blueprint
+        /// </summary>
+        private GameObject m_prefab;
+
+        /// <summary>
+        ///     Name of the generated prefab of the blueprint instance. Is always "piece_blueprint (&lt;m_name&gt;)"
+        /// </summary>
+        private string m_prefabname;
+
+        /// <summary>
+        ///     New "empty" Blueprint with a name but without any pieces. Call Capture() or Load() to add pieces to the blueprint.
+        /// </summary>
+        /// <param name="name"></param>
+        public Blueprint(string name)
+        {
+            m_name = name;
+            m_prefabname = $"piece_blueprint ({name})";
+        }
+
         public static string GetBlueprintPath()
         {
             //TODO: save per profile or world or global?
@@ -76,37 +105,7 @@ namespace Veilheim.Blueprints
         }
 
         /// <summary>
-        /// Name of the blueprint instance. Translates to &lt;m_name&gt;.blueprint in the filesystem
-        /// </summary>
-        private string m_name;
-
-        /// <summary>
-        /// Array of the pieces this blueprint is made of
-        /// </summary>
-        internal PieceEntry[] m_pieceEntries;
-
-        /// <summary>
-        /// Name of the generated prefab of the blueprint instance. Is always "piece_blueprint (&lt;m_name&gt;)"
-        /// </summary>
-        private string m_prefabname;
-
-        /// <summary>
-        /// Dynamically generated prefab for this blueprint
-        /// </summary>
-        private GameObject m_prefab;
-
-        /// <summary>
-        /// New "empty" Blueprint with a name but without any pieces. Call Capture() or Load() to add pieces to the blueprint.
-        /// </summary>
-        /// <param name="name"></param>
-        public Blueprint(string name)
-        {
-            m_name = name;
-            m_prefabname = $"piece_blueprint ({name})";
-        }
-
-        /// <summary>
-        /// Number of pieces currently stored in this blueprint
+        ///     Number of pieces currently stored in this blueprint
         /// </summary>
         /// <returns></returns>
         public int GetPieceCount()
@@ -188,44 +187,65 @@ namespace Veilheim.Blueprints
                 quat.eulerAngles = new Vector3(0, quat.eulerAngles.y, 0);
                 quat.eulerAngles = piece.transform.eulerAngles;
 
-                string additionalInfo = (piece.GetComponent<TextReceiver>() != null) ? piece.GetComponent<TextReceiver>().GetText() : "";
+                var additionalInfo = piece.GetComponent<TextReceiver>() != null ? piece.GetComponent<TextReceiver>().GetText() : "";
 
-                var line = string.Join(";",
-                    piece.name.Split('(')[0],
-                    piece.m_category.ToString(),
-                    v1.x.ToString("F5"),
-                    v1.y.ToString("F5"),
-                    v1.z.ToString("F5"),
-                    quat.x.ToString("F5"),
-                    quat.y.ToString("F5"),
-                    quat.z.ToString("F5"),
-                    quat.w.ToString("F5"),
-                    additionalInfo);
+                var line = string.Join(";", piece.name.Split('(')[0], piece.m_category.ToString(), v1.x.ToString("F5"), v1.y.ToString("F5"),
+                    v1.z.ToString("F5"), quat.x.ToString("F5"), quat.y.ToString("F5"), quat.z.ToString("F5"), quat.w.ToString("F5"), additionalInfo);
                 m_pieceEntries[i++] = new PieceEntry(line);
             }
 
             return true;
         }
 
-        public void RecordFrame()
+        // Scale down a Texture2D
+        public Texture2D ScaleTexture(Texture2D orig, int width, int height)
         {
-            Task.Factory.StartNew(() =>
+            var result = new Texture2D(width, height);
+            for (var y = 0; y < height; y++)
             {
-                // Delay, to 'miss' the enter keyup event
-                Thread.Sleep(200);
+                for (var x = 0; x < width; x++)
+                {
+                    var xp = 1f * x / width;
+                    var yp = 1f * y / height;
+                    var xo = (int) Mathf.Round(xp * orig.width); //Other X pos
+                    var yo = (int) Mathf.Round(yp * orig.height); //Other Y pos
+                    result.SetPixel(x, y, orig.GetPixel(xo, yo));
+                }
+            }
 
-                Console.instance.m_chatWindow.gameObject.SetActive(false);
-                Console.instance.Update();
-                var oldHud = Hud.instance.m_userHidden;
-                Hud.instance.m_userHidden = true;
-                Hud.instance.SetVisible(false);
-                Hud.instance.Update();
-                Thread.Sleep(100);
+            result.Apply();
+            return result;
+        }
 
-                ScreenCapture.CaptureScreenshot(Path.Combine(GetBlueprintPath(), m_name + ".png"));
+        // Save thumbnail
+        public IEnumerator RecordFrame()
+        {
+            Console.instance.m_chatWindow.gameObject.SetActive(false);
+            Console.instance.Update();
+            var oldHud = Hud.instance.m_userHidden;
+            Hud.instance.m_userHidden = true;
+            Hud.instance.SetVisible(false);
+            Hud.instance.Update();
 
-                Hud.instance.m_userHidden = oldHud;
-            });
+            // Wait for end of frame (2x)
+            yield return new WaitForEndOfFrame();
+            yield return new WaitForEndOfFrame();
+
+            // Get a screenshot
+            var screenShot = ScreenCapture.CaptureScreenshotAsTexture();
+
+            // Calculate proper height
+            var height = (int) Math.Round(160f * screenShot.height / screenShot.width);
+
+            // Create thumbnail image from screenShot
+            var tex = ScaleTexture(screenShot, 160, height);
+
+            // Save to file
+            File.WriteAllBytes(Path.Combine(GetBlueprintPath(), m_name + ".png"), tex.EncodeToPNG());
+
+            // Destroy properly
+            Object.Destroy(tex);
+            Object.Destroy(screenShot);
         }
 
         public bool Save()
@@ -318,7 +338,6 @@ namespace Veilheim.Blueprints
                 {
                     component.SetCreator(Player.m_localPlayer.GetPlayerID());
                 }
-
             }
 
             return true;
@@ -330,11 +349,13 @@ namespace Veilheim.Blueprints
             {
                 return m_prefab;
             }
+
             if (m_stub == null)
             {
                 Logger.LogWarning("Stub not loaded");
                 return null;
             }
+
             if (m_pieceEntries == null)
             {
                 Logger.LogWarning("No pieces loaded");
@@ -348,14 +369,6 @@ namespace Veilheim.Blueprints
             var piece = m_prefab.GetComponent<Piece>();
             piece.m_name = m_name;
             piece.m_category = Piece.PieceCategory.Misc;
-            //piece.m_creator = Game.instance.GetPlayerProfile().GetPlayerID();
-
-            // Safe way without children / ghost
-            /*ZNetView.m_ghostInit = true;
-            go.SetActive(true);
-            ZNetView.m_ghostInit = false;
-
-            AssetManager.RegisterPiecePrefab(go, new PieceDef { PieceTable = "_BlueprintPieceTable" }); */
 
             // Instantiate child objects
             if (!GhostInstantiate(m_prefab))
@@ -442,12 +455,12 @@ namespace Veilheim.Blueprints
 
             // Destroy GameObject
             Logger.LogInfo($"Destroying {m_prefabname}");
-            UnityEngine.Object.DestroyImmediate(m_prefab);
+            Object.DestroyImmediate(m_prefab);
         }
 
         private bool GhostInstantiate(GameObject baseObject)
         {
-            bool ret = true;
+            var ret = true;
             ZNetView.m_ghostInit = true;
 
             try
@@ -531,10 +544,10 @@ namespace Veilheim.Blueprints
         }
 
         /// <summary>
-        /// Helper class for naming and saving a captured blueprint via GUI
-        /// 
-        /// Implements the Interface <see cref="TextReceiver"/>. SetText is called from <see cref="TextInput"/> upon entering an name for the blueprint.<br />
-        /// Save the actual blueprint and add it to the list of known blueprints.
+        ///     Helper class for naming and saving a captured blueprint via GUI
+        ///     Implements the Interface <see cref="TextReceiver" />. SetText is called from <see cref="TextInput" /> upon entering
+        ///     an name for the blueprint.<br />
+        ///     Save the actual blueprint and add it to the list of known blueprints.
         /// </summary>
         internal class BlueprintSaveGUI : TextReceiver
         {
@@ -564,7 +577,7 @@ namespace Veilheim.Blueprints
                         m_blueprints.Remove(newbp.m_name);
                     }
 
-                    newbp.RecordFrame();
+                    VeilheimPlugin.instance.StartCoroutine(newbp.RecordFrame());
                     newbp.CreatePrefab();
                     newbp.AddToPieceTable();
                     Player.m_localPlayer.UpdateKnownRecipesList();
@@ -573,9 +586,9 @@ namespace Veilheim.Blueprints
 
                     Logger.LogInfo("Blueprint created");
                 }
+
                 newbp = null;
             }
-
         }
     }
 }

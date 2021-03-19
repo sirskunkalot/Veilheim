@@ -49,7 +49,7 @@ namespace Veilheim.ConsoleCommands
                 return false;
             }
 
-            blueprint.RecordFrame();
+            Veilheim.VeilheimPlugin.instance.StartCoroutine(blueprint.RecordFrame());
             return true;
         }
     }
