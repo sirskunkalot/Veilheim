@@ -246,6 +246,9 @@ namespace Veilheim.Blueprints
             // Destroy properly
             Object.Destroy(tex);
             Object.Destroy(screenShot);
+
+            // Reset Hud to previous state
+            Hud.instance.m_userHidden = oldHud;
         }
 
         public bool Save()
@@ -411,6 +414,13 @@ namespace Veilheim.Blueprints
             if (!table.m_pieces.Contains(m_prefab))
             {
                 Logger.LogInfo($"Adding {m_prefabname} to BlueprintRune");
+
+                
+                foreach (var cp in m_prefab.GetComponents(typeof(Component)))
+                {
+                    Logger.LogError($"Component {cp.GetType().Name}");
+                }
+
 
                 table.m_pieces.Add(m_prefab);
             }
