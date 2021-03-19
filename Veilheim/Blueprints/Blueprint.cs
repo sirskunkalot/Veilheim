@@ -415,13 +415,6 @@ namespace Veilheim.Blueprints
             {
                 Logger.LogInfo($"Adding {m_prefabname} to BlueprintRune");
 
-                
-                foreach (var cp in m_prefab.GetComponents(typeof(Component)))
-                {
-                    Logger.LogError($"Component {cp.GetType().Name}");
-                }
-
-
                 table.m_pieces.Add(m_prefab);
             }
         }

@@ -362,9 +362,7 @@
     <Compile Include="Blueprints\BlueprintHooks.cs" />
     <Compile Include="Blueprints\FlattenTerrain.cs" />
     <Compile Include="Configurations\Sections\ProductionInputAmountServerConfiguration.cs" />
-    <Compile Include="ConsoleCommands\ApplyBlueprintCommand.cs" />
     <Compile Include="ConsoleCommands\ConsoleHooks.cs" />
-    <Compile Include="ConsoleCommands\SaveBlueprintCommand.cs" />
     <Compile Include="Extensions\ObjectDBExtensions.cs" />
     <Compile Include="Configurations\ConfigSync.cs" />
     <Compile Include="IDestroyable.cs" />
