@@ -289,52 +289,6 @@ namespace Veilheim.Blueprints
             return true;
         }
 
-        public bool Instantiate()
-        {
-            var pieces = new List<PieceEntry>(m_pieceEntries);
-            var maxX = pieces.Max(x => x.posX);
-            var maxZ = pieces.Max(x => x.posZ);
-
-            var startPosition = Player.m_localPlayer.GetTransform();
-            var tf = startPosition;
-            tf.rotation = Camera.main.transform.rotation;
-            var q = new Quaternion();
-            q.eulerAngles = new Vector3(0, tf.rotation.eulerAngles.y, 0);
-            tf.SetPositionAndRotation(tf.position, q);
-            tf.position -= tf.right * (maxX / 2f);
-            tf.position += tf.forward * 5f;
-
-            FlattenTerrain.Flatten(tf, new Vector2(maxX, maxZ), pieces);
-
-            var prefabs = new Dictionary<string, GameObject>();
-            foreach (var piece in pieces.GroupBy(x => x.name).Select(x => x.FirstOrDefault()))
-            {
-                var go = ZNetScene.instance.GetPrefab(piece.name);
-                go.transform.SetPositionAndRotation(go.transform.position, q);
-                prefabs.Add(piece.name, go);
-            }
-
-            var nulls = prefabs.Values.Count(x => x == null);
-            Logger.LogDebug($"{nulls} nulls found");
-            if (nulls > 0)
-            {
-                return false;
-            }
-
-            foreach (var piece in pieces)
-            {
-                var gameobject = Create(tf, piece, prefabs, maxX, maxZ);
-
-                var component = gameobject.GetComponent<Piece>();
-                if (component)
-                {
-                    component.SetCreator(Player.m_localPlayer.GetPlayerID());
-                }
-            }
-
-            return true;
-        }
-
         public GameObject CreatePrefab()
         {
             if (m_prefab != null)
@@ -524,16 +478,6 @@ namespace Veilheim.Blueprints
             q.eulerAngles = new Vector3(0, startPosition.transform.rotation.eulerAngles.y + piece.GetRotation().eulerAngles.y);
 
             var toBuild = Object.Instantiate(prefabs[piece.name], pos, q);
-
-            //var component = toBuild.GetComponent<Piece>();
-            /*if (component && Player.m_localPlayer != null)
-            {
-                component.SetCreator(Player.m_localPlayer.GetPlayerID());
-            }*/
-            /*if (component)
-            {
-                component.SetCreator(Game.instance.GetPlayerProfile().GetPlayerID());
-            }*/
 
             return toBuild;
         }
