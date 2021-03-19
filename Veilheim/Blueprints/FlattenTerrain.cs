@@ -55,10 +55,10 @@ namespace Veilheim.Blueprints
             var groundPrefab = ZNetScene.instance.GetPrefab("raise");
             if (groundPrefab)
             {
-                var forward = -0.5f;
+                var forward = -1f;
                 while (forward < maxZ+1f)
                 {
-                    var right = -0.5f;
+                    var right = -1f;
                     while (right < maxX+1f)
                     {
                         Object.Instantiate(groundPrefab, transform.position + transform.forward * forward + transform.right * right + new Vector3(0, -0.5f, 0), transform.rotation);
