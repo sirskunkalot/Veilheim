@@ -213,33 +213,6 @@ namespace Veilheim.Blueprints
         }
 
         /// <summary>
-        ///     React to a placement of blueprints
-        /// </summary>
-        /// <param name="instance"></param>
-        /// <param name="piece"></param>
-        /// <param name="successful"></param>
-        [PatchEvent(typeof(Player), nameof(Player.PlacePiece), PatchEventType.Postfix)]
-        public static void AfterPlacingBlueprint(Player instance, Piece piece, bool successful)
-        {
-            // Client only
-            if (!ZNet.instance.IsServerInstance())
-            {
-                // Place a blueprint
-                if (successful && piece.name.StartsWith("piece_blueprint"))
-                {
-                    // Do something with this instance
-                    piece.SetCreator(Game.instance.GetPlayerProfile().GetPlayerID());
-
-                    foreach (var component in piece.GetComponents<Piece>())
-                    {
-                        component.SetCreator(Game.instance.GetPlayerProfile().GetPlayerID());
-                        Logger.LogError($"{piece.m_name}.{piece.m_category}");
-                    }
-                }
-            }
-        }
-
-        /// <summary>
         ///     Add some camera height while planting a blueprint
         /// </summary>
         /// <param name="instance"></param>
