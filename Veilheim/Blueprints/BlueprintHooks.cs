@@ -143,19 +143,71 @@ namespace Veilheim.Blueprints
         /// <param name="instance"></param>
         /// <param name="piece"></param>
         /// <param name="successful"></param>
-        [PatchEvent(typeof(Player), nameof(Player.PlacePiece), PatchEventType.Prefix)]
-        public static void BeforePlacingBlueprint(Player instance, Piece piece)
+        [PatchEvent(typeof(Player), nameof(Player.PlacePiece), PatchEventType.BlockingPrefix)]
+        public static void BeforePlacingBlueprint(Player instance, Piece piece, ref bool cancel)
         {
             // Client only
             if (!ZNet.instance.IsServerInstance())
             {
-                if (Input.GetKey(KeyCode.LeftControl))
-                {
-                    if (Player.m_localPlayer.m_placementStatus == Player.PlacementStatus.Valid && piece.name.StartsWith("piece_blueprint"))
+                if (Player.m_localPlayer.m_placementStatus == Player.PlacementStatus.Valid && piece.name.StartsWith("piece_blueprint"))
+                { 
+                    if (Input.GetKey(KeyCode.LeftControl))
                     {
                         Vector2 extent = Blueprint.m_blueprints.First(x => $"piece_blueprint ({x.Key})" == piece.name).Value.GetExtent();
-                        FlattenTerrain.FlattenForBlueprint(instance.m_placementGhost.transform, extent.x,extent.y);
+                        FlattenTerrain.FlattenForBlueprint(instance.m_placementGhost.transform, extent.x, extent.y);
                     }
+
+                    Blueprint bp = Blueprint.m_blueprints[piece.m_name];
+                    var transform = instance.m_placementGhost.transform;
+                    var position = instance.m_placementGhost.transform.position;
+                    var rotation = instance.m_placementGhost.transform.rotation;
+
+                    foreach (var entry in bp.m_pieceEntries)
+                    {
+                        // Final position
+                        Vector3 entryPosition = position + transform.forward * entry.posZ + transform.right * entry.posX + new Vector3(0, entry.posY, 0);
+                        
+                        // Final rotation
+                        Quaternion entryQuat = new Quaternion(entry.rotX, entry.rotY, entry.rotZ, entry.rotW);
+                        entryQuat.eulerAngles += rotation.eulerAngles ;
+
+                        // Get the prefab
+                        var prefab = ZNetScene.instance.GetPrefab(entry.name);
+                        if (prefab == null)
+                        {
+                            Logger.LogError(piece.name + " not found?");
+                        }
+
+                        // Instantiate a new object with the new prefab
+                        GameObject gameObject2 = Object.Instantiate(prefab, entryPosition, entryQuat);
+
+                        CraftingStation componentInChildren = gameObject2.GetComponentInChildren<CraftingStation>();
+                        if (componentInChildren)
+                        {
+                            instance.AddKnownStation(componentInChildren);
+                        }
+                        Piece component = gameObject2.GetComponent<Piece>();
+                        if (component)
+                        {
+                            component.SetCreator(instance.GetPlayerID());
+                        }
+                        PrivateArea component2 = gameObject2.GetComponent<PrivateArea>();
+                        if (component2)
+                        {
+                            component2.Setup(Game.instance.GetPlayerProfile().GetName());
+                        }
+                        WearNTear component3 = gameObject2.GetComponent<WearNTear>();
+                        if (component3)
+                        {
+                            component3.OnPlaced();
+                        }
+
+                        gameObject2.GetComponent<Piece>().m_placeEffect.Create(gameObject2.transform.position, rotation, gameObject2.transform, 1f);
+                        instance.AddNoise(50f);
+                        Game.instance.GetPlayerProfile().m_playerStats.m_builds++;
+                    }
+
+                    cancel = true;
                 }
             }
         }
