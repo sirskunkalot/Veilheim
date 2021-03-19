@@ -370,6 +370,14 @@ namespace Veilheim.Blueprints
             m_prefab.name = m_prefabname;
 
             var piece = m_prefab.GetComponent<Piece>();
+            if (File.Exists(Path.Combine(GetBlueprintPath(), m_name + ".png")))
+            {
+                Texture2D tex = new Texture2D(2, 2);
+                tex.LoadImage(File.ReadAllBytes(Path.Combine(GetBlueprintPath(), m_name + ".png")));
+
+                piece.m_icon = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), Vector2.zero);
+            }
+
             piece.m_name = m_name;
             piece.m_category = Piece.PieceCategory.Misc;
 
