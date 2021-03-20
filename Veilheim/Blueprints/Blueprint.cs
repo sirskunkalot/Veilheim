@@ -127,7 +127,7 @@ namespace Veilheim.Blueprints
             foreach (var piece in Piece.m_allPieces)
             {
                 if (Vector2.Distance(new Vector2(startPosition.x, startPosition.z), new Vector2(piece.transform.position.x, piece.transform.position.z)) <
-                    startRadius && piece.transform.position.y>=startPosition.y)
+                    startRadius && piece.transform.position.y >= startPosition.y)
                 {
                     collected.Add(piece);
                     numPieces++;
@@ -217,20 +217,12 @@ namespace Veilheim.Blueprints
             return result;
         }
 
+        
+
         // Save thumbnail
-        public IEnumerator RecordFrame()
+        public void RecordFrame()
         {
-            Console.instance.m_chatWindow.gameObject.SetActive(false);
-            Console.instance.Update();
-            var oldHud = Hud.instance.m_userHidden;
-            Hud.instance.m_userHidden = true;
-            Hud.instance.SetVisible(false);
-            Hud.instance.Update();
-
-            // Wait for end of frame (2x)
-            yield return new WaitForEndOfFrame();
-            yield return new WaitForEndOfFrame();
-
+        
             // Get a screenshot
             var screenShot = ScreenCapture.CaptureScreenshotAsTexture();
 
@@ -238,17 +230,14 @@ namespace Veilheim.Blueprints
             var height = (int) Math.Round(160f * screenShot.height / screenShot.width);
 
             // Create thumbnail image from screenShot
-            var tex = ScaleTexture(screenShot, 160, height);
+            Texture2D thumbnail = ScaleTexture(screenShot, 160, height);
 
             // Save to file
-            File.WriteAllBytes(Path.Combine(GetBlueprintPath(), m_name + ".png"), tex.EncodeToPNG());
+            File.WriteAllBytes(Path.Combine(GetBlueprintPath(), m_name + ".png"), thumbnail.EncodeToPNG());
 
             // Destroy properly
-            Object.Destroy(tex);
             Object.Destroy(screenShot);
-
-            // Reset Hud to previous state
-            Hud.instance.m_userHidden = oldHud;
+            Object.Destroy(thumbnail);
         }
 
         public bool Save()
@@ -300,52 +289,6 @@ namespace Veilheim.Blueprints
             return true;
         }
 
-        public bool Instantiate()
-        {
-            var pieces = new List<PieceEntry>(m_pieceEntries);
-            var maxX = pieces.Max(x => x.posX);
-            var maxZ = pieces.Max(x => x.posZ);
-
-            var startPosition = Player.m_localPlayer.GetTransform();
-            var tf = startPosition;
-            tf.rotation = Camera.main.transform.rotation;
-            var q = new Quaternion();
-            q.eulerAngles = new Vector3(0, tf.rotation.eulerAngles.y, 0);
-            tf.SetPositionAndRotation(tf.position, q);
-            tf.position -= tf.right * (maxX / 2f);
-            tf.position += tf.forward * 5f;
-
-            FlattenTerrain.Flatten(tf, new Vector2(maxX, maxZ), pieces);
-
-            var prefabs = new Dictionary<string, GameObject>();
-            foreach (var piece in pieces.GroupBy(x => x.name).Select(x => x.FirstOrDefault()))
-            {
-                var go = ZNetScene.instance.GetPrefab(piece.name);
-                go.transform.SetPositionAndRotation(go.transform.position, q);
-                prefabs.Add(piece.name, go);
-            }
-
-            var nulls = prefabs.Values.Count(x => x == null);
-            Logger.LogDebug($"{nulls} nulls found");
-            if (nulls > 0)
-            {
-                return false;
-            }
-
-            foreach (var piece in pieces)
-            {
-                var gameobject = Create(tf, piece, prefabs, maxX, maxZ);
-
-                var component = gameobject.GetComponent<Piece>();
-                if (component)
-                {
-                    component.SetCreator(Player.m_localPlayer.GetPlayerID());
-                }
-            }
-
-            return true;
-        }
-
         public GameObject CreatePrefab()
         {
             if (m_prefab != null)
@@ -370,9 +313,10 @@ namespace Veilheim.Blueprints
             m_prefab.name = m_prefabname;
 
             var piece = m_prefab.GetComponent<Piece>();
+
             if (File.Exists(Path.Combine(GetBlueprintPath(), m_name + ".png")))
             {
-                Texture2D tex = new Texture2D(2, 2);
+                var tex = new Texture2D(2, 2);
                 tex.LoadImage(File.ReadAllBytes(Path.Combine(GetBlueprintPath(), m_name + ".png")));
 
                 piece.m_icon = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), Vector2.zero);
@@ -535,16 +479,6 @@ namespace Veilheim.Blueprints
 
             var toBuild = Object.Instantiate(prefabs[piece.name], pos, q);
 
-            //var component = toBuild.GetComponent<Piece>();
-            /*if (component && Player.m_localPlayer != null)
-            {
-                component.SetCreator(Player.m_localPlayer.GetPlayerID());
-            }*/
-            /*if (component)
-            {
-                component.SetCreator(Game.instance.GetPlayerProfile().GetPlayerID());
-            }*/
-
             return toBuild;
         }
 
@@ -588,18 +522,52 @@ namespace Veilheim.Blueprints
                         m_blueprints.Remove(newbp.m_name);
                     }
 
-                    VeilheimPlugin.instance.StartCoroutine(newbp.RecordFrame());
-                    newbp.CreatePrefab();
-                    newbp.AddToPieceTable();
-                    Player.m_localPlayer.UpdateKnownRecipesList();
-                    Player.m_localPlayer.UpdateAvailablePiecesList();
-                    m_blueprints.Add(newbp.m_name, newbp);
-
-                    Logger.LogInfo("Blueprint created");
+                    VeilheimPlugin.instance.StartCoroutine(AddBlueprint());
                 }
+            }
+
+
+            public IEnumerator AddBlueprint()
+            {
+                bool oldHud = DisableHud();
+                yield return new WaitForEndOfFrame();
+                yield return new WaitForEndOfFrame();
+
+                newbp.RecordFrame();
+                
+                Hud.instance.m_userHidden = oldHud;
+                Hud.instance.SetVisible(true);
+                Hud.instance.Update();
+                yield return new WaitForEndOfFrame();
+                yield return new WaitForEndOfFrame();
+                
+                newbp.CreatePrefab();
+
+                newbp.AddToPieceTable();
+
+                Player.m_localPlayer.UpdateKnownRecipesList();
+                Player.m_localPlayer.UpdateAvailablePiecesList();
+                m_blueprints.Add(newbp.m_name, newbp);
+
+                Logger.LogInfo("Blueprint created");
 
                 newbp = null;
+
             }
+
+            private bool DisableHud()
+            {
+                Console.instance.m_chatWindow.gameObject.SetActive(false);
+                Console.instance.Update();
+                bool oldHud = Hud.instance.m_userHidden;
+                Hud.instance.m_userHidden = true;
+                Hud.instance.SetVisible(false);
+                Hud.instance.Update();
+
+                return oldHud;
+            }
+
+            
         }
     }
 }
