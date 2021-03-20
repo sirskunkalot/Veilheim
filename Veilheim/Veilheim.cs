@@ -6,6 +6,7 @@
 
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Reflection;
 using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
@@ -13,6 +14,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Veilheim.AssetUtils;
 using Veilheim.PatchEvents;
+using Veilheim.UnityWrappers;
 
 namespace Veilheim
 {
@@ -29,9 +31,11 @@ namespace Veilheim
         private readonly List<IDestroyable> m_destroyables = new List<IDestroyable>();
 
         private Harmony m_harmony;
-
-        public void Awake()
+        
+        private void Awake()
         {
+            Assembly.GetAssembly(typeof(ItemDropWrapper));  //TODO: force load assembly somewhat more elegant
+
             m_harmony = new Harmony(PluginGUID);
             m_harmony.PatchAll();
 
@@ -48,7 +52,7 @@ namespace Veilheim
             instance = this;
         }
 
-        public void OnDestroy()
+        private void OnDestroy()
         {
             Veilheim.Logger.LogInfo("Destroying plugin");
 

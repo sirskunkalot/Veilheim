@@ -52,7 +52,7 @@ namespace Veilheim.Blueprints
                 // Get prefab stub from bundle
                 if (Blueprint.m_stub == null)
                 {
-                    var assetBundle = AssetLoader.LoadAssetBundleFromResources("blueprintrune");
+                    var assetBundle = AssetLoader.LoadAssetBundleFromResources("blueprints");
                     Blueprint.m_stub = assetBundle.LoadAsset<GameObject>("piece_blueprint");
                     assetBundle.Unload(false);
                 }
