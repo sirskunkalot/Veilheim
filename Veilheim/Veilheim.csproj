@@ -426,8 +426,10 @@
     <EmbeddedResource Include="Assets\blueprints" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Assets\configurationgui" />
     <None Include="Assets\trashfire" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>powershell.exe -ExecutionPolicy RemoteSigned -File "$(SolutionDir)publish.ps1" -Target "$(ConfigurationName)" -TargetPath "$(TargetDir.TrimEnd('\'))" -TargetAssembly "$(TargetFileName)" -ValheimPath "$(ValheimDir.TrimEnd('\'))"</PostBuildEvent>
