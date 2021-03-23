@@ -15,7 +15,7 @@ namespace Veilheim.Editor
 
         public static readonly string k_LibDir = Path.Combine(k_SolutionDir, "libraries\\Unity");
 
-        public static readonly string k_AssetDir = Path.Combine(k_SolutionDir, "Veilheim\\Assets");
+        public static readonly string k_AssetDir = Path.Combine(k_SolutionDir, "Veilheim\\AssetsBundles");
 
         private static readonly string[] k_IgnoredAssemblies = {
             "UnityEngine.TestRunner",

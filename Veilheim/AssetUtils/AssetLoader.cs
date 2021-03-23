@@ -10,6 +10,8 @@ using System.Linq;
 using System.Reflection;
 using BepInEx;
 using UnityEngine;
+using Veilheim.AssetEntities;
+using Veilheim.AssetManagers;
 
 namespace Veilheim.AssetUtils
 {
@@ -24,16 +26,56 @@ namespace Veilheim.AssetUtils
             // AssetBundle for the blueprint rune. Loading the rune itself loads the referenced PieceTable and Pieces
             assetBundle = LoadAssetBundleFromResources("blueprints");
             LoadItemPrefab(assetBundle, "BlueprintRune",
-                new ItemDef
+                new RecipeDef
                 {
                     Amount = 1, 
-                    //CraftingStation = "piece_workbench", 
-                    Resources = new List<RequirementDef> {
+                    Requirements = new RequirementDef[] {
                         new RequirementDef {Item = "Stone", Amount = 1}
                     }
                 });
             LoadLocalization(assetBundle);
             assetBundle.Unload(false);
+        }
+
+        /// <summary>
+        ///     Load an "untyped" prefab from a bundle and register it in the <see cref="PrefabManager" />.
+        /// </summary>
+        /// <param name="assetBundle"></param>
+        /// <param name="assetName"></param>
+        public static void LoadPrefab(AssetBundle assetBundle, string assetName)
+        {
+            var prefab = assetBundle.LoadAsset<GameObject>(assetName);
+            PrefabManager.Instance.Prefabs.Add(assetName, prefab);
+        }
+
+        /// <summary>
+        ///     Load an <see cref="ItemDrop" /> prefab and register it in the <see cref="ItemManager"/>.<br />
+        ///     The item prefabs are added to the current <see cref="ObjectDB" /> on initialization.<br />
+        ///     A <see cref="Recipe"/> is generated automatically, when a recipeDef is given.
+        /// </summary>
+        /// <param name="assetBundle"></param>
+        /// <param name="assetName"></param>
+        /// <param name="recipeDef"></param>
+        public static void LoadItemPrefab(AssetBundle assetBundle, string assetName, RecipeDef recipeDef)
+        {
+            var prefab = assetBundle.LoadAsset<GameObject>(assetName);
+            PrefabManager.Instance.AddPrefab(assetName, prefab);
+            ItemManager.Instance.AddItem(assetName, recipeDef);
+        }
+
+        /// <summary>
+        ///     Load the localization <see cref="TextAsset" /> from a bundle. Asset name must be "localization".
+        /// </summary>
+        /// <param name="assetBundle"></param>
+        public static void LoadLocalization(AssetBundle assetBundle)
+        {
+            var localization = assetBundle.LoadAsset<TextAsset>("localization");
+
+            if (localization != null)
+            {
+                var LocalizationDef = new LocalizationDef(assetBundle.name, localization);
+                LocalizationManager.Instance.AddLocalization(LocalizationDef);
+            }
         }
 
         /// <summary>
@@ -109,29 +151,6 @@ namespace Veilheim.AssetUtils
         }
 
         /// <summary>
-        ///     Load an "untyped" prefab from a bundle and register it in <see cref="AssetManager" />.
-        /// </summary>
-        /// <param name="assetBundle"></param>
-        /// <param name="assetName"></param>
-        public static void LoadPrefab(AssetBundle assetBundle, string assetName)
-        {
-            var prefab = assetBundle.LoadAsset<GameObject>(assetName);
-            AssetManager.Instance.RegisterPrefab(prefab);
-        }
-
-        /// <summary>
-        ///     Load an item prefab from a bundle and register it in <see cref="AssetManager" />.
-        /// </summary>
-        /// <param name="assetBundle"></param>
-        /// <param name="assetName"></param>
-        /// <param name="itemDef"></param>
-        public static void LoadItemPrefab(AssetBundle assetBundle, string assetName, ItemDef itemDef)
-        {
-            var prefab = assetBundle.LoadAsset<GameObject>(assetName);
-            AssetManager.Instance.RegisterItemPrefab(prefab, itemDef);
-        }
-
-        /// <summary>
         ///     Load a piece prefab from a bundle and register it in <see cref="AssetManager" />.
         /// </summary>
         /// <param name="assetBundle"></param>
@@ -143,19 +162,5 @@ namespace Veilheim.AssetUtils
             AssetManager.Instance.RegisterPiecePrefab(prefab, pieceDef);
         }
 
-        /// <summary>
-        ///     Load the localization <see cref="TextAsset" /> from a bundle. Asset name must be "localization".
-        /// </summary>
-        /// <param name="assetBundle"></param>
-        public static void LoadLocalization(AssetBundle assetBundle)
-        {
-            var asset = assetBundle.LoadAsset<TextAsset>("localization");
-
-            if (asset != null)
-            {
-                var localization = new AssetLocalization(assetBundle.name, asset);
-                AssetManager.Instance.RegisterLocalization(localization);
-            }
-        }
     }
 }

@@ -522,7 +522,7 @@ namespace Veilheim.Blueprints
                         m_blueprints.Remove(newbp.m_name);
                     }
 
-                    VeilheimPlugin.instance.StartCoroutine(AddBlueprint());
+                    VeilheimPlugin.Instance.StartCoroutine(AddBlueprint());
                 }
             }
 
