@@ -53,7 +53,7 @@ namespace Veilheim.AssetManagers
         {
             if (Instance.Localizations.Count > 0)
             {
-                Logger.LogMessage($"----Setting up localizations for custom assets----");
+                Logger.LogMessage($"Setting up localizations for custom assets");
 
                 foreach (var localization in Instance.Localizations)
                 {

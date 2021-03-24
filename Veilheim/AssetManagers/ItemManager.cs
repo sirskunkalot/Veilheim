@@ -80,7 +80,7 @@ namespace Veilheim.AssetManagers
 
             if (Instance.Items.Count > 0)
             {
-                Logger.LogMessage($"---Registering custom items in ObjectDB {ObjectDB.instance}---");
+                Logger.LogMessage($"Registering custom items in {ObjectDB.instance}");
 
                 Instance.RegisterItems();
             }
@@ -100,14 +100,14 @@ namespace Veilheim.AssetManagers
 
             if (Instance.Items.Count > 0)
             {
-                Logger.LogMessage($"---Registering custom items in ObjectDB {ObjectDB.instance}---");
+                Logger.LogMessage($"Registering custom items in {ObjectDB.instance}");
 
                 Instance.RegisterItems();
             }
 
             if (Instance.Recipes.Count > 0)
             {
-                Logger.LogMessage($"---Registering custom recpies in ObjectDB {ObjectDB.instance}---");
+                Logger.LogMessage($"Registering custom recpies in {ObjectDB.instance}");
 
                 Instance.RegisterRecipes();
             }
@@ -141,7 +141,7 @@ namespace Veilheim.AssetManagers
             // to the actual objects defined as strings in RecipeDef
             foreach (var entry in Items)
             {
-                Logger.LogDebug($"GameObject: {entry.name}");
+                Logger.LogInfo($"GameObject: {entry.name}");
 
                 // Add the item prefab to the ObjectDB if not already in there
                 var itemDrop = entry.GetComponent<ItemDrop>();
@@ -182,7 +182,7 @@ namespace Veilheim.AssetManagers
                 var removed = ObjectDB.instance.m_recipes.RemoveAll(x => x.name == recipe.name);
                 if (removed > 0)
                 {
-                    Logger.LogDebug($"Removed recipes ({recipe.name}): {removed}");
+                    Logger.LogInfo($"Removed recipes ({recipe.name}): {removed}");
                 }
 
                 ObjectDB.instance.m_recipes.Add(recipe);

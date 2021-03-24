@@ -32,7 +32,7 @@ namespace Veilheim
         {
             typeof(LocalizationManager),
             typeof(PrefabManager),
-            //typeof(PieceManager),
+            typeof(PieceManager),
             typeof(ItemManager)
         };
 

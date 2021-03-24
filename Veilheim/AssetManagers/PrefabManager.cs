@@ -67,13 +67,13 @@ namespace Veilheim.AssetManagers
 
             if (Instance.Prefabs.Count > 0)
             {
-                Logger.LogMessage("----Adding custom prefabs to ZNetScene----");
+                Logger.LogMessage("Adding custom prefabs to ZNetScene");
 
                 foreach (var prefab in Instance.Prefabs)
                 {
                     var name = prefab.Key;
 
-                    Logger.LogDebug($"GameObject: {name}");
+                    Logger.LogInfo($"GameObject: {name}");
 
                     if (!ZNetScene.instance.m_namedPrefabs.ContainsKey(name.GetStableHashCode()))
                     {
@@ -81,7 +81,7 @@ namespace Veilheim.AssetManagers
 
                         ZNetScene.instance.m_prefabs.Add(gameObject);
                         ZNetScene.instance.m_namedPrefabs.Add(name.GetStableHashCode(), gameObject);
-                        Logger.LogInfo($"Added {name}");
+                        Logger.LogInfo($"Added prefab {name}");
                     }
                 }
             }
