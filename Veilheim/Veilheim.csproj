@@ -376,6 +376,7 @@
     <Compile Include="Map\PortalsOnMap.cs" />
     <Compile Include="Map\PublicPosition.cs" />
     <Compile Include="Map\SharedMapSystem.cs" />
+    <Compile Include="Patches\Debug.cs" />
     <Compile Include="Patches\ProductionInputAmounts.cs" />
     <Compile Include="PatchEvents\PatchDispatcher.cs" />
     <Compile Include="PatchEvents\PatchEventAttribute.cs" />
