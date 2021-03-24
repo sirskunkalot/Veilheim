@@ -365,8 +365,6 @@
     <Compile Include="AssetManagers\PrefabManager.cs" />
     <Compile Include="AssetUtils\AssetCreator.cs" />
     <Compile Include="AssetUtils\AssetLoader.cs" />
-    <Compile Include="AssetUtils\AssetLocalization.cs" />
-    <Compile Include="AssetUtils\AssetManager.cs" />
     <Compile Include="AssetEntities\RecipeDef.cs" />
     <Compile Include="AssetEntities\PieceDef.cs" />
     <Compile Include="AssetEntities\RequirementDef.cs" />
