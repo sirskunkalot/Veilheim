@@ -128,8 +128,9 @@ When Valheim updates it is likely that parts of the assembly files change. If th
 ## Visual Studio actions
 
 1. Make new versions of the publicized assemblies as described in [Development Environment Setup] step 4 and 5.
-2. Go to VS and clean/build (or just rebuild) the project. The building process makes copies of the referenced dlls and stores them in the project folder. To get the newly created dlls it is important to grab the new publicized dlls from the step 1.
+2. Go to VS and clean/build (or just rebuild) the project. The building process makes copies of the referenced dlls and stores them in the project folder. To get the newly created dlls it is important to grab the new publicized dlls from step 1.
 
 ## Unity actions
 
 1. Copy all original `assembly_*.dll` as described in [Editor Setup] step 7 and 8.
+2. Go to Unity Editor and press `Ctrl+R`. This reloads all files from the filesystem and "imports" the copied dlls into the project.
