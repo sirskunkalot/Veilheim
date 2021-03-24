@@ -63,6 +63,18 @@ namespace Veilheim.AssetUtils
         }
 
         /// <summary>
+        ///     Load a piece prefab from a bundle and register it in <see cref="AssetManager" />.
+        /// </summary>
+        /// <param name="assetBundle"></param>
+        /// <param name="assetName"></param>
+        /// <param name="pieceDef"></param>
+        public static void LoadPiecePrefab(AssetBundle assetBundle, string assetName, PieceDef pieceDef)
+        {
+            var prefab = assetBundle.LoadAsset<GameObject>(assetName);
+            //AssetManager.Instance.RegisterPiecePrefab(prefab, pieceDef);
+        }
+
+        /// <summary>
         ///     Load the localization <see cref="TextAsset" /> from a bundle. Asset name must be "localization".
         /// </summary>
         /// <param name="assetBundle"></param>
@@ -148,18 +160,5 @@ namespace Veilheim.AssetUtils
             var assetBundlePath = GetFilePath(fileName);
             return AssetBundle.LoadFromFile(assetBundlePath);
         }
-
-        /// <summary>
-        ///     Load a piece prefab from a bundle and register it in <see cref="AssetManager" />.
-        /// </summary>
-        /// <param name="assetBundle"></param>
-        /// <param name="assetName"></param>
-        /// <param name="pieceDef"></param>
-        public static void LoadPiecePrefab(AssetBundle assetBundle, string assetName, PieceDef pieceDef)
-        {
-            var prefab = assetBundle.LoadAsset<GameObject>(assetName);
-            AssetManager.Instance.RegisterPiecePrefab(prefab, pieceDef);
-        }
-
     }
 }
