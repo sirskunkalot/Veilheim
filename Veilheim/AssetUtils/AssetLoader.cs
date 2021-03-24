@@ -32,6 +32,8 @@ namespace Veilheim.AssetUtils
                         new RequirementDef {Item = "Stone", Amount = 1}
                     }
                 });
+            LoadPrefab(assetBundle, "make_blueprint");
+            LoadPrefab(assetBundle, "piece_blueprint");
             LoadLocalization(assetBundle);
             assetBundle.Unload(false);
         }
