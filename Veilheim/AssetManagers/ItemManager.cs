@@ -43,6 +43,12 @@ namespace Veilheim.AssetManagers
         internal void AddItem(string itemName, RecipeDef recipeDef)
         {
             var item = PrefabManager.Instance.GetPrefab(itemName);
+            if (item == null)
+            {
+                Logger.LogError($"Prefab for item {itemName} not found");
+                return;
+            }
+
             if (item.layer == 0)
             {
                 item.layer = LayerMask.NameToLayer("item");
@@ -138,28 +144,28 @@ namespace Veilheim.AssetManagers
         {
             // Go through all registered Items and try to obtain references
             // to the actual objects defined as strings in RecipeDef
-            foreach (var entry in Items)
+            foreach (var prefab in Items)
             {
-                Logger.LogInfo($"GameObject: {entry.name}");
+                Logger.LogInfo($"GameObject: {prefab.name}");
 
                 // Add the item prefab to the ObjectDB if not already in there
-                var itemDrop = entry.GetComponent<ItemDrop>();
+                var itemDrop = prefab.GetComponent<ItemDrop>();
                 if (itemDrop == null)
                 {
-                    Logger.LogError($"GameObject {entry.name} has no ItemDrop attached");
+                    Logger.LogError($"GameObject {prefab.name} has no ItemDrop attached");
                     continue;
                 }
 
-                if (ObjectDB.instance.m_itemByHash.ContainsKey(StringExtensionMethods.GetStableHashCode(entry.name)))
+                if (ObjectDB.instance.m_itemByHash.ContainsKey(StringExtensionMethods.GetStableHashCode(prefab.name)))
                 {
                     Logger.LogWarning("Item already added to ObjectDB");
                     continue;
                 }
 
-                itemDrop.m_itemData.m_dropPrefab = entry;
-                ObjectDB.instance.m_items.Add(entry);
+                itemDrop.m_itemData.m_dropPrefab = prefab;
+                ObjectDB.instance.m_items.Add(prefab);
 
-                Logger.LogInfo($"Registered item {entry.name}");
+                Logger.LogInfo($"Registered item {prefab.name}");
             }
 
             // If we registered items, update their hashes
@@ -172,10 +178,10 @@ namespace Veilheim.AssetManagers
 
         private void RegisterRecipes()
         {
-            foreach (var entry in Recipes)
+            foreach (var recipeDef in Recipes)
             {
                 // Create recipe 
-                var recipe = entry.GetRecipe();
+                var recipe = recipeDef.GetRecipe();
 
                 // Add the Recipe to the ObjectDB, remove one with the same name first
                 var removed = ObjectDB.instance.m_recipes.RemoveAll(x => x.name == recipe.name);

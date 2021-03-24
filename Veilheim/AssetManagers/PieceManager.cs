@@ -19,6 +19,9 @@ namespace Veilheim.AssetManagers
     {
         internal static PieceManager Instance { get; private set; }
 
+        internal GameObject PieceTableContainer;
+
+        private readonly Dictionary<string, PieceTable> PieceTables = new Dictionary<string, PieceTable>();
         private readonly Dictionary<GameObject, PieceDef> Pieces = new Dictionary<GameObject, PieceDef>();
 
         private void Awake()
@@ -34,7 +37,69 @@ namespace Veilheim.AssetManagers
 
         internal override void Init()
         {
-            Logger.LogInfo("Initialized PieceManager");
+            PieceTableContainer = new GameObject("PieceTables");
+            PieceTableContainer.transform.parent = VeilheimPlugin.RootObject.transform;
+
+            Debug.Log("Initialized PieceManager");
+        }
+
+        internal void AddPieceTable(GameObject prefab)
+        {
+            if (PieceTables.ContainsKey(prefab.name))
+            {
+                Logger.LogWarning($"Piece table {name} already added");
+                return;
+            }
+
+            var table = prefab.GetComponent<PieceTable>();
+
+            if (table == null)
+            {
+                Logger.LogError($"Game object has no PieceTable attached");
+                return;
+            }
+
+            prefab.transform.parent = PieceTableContainer.transform;
+
+            PieceTables.Add(prefab.name, table);
+        }
+
+        internal void AddPiece(string pieceName, PieceDef pieceDef)
+        {
+            var prefab = PrefabManager.Instance.GetPrefab(pieceName);
+            if (prefab == null)
+            {
+                Logger.LogError($"Prefab for piece {pieceName} not found");
+                return;
+            }
+
+            if (prefab.layer == 0)
+            {
+                prefab.layer = LayerMask.NameToLayer("piece");
+            }
+
+            pieceDef.Name = pieceName;
+
+            Pieces.Add(prefab, pieceDef);
+        }
+
+        [PatchEvent(typeof(ObjectDB), nameof(ObjectDB.Awake), PatchEventType.Postfix, 1000)]
+        public static void AddToObjectDB(ObjectDB instance)
+        {
+            Logger.LogMessage($"Registering custom pieces in {ObjectDB.instance}");
+
+            // Load all missing PieceTables (e.g. the ingame ones)
+            foreach (PieceTable table in Resources.FindObjectsOfTypeAll(typeof(PieceTable)))
+            {
+                string name = table.gameObject.name;
+                if (!Instance.PieceTables.ContainsKey(name))
+                {
+                    Instance.PieceTables.Add(name, table);
+                }
+            }
+
+            // Register Pieces
+            Instance.RegisterPieces();
         }
 
         /// <summary>
@@ -58,36 +123,39 @@ namespace Veilheim.AssetManagers
             }
         }
 
+        internal PieceTable GetPieceTable(string name)
+        {
+            if (PieceTables.ContainsKey(name))
+            {
+                return PieceTables[name];
+            }
+
+            return null;
+        }
+
         /// <summary>
         ///     Register our custom building pieces to their respective ingame items or stations
         /// </summary>
-        /*private void RegisterPieces(ObjectDB instance)
+        private void RegisterPieces()
         {
             // Go through all registered Pieces and try to obtain references
             // to the actual objects defined as strings in PieceDef
             foreach (var entry in Pieces)
             {
-                Logger.LogDebug($"GameObject: {entry.Key.name}");
-
                 var prefab = entry.Key;
                 var pieceDef = entry.Value;
 
-                var piece = prefab.GetComponent<Piece>();
+                Logger.LogInfo($"GameObject: {prefab.name}");
 
+                // Assign the piece to the actual PieceTable if not already in there
+                var piece = prefab.GetComponent<Piece>();
                 if (piece == null)
                 {
                     Logger.LogError("GameObject has no Piece attached");
                     continue;
                 }
 
-                if (pieceDef == null)
-                {
-                    Logger.LogError("No PieceDef available");
-                    continue;
-                }
-
-                // Assign the piece to the actual PieceTable if not already in there
-                var pieceTable = PieceTables.GetValueSafe(pieceDef.PieceTable);
+                var pieceTable = GetPieceTable(pieceDef.PieceTable);
                 if (pieceTable == null)
                 {
                     Logger.LogWarning($"Could not find piecetable: {pieceDef.PieceTable}");
@@ -96,19 +164,19 @@ namespace Veilheim.AssetManagers
 
                 if (pieceTable.m_pieces.Contains(prefab))
                 {
-                    Logger.LogDebug($"Piece already added to PieceTable {pieceDef.PieceTable}");
+                    Logger.LogInfo($"Piece already added to PieceTable {pieceDef.PieceTable}");
                     continue;
                 }
 
                 pieceTable.m_pieces.Add(prefab);
 
-                // Assign the CraftingStation for this piece, if needed
+                /*// Assign the CraftingStation for this piece, if needed
                 if (!string.IsNullOrEmpty(pieceDef.CraftingStation))
                 {
-                    var pieceStation = CraftingStations.GetValueSafe(pieceDef.CraftingStation);
+                    var pieceStation = CraftingStations.GetValueSafe(entry.CraftingStation);
                     if (pieceStation == null)
                     {
-                        Logger.LogWarning($"Could not find crafting station: {pieceDef.CraftingStation}");
+                        Logger.LogWarning($"Could not find crafting station: {entry.CraftingStation}");
                         var stationList = string.Join(", ", CraftingStations.Keys);
                         Logger.LogDebug($"Available Stations: {stationList}");
                     }
@@ -120,7 +188,7 @@ namespace Veilheim.AssetManagers
 
                 // Assign all needed resources for this piece
                 var resources = new List<Piece.Requirement>();
-                foreach (var resource in pieceDef.Resources)
+                foreach (var resource in entry.Resources)
                 {
                     var resourcePrefab = instance.GetItemPrefab(resource.Item);
                     if (resourcePrefab == null)
@@ -136,9 +204,9 @@ namespace Veilheim.AssetManagers
 
                 // Try to assign the effect prefabs of another extension defined in ExtendStation
                 var stationExt = prefab.GetComponent<StationExtension>();
-                if (stationExt != null && !string.IsNullOrEmpty(pieceDef.ExtendStation))
+                if (stationExt != null && !string.IsNullOrEmpty(entry.ExtendStation))
                 {
-                    var stationPrefab = pieceTable.m_pieces.Find(x => x.name == pieceDef.ExtendStation);
+                    var stationPrefab = pieceTable.m_pieces.Find(x => x.name == entry.ExtendStation);
                     if (stationPrefab != null)
                     {
                         var station = stationPrefab.GetComponent<CraftingStation>();
@@ -161,10 +229,10 @@ namespace Veilheim.AssetManagers
                 {
                     var otherPiece = pieceTable.m_pieces.Find(x => x.GetComponent<Piece>() != null).GetComponent<Piece>();
                     piece.m_placeEffect.m_effectPrefabs.AddRangeToArray(otherPiece.m_placeEffect.m_effectPrefabs);
-                }
+                }*/
 
                 Logger.LogInfo($"Registered Piece {prefab.name}");
             }
-        }*/
+        }
     }
 }

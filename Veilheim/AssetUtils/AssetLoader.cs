@@ -11,6 +11,7 @@ using BepInEx;
 using UnityEngine;
 using Veilheim.AssetEntities;
 using Veilheim.AssetManagers;
+using Veilheim.Blueprints;
 
 namespace Veilheim.AssetUtils
 {
@@ -24,8 +25,17 @@ namespace Veilheim.AssetUtils
 
             // AssetBundle for the blueprint rune. Loading the rune itself loads the referenced PieceTable and Pieces
             assetBundle = LoadAssetBundleFromResources("blueprints");
-            LoadPrefab(assetBundle, "make_blueprint");
-            LoadPrefab(assetBundle, "piece_blueprint");
+            LoadPieceTablePrefab(assetBundle, "_BlueprintPieceTable");
+            LoadPiecePrefab(assetBundle, "make_blueprint", 
+                new PieceDef
+                {
+                    PieceTable = "_BlueprintPieceTable"
+                });
+            LoadPiecePrefab(assetBundle, "piece_blueprint",
+                new PieceDef
+                {
+                    PieceTable = "_BlueprintPieceTable"
+                });
             LoadItemPrefab(assetBundle, "BlueprintRune",
                 new RecipeDef
                 {
@@ -46,7 +56,7 @@ namespace Veilheim.AssetUtils
         public static void LoadPrefab(AssetBundle assetBundle, string assetName)
         {
             var prefab = assetBundle.LoadAsset<GameObject>(assetName);
-            PrefabManager.Instance.Prefabs.Add(assetName, prefab);
+            PrefabManager.Instance.AddPrefab(assetName, prefab);
         }
 
         /// <summary>
@@ -65,7 +75,7 @@ namespace Veilheim.AssetUtils
         }
 
         /// <summary>
-        ///     Load a piece prefab from a bundle and register it in <see cref="AssetManager" />.
+        ///     Load a piece prefab from a bundle and register it in <see cref="PieceManager" />.
         /// </summary>
         /// <param name="assetBundle"></param>
         /// <param name="assetName"></param>
@@ -73,7 +83,20 @@ namespace Veilheim.AssetUtils
         public static void LoadPiecePrefab(AssetBundle assetBundle, string assetName, PieceDef pieceDef)
         {
             var prefab = assetBundle.LoadAsset<GameObject>(assetName);
-            //AssetManager.Instance.RegisterPiecePrefab(prefab, pieceDef);
+            PrefabManager.Instance.AddPrefab(assetName, prefab);
+            PieceManager.Instance.AddPiece(assetName, pieceDef);
+        }
+
+        /// <summary>
+        ///     Load a PieceTable prefab from a bundle and register it in <see cref="PieceManager" />.
+        /// </summary>
+        /// <param name="assetBundle"></param>
+        /// <param name="assetName"></param>
+        /// <param name="pieceDef"></param>
+        public static void LoadPieceTablePrefab(AssetBundle assetBundle, string assetName)
+        {
+            var prefab = assetBundle.LoadAsset<GameObject>(assetName);
+            PieceManager.Instance.AddPieceTable(prefab);
         }
 
         /// <summary>

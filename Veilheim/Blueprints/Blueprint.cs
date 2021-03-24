@@ -334,7 +334,7 @@ namespace Veilheim.Blueprints
             }
 
             // Add to known prefabs
-            ZNetScene.instance.m_namedPrefabs.Add(m_prefabname.GetStableHashCode(), m_prefab);
+            //ZNetScene.instance.m_namedPrefabs.Add(m_prefabname.GetStableHashCode(), m_prefab);
 
             Logger.LogInfo($"Prefab {m_prefabname} created");
 

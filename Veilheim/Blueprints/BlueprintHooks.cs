@@ -7,6 +7,7 @@
 using System.IO;
 using System.Linq;
 using UnityEngine;
+using Veilheim.AssetManagers;
 using Veilheim.AssetUtils;
 using Veilheim.PatchEvents;
 
@@ -52,9 +53,11 @@ namespace Veilheim.Blueprints
                 // Get prefab stub from bundle
                 if (Blueprint.m_stub == null)
                 {
-                    var assetBundle = AssetLoader.LoadAssetBundleFromResources("blueprints");
-                    Blueprint.m_stub = assetBundle.LoadAsset<GameObject>("piece_blueprint");
-                    assetBundle.Unload(false);
+                    //var assetBundle = AssetLoader.LoadAssetBundleFromResources("blueprints");
+                    //Blueprint.m_stub = assetBundle.LoadAsset<GameObject>("piece_blueprint");
+                    //assetBundle.Unload(false);
+                    var stub = PrefabManager.Instance.GetPrefab("piece_blueprint");
+                    Blueprint.m_stub = stub;
                 }
 
                 // Get prefabs from all known blueprints
@@ -65,6 +68,7 @@ namespace Veilheim.Blueprints
                     var prefab = bp.Value.CreatePrefab();
                     if (prefab != null)
                     {
+                        PrefabManager.Instance.AddPrefab(prefab.name, prefab);
                         bp.Value.AddToPieceTable();
                     }
                 }
