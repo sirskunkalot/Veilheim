@@ -47,8 +47,8 @@ namespace Veilheim.AssetManagers
             }
 
             prefab.name = name;
-            prefab.transform.parent = PrefabContainer.transform;
-            prefab.SetActive(true);
+            //prefab.transform.parent = PrefabContainer.transform;
+            //prefab.SetActive(true);
             Prefabs.Add(name, prefab);
         }
 

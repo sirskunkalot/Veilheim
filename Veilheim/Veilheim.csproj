@@ -431,10 +431,10 @@
     <Content Include="FodyWeavers.xml" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="AssetBundels\blueprints" />
+    <EmbeddedResource Include="AssetBundles\blueprints" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="AssetBundels\trashfire" />
+    <None Include="AssetBundles\trashfire" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
