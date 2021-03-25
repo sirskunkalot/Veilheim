@@ -85,9 +85,9 @@ namespace Veilheim
 #if DEBUG
         private void Update()
         {
-            // Set a breakpoint here to break on F6 key press
-            if (Input.GetKeyDown(KeyCode.F6)) 
-            { }
+            if (Input.GetKeyDown(KeyCode.F6))
+            { // Set a breakpoint here to break on F6 key press
+            }
         }
 #endif
 
