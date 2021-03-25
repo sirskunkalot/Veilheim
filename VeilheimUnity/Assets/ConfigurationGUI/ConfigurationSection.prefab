@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 4022649242881560130}
   - component: {fileID: 4122583515828010928}
   - component: {fileID: 3215675237661201759}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Background
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -87,7 +87,7 @@ GameObject:
   - component: {fileID: 8087854040980152411}
   - component: {fileID: 1324293024752071411}
   - component: {fileID: 5689431788598702383}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: ConfigurationSection
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -182,7 +182,7 @@ GameObject:
   - component: {fileID: 39315157199547278}
   - component: {fileID: 1296934154498394450}
   - component: {fileID: 3081587517396948936}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Checkmark
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -255,7 +255,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4086966212501367051}
   - component: {fileID: 7394726175725040672}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Toggle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -341,7 +341,7 @@ GameObject:
   - component: {fileID: 5098309520743031167}
   - component: {fileID: 2229501966609889765}
   - component: {fileID: 810614309498593952}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Panel
   m_TagString: Untagged
   m_Icon: {fileID: 0}

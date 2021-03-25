@@ -64,8 +64,8 @@ namespace Veilheim.Configurations.GUI
                 BaseConfig configSection = property.GetValue(Configuration.Current, null) as BaseConfig;
                 bool sectionEnabled = configSection.IsEnabled;
                 GameObject section = CreateSection(property.Name, sectionEnabled, ContentGrid.transform);
-                sections.Add(section);
-                foreach (var sectionProperty in BaseConfig.GetProps(property.PropertyType))
+
+                foreach (var sectionProperty in BaseConfig.GetProps(property.PropertyType).Where(x => x.Name != nameof(BaseConfig.IsEnabled)))
                 {
                     GameObject entry = null;
                     if (sectionProperty.PropertyType == typeof(bool))
@@ -83,8 +83,6 @@ namespace Veilheim.Configurations.GUI
 
                     entries.Add(entry);
                 }
-
-                section.transform.SetParent(ContentGrid.transform);
             }
 
 
@@ -94,7 +92,7 @@ namespace Veilheim.Configurations.GUI
                 bool sectionEnabled = configSection.IsEnabled;
                 GameObject section = CreateSection(property.Name, sectionEnabled, ContentGrid.transform);
 
-                foreach (var sectionProperty in BaseConfig.GetProps(property.PropertyType))
+                foreach (var sectionProperty in BaseConfig.GetProps(property.PropertyType).Where(x => x.Name != nameof(BaseConfig.IsEnabled)))
                 {
                     GameObject entry = null;
                     if (sectionProperty.PropertyType == typeof(bool))
@@ -112,8 +110,6 @@ namespace Veilheim.Configurations.GUI
 
                     entries.Add(entry);
                 }
-
-                section.transform.SetParent(ContentGrid.transform);
             }
 
         }
@@ -121,6 +117,7 @@ namespace Veilheim.Configurations.GUI
         private static GameObject CreateSection(string sectionName, bool isEnabled, Transform parentTransform)
         {
             GameObject newSection = Object.Instantiate(PrefabManager.Instance.GetPrefab("ConfigurationSection"), parentTransform);
+            sections.Add(newSection);
             newSection.GetComponent<Text>().text = sectionName;
             newSection.GetComponentInChildren<Toggle>().isOn = isEnabled;
 
