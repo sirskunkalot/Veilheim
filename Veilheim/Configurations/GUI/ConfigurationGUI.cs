@@ -23,7 +23,7 @@ namespace Veilheim.Configurations.GUI
 
         private static GameObject GUIRoot;
 
-        private static Grid ContentGrid;
+        private static VerticalLayoutGroup ContentGrid;
 
         private static List<GameObject> entries = new List<GameObject>();
 
@@ -46,6 +46,8 @@ namespace Veilheim.Configurations.GUI
 
         public static void CreateConfigurationGUIRoot()
         {
+            Assembly asm = Assembly.GetAssembly(typeof(UnityEngine.UI.Text));
+
             if (GUIRoot != null)
             {
                 return;
@@ -56,7 +58,8 @@ namespace Veilheim.Configurations.GUI
 
             GUIRoot = Object.Instantiate(PrefabManager.Instance.GetPrefab("ConfigurationGUIRoot"), InventoryGui.instance.m_playerGrid.transform.parent.parent.parent.parent);
 
-            ContentGrid = GUIRoot.GetComponentInChildren<Grid>();
+            GUIRoot.SetActive(false);
+            ContentGrid = GUIRoot.GetComponentInChildren<VerticalLayoutGroup>();
 
 
             foreach (var property in Configuration.Current.GetSections().Where(x => !typeof(ISyncableSection).IsAssignableFrom(x.PropertyType)))
@@ -121,7 +124,7 @@ namespace Veilheim.Configurations.GUI
             newSection.GetComponent<Text>().text = sectionName;
             newSection.GetComponentInChildren<Toggle>().isOn = isEnabled;
 
-            return newSection.GetComponentInChildren<Grid>().gameObject;
+            return newSection.GetComponentInChildren<VerticalLayoutGroup>().gameObject;
         }
 
         private static GameObject AddEntry(string entryName, bool value, Transform parentTransform)
