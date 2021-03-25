@@ -80,6 +80,18 @@ namespace Veilheim.AssetManagers
             Pieces.Add(prefab, pieceDef);
         }
 
+        internal void RemovePiece(string pieceName)
+        {
+            var prefab = PrefabManager.Instance.GetPrefab(pieceName);
+            if (prefab == null)
+            {
+                Logger.LogError($"Prefab for piece {pieceName} not found");
+                return;
+            }
+
+            Pieces.Remove(prefab);
+        }
+
         [PatchEvent(typeof(ObjectDB), nameof(ObjectDB.Awake), PatchEventType.Postfix, 1000)]
         public static void AddToObjectDB(ObjectDB instance)
         {
