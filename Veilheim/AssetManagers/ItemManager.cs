@@ -137,6 +137,7 @@ namespace Veilheim.AssetManagers
                 Logger.LogMessage($"Updating known recipes and pieces for Player {Player.m_localPlayer.GetPlayerName()}");
 
                 Player.m_localPlayer.UpdateKnownRecipesList();
+                Player.m_localPlayer.UpdateAvailablePiecesList();
             }
         }
 

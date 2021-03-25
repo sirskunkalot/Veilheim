@@ -81,6 +81,13 @@ namespace Veilheim
             Instance = this;
         }
 
+#if DEBUG
+        private void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.F6)) { }
+        }
+#endif
+
         private void OnDestroy()
         {
             Veilheim.Logger.LogInfo($"Destroying {PluginName} v{PluginVersion}");

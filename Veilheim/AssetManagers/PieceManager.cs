@@ -4,12 +4,9 @@
 // File:    PieceManager.cs
 // Project: Veilheim
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Veilheim.AssetEntities;
 using Veilheim.PatchEvents;
 
@@ -21,8 +18,8 @@ namespace Veilheim.AssetManagers
 
         internal GameObject PieceTableContainer;
 
-        private readonly Dictionary<string, PieceTable> PieceTables = new Dictionary<string, PieceTable>();
-        private readonly Dictionary<GameObject, PieceDef> Pieces = new Dictionary<GameObject, PieceDef>();
+        internal readonly Dictionary<string, PieceTable> PieceTables = new Dictionary<string, PieceTable>();
+        internal readonly Dictionary<GameObject, PieceDef> Pieces = new Dictionary<GameObject, PieceDef>();
 
         private void Awake()
         {
@@ -86,6 +83,11 @@ namespace Veilheim.AssetManagers
         [PatchEvent(typeof(ObjectDB), nameof(ObjectDB.Awake), PatchEventType.Postfix, 1000)]
         public static void AddToObjectDB(ObjectDB instance)
         {
+            if (SceneManager.GetActiveScene().name != "main")
+            {
+                return;
+            }
+
             Logger.LogMessage($"Registering custom pieces in {ObjectDB.instance}");
 
             // Load all missing PieceTables (e.g. the ingame ones)
@@ -119,6 +121,7 @@ namespace Veilheim.AssetManagers
             {
                 Logger.LogMessage($"Updating known pieces for Player {Player.m_localPlayer.GetPlayerName()}");
 
+                Player.m_localPlayer.UpdateKnownRecipesList();
                 Player.m_localPlayer.UpdateAvailablePiecesList();
             }
         }

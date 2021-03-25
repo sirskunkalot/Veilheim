@@ -26,12 +26,8 @@ namespace Veilheim.AssetUtils
             // AssetBundle for the blueprint rune. Loading the rune itself loads the referenced PieceTable and Pieces
             assetBundle = LoadAssetBundleFromResources("blueprints");
             LoadPieceTablePrefab(assetBundle, "_BlueprintPieceTable");
+            LoadPrefab(assetBundle, "piece_blueprint");
             LoadPiecePrefab(assetBundle, "make_blueprint", 
-                new PieceDef
-                {
-                    PieceTable = "_BlueprintPieceTable"
-                });
-            LoadPiecePrefab(assetBundle, "piece_blueprint",
                 new PieceDef
                 {
                     PieceTable = "_BlueprintPieceTable"

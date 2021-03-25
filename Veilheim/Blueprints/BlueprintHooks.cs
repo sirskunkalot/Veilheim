@@ -51,31 +51,31 @@ namespace Veilheim.Blueprints
                 Logger.LogMessage("Registering known blueprints");
 
                 // Get prefab stub from bundle
-                if (Blueprint.m_stub == null)
+                /*if (Blueprint.m_stub == null)
                 {
-                    //var assetBundle = AssetLoader.LoadAssetBundleFromResources("blueprints");
-                    //Blueprint.m_stub = assetBundle.LoadAsset<GameObject>("piece_blueprint");
-                    //assetBundle.Unload(false);
-                    var stub = PrefabManager.Instance.GetPrefab("piece_blueprint");
-                    Blueprint.m_stub = stub;
-                }
+                    var assetBundle = AssetLoader.LoadAssetBundleFromResources("blueprints");
+                    Blueprint.m_stub = assetBundle.LoadAsset<GameObject>("piece_blueprint");
+                    assetBundle.Unload(false);
+                    assetBundle.Unload(false);
+                }*/
 
                 // Get prefabs from all known blueprints
                 foreach (var bp in Blueprint.m_blueprints)
                 {
-                    Logger.LogInfo($"{bp.Key}.blueprint");
+                    bp.Value.CreatePrefab();
 
-                    var prefab = bp.Value.CreatePrefab();
-                    if (prefab != null)
-                    {
-                        PrefabManager.Instance.AddPrefab(prefab.name, prefab);
-                        bp.Value.AddToPieceTable();
-                    }
+                    //Logger.LogInfo($"{bp.Key}.blueprint");
+
+                    //var prefab = bp.Value.CreatePrefab();
+                    //if (prefab != null)
+                    //{
+                    //    bp.Value.AddToPieceTable();
+                    //}
                 }
             }
         }
 
-        [PatchEvent(typeof(ZNet), nameof(ZNet.Shutdown), PatchEventType.Postfix)]
+        /*[PatchEvent(typeof(ZNet), nameof(ZNet.Shutdown), PatchEventType.Postfix)]
         public static void DestroyDynamicPrefabs(ZNet instance)
         {
             // Client only
@@ -91,7 +91,7 @@ namespace Veilheim.Blueprints
                     bp.Value.Destroy();
                 }
             }
-        }
+        }*/
 
         /// <summary>
         ///     React to the "placement" of make_blueprint

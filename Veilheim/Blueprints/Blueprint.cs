@@ -10,6 +10,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEngine;
+using Veilheim.AssetEntities;
+using Veilheim.AssetManagers;
 using Veilheim.Configurations;
 using Object = UnityEngine.Object;
 
@@ -217,12 +219,9 @@ namespace Veilheim.Blueprints
             return result;
         }
 
-        
-
         // Save thumbnail
         public void RecordFrame()
         {
-        
             // Get a screenshot
             var screenShot = ScreenCapture.CaptureScreenshotAsTexture();
 
@@ -295,12 +294,8 @@ namespace Veilheim.Blueprints
             {
                 return m_prefab;
             }
-
-            if (m_stub == null)
-            {
-                Logger.LogWarning("Stub not loaded");
-                return null;
-            }
+            
+            Logger.LogInfo($"{m_name}.blueprint");
 
             if (m_pieceEntries == null)
             {
@@ -308,9 +303,22 @@ namespace Veilheim.Blueprints
                 return null;
             }
 
+            // Get Stub from PrefabManager
+            if (m_stub == null)
+            {
+                m_stub = PrefabManager.Instance.GetPrefab("piece_blueprint");
+                if (m_stub == null)
+                {
+                    Logger.LogWarning("Can not load blueprint stub from prefabs");
+                    return null;
+                }
+            }
+
             // Instantiate clone from stub
+            ZNetView.m_forceDisableInit = true;
             m_prefab = Object.Instantiate(m_stub);
             m_prefab.name = m_prefabname;
+            ZNetView.m_forceDisableInit = false;
 
             var piece = m_prefab.GetComponent<Piece>();
 
@@ -334,7 +342,12 @@ namespace Veilheim.Blueprints
             }
 
             // Add to known prefabs
-            //ZNetScene.instance.m_namedPrefabs.Add(m_prefabname.GetStableHashCode(), m_prefab);
+
+            PrefabManager.Instance.AddPrefab(m_prefabname, m_prefab);
+            PieceManager.Instance.AddPiece(m_prefabname, new PieceDef
+            {
+                PieceTable = "_BlueprintPieceTable"
+            });
 
             Logger.LogInfo($"Prefab {m_prefabname} created");
 
