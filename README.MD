@@ -18,14 +18,14 @@ How to setup the development enviroment for this project.
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <StartAction>Program</StartAction>
-    <!-- Runs Steam opening Valheim after building debug -->
-    <!-- Needs to be your path to the Steam client -->
-    <StartProgram>C:\Program Files %28x86%29\Steam\steam.exe</StartProgram>
-    <StartArguments>-applaunch 892970</StartArguments>
-    <!-- Alternatively start valheim.exe directly -->
-    <!-- <StartProgram>$(ValheimDir)\valheim.exe</StartProgram> -->
+    <!-- Start valheim.exe after building Debug-->
+    <StartProgram>$(ValheimDir)\valheim.exe</StartProgram>
     <!-- If you want to connect to a server automatically, add '+connect <ip-address>:<port>' as StartArguments -->
-    <!-- <StartArguments></StartArguments> -->
+    <StartArguments>+console</StartArguments>
+    <!-- Alternatively run Steam.exe opening Valheim after building debug -->
+    <!-- Needs to be your local path to the Steam client -->
+    <!-- StartProgram>C:\Program Files %28x86%29\Steam\steam.exe</StartProgram -->
+    <!-- StartArguments>-applaunch 892970</StartArguments -->
   </PropertyGroup>
 </Project>
 ```
