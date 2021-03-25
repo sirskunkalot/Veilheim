@@ -8,7 +8,6 @@ using System.IO;
 using System.Linq;
 using UnityEngine;
 using Veilheim.AssetManagers;
-using Veilheim.AssetUtils;
 using Veilheim.PatchEvents;
 
 namespace Veilheim.Blueprints
@@ -51,15 +50,16 @@ namespace Veilheim.Blueprints
                 Logger.LogMessage("Registering known blueprints");
 
                 // Create prefabs for all known blueprints
-                foreach (var bp in Blueprint.m_blueprints)
+                foreach (var bp in Blueprint.m_blueprints.Values)
                 {
-                    bp.Value.CreatePrefab();
+                    bp.CreatePrefab();
                 }
             }
         }
 
         /// <summary>
-        ///     React to the "placement" of make_blueprint
+        ///     React to the "placement" of make_blueprint. Captures a new blueprint and cancels
+        ///     the original placement.
         /// </summary>
         /// <param name="instance"></param>
         /// <param name="piece"></param>
@@ -107,11 +107,13 @@ namespace Veilheim.Blueprints
         }
 
         /// <summary>
-        /// Flatten terrain if left ctrl is pressed
+        ///     Incept placing of the blueprint and instantiate all pieces individually.
+        ///     Cancels the real placement of the placeholder piece_blueprint.<br />
+        ///     Flatten terrain if left ctrl is pressed.
         /// </summary>
         /// <param name="instance"></param>
         /// <param name="piece"></param>
-        /// <param name="successful"></param>
+        /// <param name="cancel"></param>
         [PatchEvent(typeof(Player), nameof(Player.PlacePiece), PatchEventType.BlockingPrefix)]
         public static void BeforePlacingBlueprint(Player instance, Piece piece, ref bool cancel)
         {
@@ -142,7 +144,7 @@ namespace Veilheim.Blueprints
                         entryQuat.eulerAngles += rotation.eulerAngles;
 
                         // Get the prefab
-                        var prefab = ZNetScene.instance.GetPrefab(entry.name);
+                        var prefab = PrefabManager.Instance.GetPrefab(entry.name);
                         if (prefab == null)
                         {
                             Logger.LogError(piece.name + " not found?");
@@ -249,7 +251,7 @@ namespace Veilheim.Blueprints
                         if (circleProjector == null)
                         {
                             circleProjector = instance.m_placementMarkerInstance.AddComponent<CircleProjector>();
-                            circleProjector.m_prefab = ZNetScene.instance.GetPrefab("piece_workbench").GetComponentInChildren<CircleProjector>().m_prefab;
+                            circleProjector.m_prefab = PrefabManager.Instance.GetPrefab("piece_workbench").GetComponentInChildren<CircleProjector>().m_prefab;
 
                             // Force calculation of segment count
                             circleProjector.m_radius = -1;

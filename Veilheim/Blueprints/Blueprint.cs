@@ -60,7 +60,7 @@ namespace Veilheim.Blueprints
     {
         public static readonly Dictionary<string, Blueprint> m_blueprints = new Dictionary<string, Blueprint>();
 
-        public static GameObject m_stub;
+        //public static GameObject m_stub;
 
         public static float selectionRadius = 10.0f;
 
@@ -304,21 +304,18 @@ namespace Veilheim.Blueprints
             }
 
             // Get Stub from PrefabManager
-            if (m_stub == null)
+            var stub = PrefabManager.Instance.GetPrefab("piece_blueprint");
+            if (stub == null)
             {
-                m_stub = PrefabManager.Instance.GetPrefab("piece_blueprint");
-                if (m_stub == null)
-                {
-                    Logger.LogWarning("Could not load blueprint stub from prefabs");
-                    return null;
-                }
+                Logger.LogWarning("Could not load blueprint stub from prefabs");
+                return null;
             }
 
             // Instantiate clone from stub
             ZNetView.m_forceDisableInit = true;
-            m_prefab = Object.Instantiate(m_stub);
-            m_prefab.name = m_prefabname;
+            m_prefab = Object.Instantiate(stub);
             ZNetView.m_forceDisableInit = false;
+            m_prefab.name = m_prefabname;
 
             var piece = m_prefab.GetComponent<Piece>();
 
@@ -331,13 +328,13 @@ namespace Veilheim.Blueprints
             }
 
             piece.m_name = m_name;
-            piece.m_category = Piece.PieceCategory.Misc;
+            //piece.m_category = Piece.PieceCategory.Misc;
 
             // Instantiate child objects
             if (!GhostInstantiate(m_prefab))
             {
                 Logger.LogWarning("Could not create prefab");
-                Object.Destroy(m_prefab);
+                Object.DestroyImmediate(m_prefab);
                 return null;
             }
 
@@ -396,6 +393,7 @@ namespace Veilheim.Blueprints
             }
 
             // Remove from prefabs
+            PieceManager.Instance.RemovePiece(m_prefabname);
             PrefabManager.Instance.DestroyPrefab(m_prefabname);
         }
 
@@ -434,13 +432,23 @@ namespace Veilheim.Blueprints
 
                 foreach (var piece in pieces)
                 {
-                    var child = Create(tf, piece, prefabs, maxX, maxZ);
+                    var pos = tf.position + tf.right * piece.GetPosition().x + tf.forward * piece.GetPosition().z +
+                      new Vector3(0, piece.GetPosition().y, 0);
+                    
+                    var q = new Quaternion();
+                    q.eulerAngles = new Vector3(0, tf.transform.rotation.eulerAngles.y + piece.GetRotation().eulerAngles.y);
+
+                    var child = Object.Instantiate(prefabs[piece.name], pos, q);
 
                     child.transform.SetParent(baseObject.transform);
                     child.GetComponent<TextReceiver>()?.SetText(piece.additionalInfo);
-                }
 
-                baseObject.SetActive(true);
+                    var projector = child.GetComponentInChildren<CircleProjector>();
+                    if (projector != null)
+                    {
+                        Object.Destroy(projector);
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -454,20 +462,6 @@ namespace Veilheim.Blueprints
 
             return ret;
         }
-
-        private GameObject Create(Transform startPosition, PieceEntry piece, Dictionary<string, GameObject> prefabs, float maxX, float maxZ)
-        {
-            var pos = startPosition.position + startPosition.right * piece.GetPosition().x + startPosition.forward * piece.GetPosition().z +
-                      new Vector3(0, piece.GetPosition().y, 0);
-
-            var q = new Quaternion();
-            q.eulerAngles = new Vector3(0, startPosition.transform.rotation.eulerAngles.y + piece.GetRotation().eulerAngles.y);
-
-            var toBuild = Object.Instantiate(prefabs[piece.name], pos, q);
-
-            return toBuild;
-        }
-
 
         public Vector2 GetExtent()
         {
@@ -502,8 +496,7 @@ namespace Veilheim.Blueprints
                 {
                     if (m_blueprints.ContainsKey(newbp.m_name))
                     {
-                        Blueprint oldbp;
-                        m_blueprints.TryGetValue(newbp.m_name, out oldbp);
+                        Blueprint oldbp = m_blueprints[newbp.m_name];
                         oldbp.Destroy();
                         m_blueprints.Remove(newbp.m_name);
                     }
