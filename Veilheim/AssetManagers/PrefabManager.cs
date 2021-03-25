@@ -42,7 +42,7 @@ namespace Veilheim.AssetManagers
         {
             if (Prefabs.ContainsKey(name))
             {
-                Logger.LogError("Prefab already exists: " + name);
+                Logger.LogWarning($"Prefab {name} already exists");
                 return;
             }
 
@@ -50,6 +50,58 @@ namespace Veilheim.AssetManagers
             prefab.transform.parent = PrefabContainer.transform;
             prefab.SetActive(true);
             Prefabs.Add(name, prefab);
+        }
+
+        /// <summary>
+        /// Returns an existing prefab with given name, or null if none exist.
+        /// </summary>
+        /// <param name="name">Name of the prefab to search for</param>
+        /// <returns></returns>
+        internal GameObject GetPrefab(string name)
+        {
+            if (Prefabs.ContainsKey(name))
+            {
+                return Prefabs[name];
+            }
+
+            if (ZNetScene.instance)
+            {
+                foreach (GameObject obj in ZNetScene.instance.m_prefabs)
+                {
+                    if (obj.name == name)
+                    {
+                        return obj;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        internal void DestroyPrefab(string name)
+        {
+            if (Prefabs.ContainsKey(name))
+            {
+                Prefabs.Remove(name);
+            }
+
+            if (ZNetScene.instance)
+            {
+                GameObject del = null;
+                foreach (GameObject obj in ZNetScene.instance.m_prefabs)
+                {
+                    if (obj.name == name)
+                    {
+                        break;
+                    }
+                }
+
+                if (del != null)
+                {
+                    ZNetScene.instance.m_prefabs.Remove(del);
+                    DestroyImmediate(del);
+                }
+            }
         }
 
         /// <summary>
@@ -85,35 +137,6 @@ namespace Veilheim.AssetManagers
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// Returns an existing prefab with given name, or null if none exist.
-        /// </summary>
-        /// <param name="name">Name of the prefab to search for</param>
-        /// <returns></returns>
-        internal GameObject GetPrefab(string name)
-        {
-            if (Prefabs.ContainsKey(name))
-            {
-                return Prefabs[name];
-            }
-
-            if (!ZNetScene.instance)
-            {
-                Debug.LogError("ZNetScene instance null");
-                return null;
-            }
-
-            foreach (GameObject obj in ZNetScene.instance.m_prefabs)
-            {
-                if (obj.name == name)
-                {
-                    return obj;
-                }
-            }
-
-            return null;
         }
     }
 }

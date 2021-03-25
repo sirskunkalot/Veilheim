@@ -50,48 +50,13 @@ namespace Veilheim.Blueprints
             {
                 Logger.LogMessage("Registering known blueprints");
 
-                // Get prefab stub from bundle
-                /*if (Blueprint.m_stub == null)
-                {
-                    var assetBundle = AssetLoader.LoadAssetBundleFromResources("blueprints");
-                    Blueprint.m_stub = assetBundle.LoadAsset<GameObject>("piece_blueprint");
-                    assetBundle.Unload(false);
-                    assetBundle.Unload(false);
-                }*/
-
-                // Get prefabs from all known blueprints
+                // Create prefabs for all known blueprints
                 foreach (var bp in Blueprint.m_blueprints)
                 {
                     bp.Value.CreatePrefab();
-
-                    //Logger.LogInfo($"{bp.Key}.blueprint");
-
-                    //var prefab = bp.Value.CreatePrefab();
-                    //if (prefab != null)
-                    //{
-                    //    bp.Value.AddToPieceTable();
-                    //}
                 }
             }
         }
-
-        /*[PatchEvent(typeof(ZNet), nameof(ZNet.Shutdown), PatchEventType.Postfix)]
-        public static void DestroyDynamicPrefabs(ZNet instance)
-        {
-            // Client only
-            if (!instance.IsServerInstance())
-            {
-                Logger.LogMessage("Destroying known blueprints");
-
-                // Try to destroy all known blueprints
-                foreach (var bp in Blueprint.m_blueprints)
-                {
-                    Logger.LogInfo($"{bp.Key}.blueprint");
-
-                    bp.Value.Destroy();
-                }
-            }
-        }*/
 
         /// <summary>
         ///     React to the "placement" of make_blueprint

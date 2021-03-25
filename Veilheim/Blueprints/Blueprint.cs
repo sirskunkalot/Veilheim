@@ -295,7 +295,7 @@ namespace Veilheim.Blueprints
                 return m_prefab;
             }
             
-            Logger.LogInfo($"{m_name}.blueprint");
+            Logger.LogInfo($"Creating dynamic prefab {m_prefabname}");
 
             if (m_pieceEntries == null)
             {
@@ -309,7 +309,7 @@ namespace Veilheim.Blueprints
                 m_stub = PrefabManager.Instance.GetPrefab("piece_blueprint");
                 if (m_stub == null)
                 {
-                    Logger.LogWarning("Can not load blueprint stub from prefabs");
+                    Logger.LogWarning("Could not load blueprint stub from prefabs");
                     return null;
                 }
             }
@@ -342,14 +342,11 @@ namespace Veilheim.Blueprints
             }
 
             // Add to known prefabs
-
             PrefabManager.Instance.AddPrefab(m_prefabname, m_prefab);
             PieceManager.Instance.AddPiece(m_prefabname, new PieceDef
             {
                 PieceTable = "_BlueprintPieceTable"
             });
-
-            Logger.LogInfo($"Prefab {m_prefabname} created");
 
             return m_prefab;
         }
@@ -358,18 +355,10 @@ namespace Veilheim.Blueprints
         {
             if (m_prefab == null)
             {
-                Logger.LogWarning("No prefab created");
                 return;
             }
 
-            var rune = ObjectDB.instance.GetItemPrefab("BlueprintRune");
-            if (rune == null)
-            {
-                Logger.LogWarning("BlueprintRune prefab not found");
-                return;
-            }
-
-            var table = rune.GetComponent<ItemDrop>().m_itemData.m_shared.m_buildPieces;
+            var table = PieceManager.Instance.GetPieceTable("_BlueprintPieceTable");
             if (table == null)
             {
                 Logger.LogWarning("BlueprintPieceTable not found");
@@ -392,14 +381,7 @@ namespace Veilheim.Blueprints
             }
 
             // Remove from PieceTable
-            var rune = ObjectDB.instance.GetItemPrefab("BlueprintRune");
-            if (rune == null)
-            {
-                Logger.LogWarning("BlueprintRune prefab not found");
-                return;
-            }
-
-            var table = rune.GetComponent<ItemDrop>().m_itemData.m_shared.m_buildPieces;
+            var table = PieceManager.Instance.GetPieceTable("_BlueprintPieceTable");
             if (table == null)
             {
                 Logger.LogWarning("BlueprintPieceTable not found");
@@ -414,16 +396,7 @@ namespace Veilheim.Blueprints
             }
 
             // Remove from prefabs
-            if (ZNetScene.instance.m_namedPrefabs.ContainsKey(m_prefabname.GetStableHashCode()))
-            {
-                Logger.LogInfo($"Removing {m_prefabname} from ZNetScene");
-
-                ZNetScene.instance.m_namedPrefabs.Remove(m_prefabname.GetStableHashCode());
-            }
-
-            // Destroy GameObject
-            Logger.LogInfo($"Destroying {m_prefabname}");
-            Object.DestroyImmediate(m_prefab);
+            PrefabManager.Instance.DestroyPrefab(m_prefabname);
         }
 
         private bool GhostInstantiate(GameObject baseObject)

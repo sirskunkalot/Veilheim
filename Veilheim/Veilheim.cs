@@ -70,6 +70,7 @@ namespace Veilheim
                 manager.Init();
             }
 
+            //TODO: destroy managers, no need for an interface anymore
             /*AssetManager.Init();
             m_destroyables.Add(AssetManager.Instance);*/
 
@@ -84,6 +85,7 @@ namespace Veilheim
 #if DEBUG
         private void Update()
         {
+            // Set a breakpoint here to break on F6 key press
             if (Input.GetKeyDown(KeyCode.F6)) { }
         }
 #endif
