@@ -12,6 +12,7 @@ using HarmonyLib;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Veilheim.AssetManagers;
+using Veilheim.Configurations.GUI;
 using Veilheim.PatchEvents;
 using Veilheim.UnityWrappers;
 
@@ -86,8 +87,11 @@ namespace Veilheim
         private void Update()
         {
             // Set a breakpoint here to break on F6 key press
-            if (Input.GetKeyDown(KeyCode.F6)) 
-            { }
+            if (Input.GetKeyDown(KeyCode.F6))
+            {
+                ConfigurationGUI.CreateConfigurationGUIRoot();
+                ConfigurationGUI.ToggleGUI();
+            }
         }
 #endif
 

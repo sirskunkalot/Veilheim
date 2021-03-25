@@ -465,7 +465,6 @@ GameObject:
   - component: {fileID: 902072999515502478}
   - component: {fileID: 2686092062548719973}
   - component: {fileID: 8474286793582237555}
-  - component: {fileID: 2850876541553050295}
   m_Layer: 0
   m_Name: ConfigurationEntry
   m_TagString: Untagged
@@ -565,18 +564,6 @@ MonoBehaviour:
   m_panel: {fileID: 0}
   m_textField: {fileID: 0}
   m_topic: {fileID: 0}
---- !u!114 &2850876541553050295
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7094426948546192381}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 39574dc2eaa11a1439b3e4d2d5ab17a0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &8416631117945852315
 GameObject:
   m_ObjectHideFlags: 0

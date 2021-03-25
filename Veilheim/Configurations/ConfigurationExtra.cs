@@ -24,6 +24,8 @@ namespace Veilheim.Configurations
     {
         internal static readonly List<PropertyInfo> propertyCache;
 
+        internal static bool PlayerIsAdmin = false;
+
         static Configuration()
         {
             // Create dir if not existant
@@ -142,6 +144,11 @@ namespace Veilheim.Configurations
             }
 
             return sb.ToString();
+        }
+
+        public IEnumerable<PropertyInfo> GetSections()
+        {
+            return propertyCache;
         }
 
 

@@ -13,6 +13,7 @@
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
+    <AssemblyVersion>0.0.14.7754</AssemblyVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -371,6 +372,7 @@
     <Compile Include="Blueprints\Blueprint.cs" />
     <Compile Include="Blueprints\BlueprintHooks.cs" />
     <Compile Include="Blueprints\FlattenTerrain.cs" />
+    <Compile Include="Configurations\GUI\ConfigurationGUI.cs" />
     <Compile Include="Configurations\Sections\ProductionInputAmountServerConfiguration.cs" />
     <Compile Include="ConsoleCommands\ConsoleHooks.cs" />
     <Compile Include="Extensions\ObjectDBExtensions.cs" />
@@ -435,6 +437,7 @@
     <EmbeddedResource Include="AssetBundles\blueprints" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="AssetBundles\configurationgui" />
     <None Include="AssetBundles\trashfire" />
   </ItemGroup>
   <ItemGroup />

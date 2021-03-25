@@ -38,6 +38,12 @@ namespace Veilheim.AssetUtils
             LoadPrefab(assetBundle, "piece_blueprint");
             LoadLocalization(assetBundle);
             assetBundle.Unload(false);
+
+            assetBundle = LoadAssetBundleFromResources("configurationgui");
+            LoadPrefab(assetBundle, "ConfigurationEntry");
+            LoadPrefab(assetBundle, "ConfigurationGUIRoot");
+            LoadPrefab(assetBundle, "ConfigurationSection");
+            assetBundle.Unload(false);
         }
 
         /// <summary>
