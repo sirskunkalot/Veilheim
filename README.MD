@@ -18,14 +18,14 @@ How to setup the development enviroment for this project.
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <StartAction>Program</StartAction>
-    <!-- Runs Steam opening Valheim after building debug -->
-    <!-- Needs to be your path to the Steam client -->
-    <StartProgram>C:\Program Files %28x86%29\Steam\steam.exe</StartProgram>
-    <StartArguments>-applaunch 892970</StartArguments>
-    <!-- Alternatively start valheim.exe directly -->
-    <!-- <StartProgram>$(ValheimDir)\valheim.exe</StartProgram> -->
+    <!-- Start valheim.exe after building Debug-->
+    <StartProgram>$(ValheimDir)\valheim.exe</StartProgram>
     <!-- If you want to connect to a server automatically, add '+connect <ip-address>:<port>' as StartArguments -->
-    <!-- <StartArguments></StartArguments> -->
+    <StartArguments>+console</StartArguments>
+    <!-- Alternatively run Steam.exe opening Valheim after building debug -->
+    <!-- Needs to be your local path to the Steam client -->
+    <!-- StartProgram>C:\Program Files %28x86%29\Steam\steam.exe</StartProgram -->
+    <!-- StartArguments>-applaunch 892970</StartArguments -->
   </PropertyGroup>
 </Project>
 ```
@@ -35,15 +35,16 @@ How to setup the development enviroment for this project.
 
 New Assets can be created with Unity and imported into Valheim using the mod. A Unity project is included in this repository under `<Veilheim>\VeilheimUnity`.
 
-## Setup
+## Editor Setup
 
 1. [Download](https://public-cdn.cloud.unity3d.com/hub/prod/UnityHubSetup.exe) UnityHub directly from Unity or install it with the Visual Studio Installer via `Individual Components` -> `Visual Studio Tools for Unity`.
 2. You will need an Unity account to register your PC and get a free licence. Create the account, login with it in Unity Hub and get your licence via `Settings` -> `Licence Management`.
 3. Install Unity Editor version 2019.4.20f.
 4. Open Unity and add the VeilheimUnity project.
 5. Install the `AssetBundle Browser` package in the Unity Editor via `Window`-> `Package Manager`.
-6. Create the folder `<Veilheim>\VeilheimUnity\Packages\valheim` and copy all `assembly_*.dll` from `<Valheim>\valheim_Data\Managed` into it.
-7. Create a new text file `package.json` in the same folder and paste the following content into it:
+6. Create the folder `<Veilheim>\VeilheimUnity\Packages\valheim` 
+7. Copy all `assembly_*.dll` from `<Valheim>\valheim_Data\Managed` into it.
+8. Create a new text file `package.json` in the same folder and paste the following content into it:
 ```json
 {
   "name": "valheim",
@@ -53,12 +54,12 @@ New Assets can be created with Unity and imported into Valheim using the mod. A 
     "url": ""
   },
   "displayName": "valheim",
-  "version": "0.147.3",
+  "version": "0.148.6",
   "unity": "2019.4",
   "description": "Imported Assets from game valheim"
 }
 ```
-8. Go back to the Unity Editor and press `Ctrl+R`. This should reload all files and add the valheim package under `Packages` in the project tree.
+9. Go back to the Unity Editor and press `Ctrl+R`. This should reload all files and add the valheim package under `Packages` in the project tree.
 
 ## Development
 
@@ -119,3 +120,17 @@ Your own code can be debugged in source with Visual Studio itself. You cannot de
 4. Start Valheim (either directly from Steam or hit F5 in Visual Studio when Steam is running)
 5. Go to `Debug` -> `Attach Unity debugger`
 6. Since the patched mono dll does not open the same port as Unity Dev builds, you have to click on `Input IP`. It should fill in your local IP automatically. you just have to change the port to `55555`and the debugger should connect.
+
+# Actions after a game update
+
+When Valheim updates it is likely that parts of the assembly files change. If this is the case, the references to the assembly files must be renewed in Visual Studio and Unity.
+
+## Visual Studio actions
+
+1. Make new versions of the publicized assemblies as described in [Development Environment Setup] step 4 and 5.
+2. Go to VS and clean/build (or just rebuild) the project. The building process makes copies of the referenced dlls and stores them in the project folder. To get the newly created dlls it is important to grab the new publicized dlls from step 1.
+
+## Unity actions
+
+1. Copy all original `assembly_*.dll` as described in [Editor Setup] step 7 and 8.
+2. Go to Unity Editor and press `Ctrl+R`. This reloads all files from the filesystem and "imports" the copied dlls into the project.

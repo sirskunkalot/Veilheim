@@ -357,10 +357,17 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AssetEntities\LocalizationDef.cs" />
+    <Compile Include="AssetManagers\AssetManager.cs" />
+    <Compile Include="AssetManagers\ItemManager.cs" />
+    <Compile Include="AssetManagers\LocalizationManager.cs" />
+    <Compile Include="AssetManagers\PieceManager.cs" />
+    <Compile Include="AssetManagers\PrefabManager.cs" />
     <Compile Include="AssetUtils\AssetCreator.cs" />
     <Compile Include="AssetUtils\AssetLoader.cs" />
-    <Compile Include="AssetUtils\AssetLocalization.cs" />
-    <Compile Include="AssetUtils\AssetManager.cs" />
+    <Compile Include="AssetEntities\RecipeDef.cs" />
+    <Compile Include="AssetEntities\PieceDef.cs" />
+    <Compile Include="AssetEntities\RequirementDef.cs" />
     <Compile Include="Blueprints\Blueprint.cs" />
     <Compile Include="Blueprints\BlueprintHooks.cs" />
     <Compile Include="Blueprints\FlattenTerrain.cs" />
@@ -370,12 +377,14 @@
     <Compile Include="Configurations\ConfigSync.cs" />
     <Compile Include="IDestroyable.cs" />
     <Compile Include="Extensions\ZNetExtensions.cs" />
+    <Compile Include="Logger.cs" />
     <Compile Include="Map\MapHooks.cs" />
     <Compile Include="Map\PortalList.cs" />
     <Compile Include="Map\PortalSelectionGUI.cs" />
     <Compile Include="Map\PortalsOnMap.cs" />
     <Compile Include="Map\PublicPosition.cs" />
     <Compile Include="Map\SharedMapSystem.cs" />
+    <Compile Include="Patches\Debug.cs" />
     <Compile Include="Patches\ProductionInputAmounts.cs" />
     <Compile Include="PatchEvents\PatchDispatcher.cs" />
     <Compile Include="PatchEvents\PatchEventAttribute.cs" />
@@ -423,11 +432,10 @@
     <Content Include="FodyWeavers.xml" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Assets\blueprints" />
+    <EmbeddedResource Include="AssetBundles\blueprints" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Assets\configurationgui" />
-    <None Include="Assets\trashfire" />
+    <None Include="AssetBundles\trashfire" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -1,7 +1,7 @@
 ﻿// Veilheim
 // a Valheim mod
 // 
-// File:    AssetLocalization.cs
+// File:    LocalizationDef.cs
 // Project: Veilheim
 
 using System.Collections.Generic;
@@ -9,20 +9,17 @@ using System.IO;
 using System.Text;
 using UnityEngine;
 
-namespace Veilheim.AssetUtils
+namespace Veilheim.AssetEntities
 {
-    /// <summary>
-    ///     Handles translation of asset bundle content.
-    /// </summary>
-    internal class AssetLocalization
+    internal class LocalizationDef
     {
-        private readonly string m_assetBundleName;
+        public readonly string AssetBundleName;
         private TextAsset m_localization;
         private Dictionary<string, string> m_translations = new Dictionary<string, string>();
 
-        public AssetLocalization(string assetBundleName, TextAsset localization)
+        public LocalizationDef(string assetBundleName, TextAsset localization)
         {
-            m_assetBundleName = assetBundleName;
+            AssetBundleName = assetBundleName;
             m_localization = localization;
         }
 
@@ -36,7 +33,7 @@ namespace Veilheim.AssetUtils
 
         public override string ToString()
         {
-            return $"AssetLocalization ({m_assetBundleName})";
+            return $"AssetLocalization ({AssetBundleName})";
         }
 
         // heavily based on valheims language setup
@@ -44,7 +41,7 @@ namespace Veilheim.AssetUtils
         {
             if (m_localization == null)
             {
-                Logger.LogWarning($"Failed to load language file for AssetBundle {m_assetBundleName}");
+                Logger.LogWarning($"Failed to load language file for AssetBundle {AssetBundleName}");
                 return;
             }
 
@@ -62,7 +59,7 @@ namespace Veilheim.AssetUtils
 
             if (index1 == -1)
             {
-                Logger.LogWarning($"Failed to find language: {language} in AssetBundle {m_assetBundleName}");
+                Logger.LogWarning($"Failed to find language: {language} in AssetBundle {AssetBundleName}");
                 return;
             }
 
@@ -84,7 +81,7 @@ namespace Veilheim.AssetUtils
                 }
             }
 
-            Logger.LogInfo($"Loaded localization {language} for AssetBundle {m_assetBundleName}");
+            Logger.LogInfo($"Loaded localization {language} for AssetBundle {AssetBundleName}");
         }
 
         public bool TryTranslate(string word, out string translated)
@@ -146,12 +143,12 @@ namespace Veilheim.AssetUtils
                             continue;
                         }
 
-                        stringBuilder.Append((char) num);
+                        stringBuilder.Append((char)num);
                         continue;
                 }
             }
 
-            label_2:
+        label_2:
             stringList.Add(stringBuilder.ToString());
             stringListList.Add(stringList);
             return stringListList;

@@ -7,7 +7,7 @@
 using System.IO;
 using System.Linq;
 using UnityEngine;
-using Veilheim.AssetUtils;
+using Veilheim.AssetManagers;
 using Veilheim.PatchEvents;
 
 namespace Veilheim.Blueprints
@@ -49,48 +49,17 @@ namespace Veilheim.Blueprints
             {
                 Logger.LogMessage("Registering known blueprints");
 
-                // Get prefab stub from bundle
-                if (Blueprint.m_stub == null)
+                // Create prefabs for all known blueprints
+                foreach (var bp in Blueprint.m_blueprints.Values)
                 {
-                    var assetBundle = AssetLoader.LoadAssetBundleFromResources("blueprints");
-                    Blueprint.m_stub = assetBundle.LoadAsset<GameObject>("piece_blueprint");
-                    assetBundle.Unload(false);
-                }
-
-                // Get prefabs from all known blueprints
-                foreach (var bp in Blueprint.m_blueprints)
-                {
-                    Logger.LogInfo($"{bp.Key}.blueprint");
-
-                    var prefab = bp.Value.CreatePrefab();
-                    if (prefab != null)
-                    {
-                        bp.Value.AddToPieceTable();
-                    }
-                }
-            }
-        }
-
-        [PatchEvent(typeof(ZNet), nameof(ZNet.Shutdown), PatchEventType.Postfix)]
-        public static void DestroyDynamicPrefabs(ZNet instance)
-        {
-            // Client only
-            if (!instance.IsServerInstance())
-            {
-                Logger.LogMessage("Destroying known blueprints");
-
-                // Try to destroy all known blueprints
-                foreach (var bp in Blueprint.m_blueprints)
-                {
-                    Logger.LogInfo($"{bp.Key}.blueprint");
-
-                    bp.Value.Destroy();
+                    bp.CreatePrefab();
                 }
             }
         }
 
         /// <summary>
-        ///     React to the "placement" of make_blueprint
+        ///     React to the "placement" of make_blueprint. Captures a new blueprint and cancels
+        ///     the original placement.
         /// </summary>
         /// <param name="instance"></param>
         /// <param name="piece"></param>
@@ -138,11 +107,13 @@ namespace Veilheim.Blueprints
         }
 
         /// <summary>
-        /// Flatten terrain if left ctrl is pressed
+        ///     Incept placing of the blueprint and instantiate all pieces individually.
+        ///     Cancels the real placement of the placeholder piece_blueprint.<br />
+        ///     Flatten terrain if left ctrl is pressed.
         /// </summary>
         /// <param name="instance"></param>
         /// <param name="piece"></param>
-        /// <param name="successful"></param>
+        /// <param name="cancel"></param>
         [PatchEvent(typeof(Player), nameof(Player.PlacePiece), PatchEventType.BlockingPrefix)]
         public static void BeforePlacingBlueprint(Player instance, Piece piece, ref bool cancel)
         {
@@ -173,7 +144,7 @@ namespace Veilheim.Blueprints
                         entryQuat.eulerAngles += rotation.eulerAngles;
 
                         // Get the prefab
-                        var prefab = ZNetScene.instance.GetPrefab(entry.name);
+                        var prefab = PrefabManager.Instance.GetPrefab(entry.name);
                         if (prefab == null)
                         {
                             Logger.LogError(piece.name + " not found?");
@@ -280,7 +251,7 @@ namespace Veilheim.Blueprints
                         if (circleProjector == null)
                         {
                             circleProjector = instance.m_placementMarkerInstance.AddComponent<CircleProjector>();
-                            circleProjector.m_prefab = ZNetScene.instance.GetPrefab("piece_workbench").GetComponentInChildren<CircleProjector>().m_prefab;
+                            circleProjector.m_prefab = PrefabManager.Instance.GetPrefab("piece_workbench").GetComponentInChildren<CircleProjector>().m_prefab;
 
                             // Force calculation of segment count
                             circleProjector.m_radius = -1;

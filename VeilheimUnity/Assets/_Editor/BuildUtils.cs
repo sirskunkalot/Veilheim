@@ -13,9 +13,15 @@ namespace Veilheim.Editor
         /// </summary>
         public static readonly string k_SolutionDir = Path.Combine(Application.dataPath, "..", "..");
 
+        /// <summary>
+        /// Absolute path to libraries/Unity
+        /// </summary>
         public static readonly string k_LibDir = Path.Combine(k_SolutionDir, "libraries\\Unity");
 
-        public static readonly string k_AssetDir = Path.Combine(k_SolutionDir, "Veilheim\\Assets");
+        /// <summary>
+        /// Absolute path to Veilheim\AssetBundles
+        /// </summary>
+        public static readonly string k_AssetDir = Path.Combine(k_SolutionDir, "Veilheim\\AssetBundles");
 
         private static readonly string[] k_IgnoredAssemblies = {
             "UnityEngine.TestRunner",
@@ -50,6 +56,7 @@ namespace Veilheim.Editor
             string stageDirName = "Build";
             string projectRootDir = Path.Combine(Application.dataPath, "..");
             string stagePath = Path.Combine(projectRootDir, stageDirName);
+            ResetDirectory(stagePath);
 
             var options = new BuildPlayerOptions();
             options.locationPathName = Path.Combine(stagePath, "Veilheim.exe");
@@ -57,7 +64,6 @@ namespace Veilheim.Editor
             options.target = EditorUserBuildSettings.activeBuildTarget;
             BuildPipeline.BuildPlayer(options);
 
-            //string distDir = CreateDistDirectory();
             string distDir = k_LibDir;
             foreach (var assembly in playerAssemblies)
             {
@@ -78,16 +84,25 @@ namespace Veilheim.Editor
             string stageDirName = "AssetBundles";
             string projectRootDir = Path.Combine(Application.dataPath, "..");
             string stagePath = Path.Combine(projectRootDir, stageDirName);
+            ResetDirectory(stagePath);
 
             BuildPipeline.BuildAssetBundles(stagePath, BuildAssetBundleOptions.None, EditorUserBuildSettings.activeBuildTarget);
 
-            //string distDir = CreateDistDirectory();
             string distDir = k_AssetDir;
             foreach (var file in Directory.EnumerateFiles(stagePath).Where(x => !x.EndsWith(".manifest") && !x.EndsWith("AssetBundles")))
             {
                 string fileName = Path.GetFileName(file);
                 File.Copy(file, Path.Combine(distDir, fileName), true);
             }
+        }
+
+        private static void ResetDirectory(string path)
+        {
+            if (Directory.Exists(path))
+            {
+                Directory.Delete(path, true);
+            }
+            Directory.CreateDirectory(path);
         }
     }
 }

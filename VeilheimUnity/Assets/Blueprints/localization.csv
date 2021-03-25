@@ -1,7 +1,7 @@
 ,English,German
 item_blueprintrune,Blueprint Rune,Rune des Kopierens
 item_blueprintrune_desc,Used to make copies of structures and rebuild exact copies of them somewhere else.,Kopiert Strukturen und baut sie an anderer Stelle wieder auf.
-piece_make_blueprint,Create new blueprint,Neue Blaupause
-piece_make_blueprint_desc,Creates a new blueprint of a structure.,Erstelle eine neue Blaupause einer bestehenden Struktur.
+make_blueprint,Create new blueprint,Neue Blaupause
+make_blueprint_desc,Creates a new blueprint of a structure.,Erstelle eine neue Blaupause einer bestehenden Struktur.
 piece_blueprint,Blueprint,Blaupause
 piece_blueprint_desc,Creates the structure attached to this blueprint.,Erschafft eine Kopie der Struktur auf dieser Blaupause.

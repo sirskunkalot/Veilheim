@@ -140,6 +140,7 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
+  - {fileID: 9209872984065527817}
   - {fileID: 5139619249355099051}
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -206,7 +207,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_autoPickup: 1
-  m_autoDestroy: 1
+  m_autoDestroy: 0
   m_itemData:
     m_stack: 1
     m_durability: 0
@@ -393,7 +394,7 @@ MonoBehaviour:
         m_trailStartEffect:
           m_effectPrefabs: []
       m_useDurability: 0
-      m_destroyBroken: 1
+      m_destroyBroken: 0
       m_canBeReparied: 1
       m_maxDurability: 100
       m_durabilityPerLevel: 50
@@ -428,7 +429,7 @@ MonoBehaviour:
         m_effectPrefabs: []
       m_consumeStatusEffect: {fileID: 0}
   getFromRuntime: 0
-  includeInRealease: 0
+  includeInRelease: 0
 --- !u!1 &6481216377857674673
 GameObject:
   m_ObjectHideFlags: 0
@@ -552,5 +553,49 @@ Transform:
   - {fileID: 2653339759650078600}
   - {fileID: 6845893181640845806}
   m_Father: {fileID: 6714413790422310430}
+  m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &8626053400687810144
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 9209872984065527817}
+  - component: {fileID: 6829032112115115695}
+  m_Layer: 12
+  m_Name: collider
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &9209872984065527817
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8626053400687810144}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.002, y: -0.007, z: -0.139}
+  m_LocalScale: {x: 1.074926, y: 1, z: 0.7388141}
+  m_Children: []
+  m_Father: {fileID: 6714413790422310430}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &6829032112115115695
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8626053400687810144}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 0.24, y: 0.1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
