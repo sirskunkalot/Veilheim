@@ -56,7 +56,9 @@ namespace Veilheim.Configurations.GUI
             sections.Clear();
             entries.Clear();
 
-            GUIRoot = Object.Instantiate(PrefabManager.Instance.GetPrefab("ConfigurationGUIRoot"), InventoryGui.instance.m_playerGrid.transform.parent.parent.parent.parent);
+            //GUIRoot = Object.Instantiate(PrefabManager.Instance.GetPrefab("ConfigurationGUIRoot"), InventoryGui.instance.m_playerGrid.transform.parent.parent.parent.parent);
+            GUIRoot = Object.Instantiate(PrefabManager.Instance.GetPrefab("ConfigurationGUIRoot"));
+            GUIRoot.transform.SetParent(VeilheimPlugin.RootObject.transform);
 
             GUIRoot.SetActive(false);
             ContentGrid = GUIRoot.GetComponentInChildren<VerticalLayoutGroup>();
