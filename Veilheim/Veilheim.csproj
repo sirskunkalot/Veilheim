@@ -358,7 +358,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssetEntities\LocalizationDef.cs" />
-    <Compile Include="AssetManagers\AssetManager.cs" />
+    <Compile Include="Manager.cs" />
     <Compile Include="AssetManagers\GUIManager.cs" />
     <Compile Include="AssetManagers\ItemManager.cs" />
     <Compile Include="AssetManagers\LocalizationManager.cs" />
@@ -387,7 +387,7 @@
     <Compile Include="Map\SharedMapSystem.cs" />
     <Compile Include="Patches\Debug.cs" />
     <Compile Include="Patches\ProductionInputAmounts.cs" />
-    <Compile Include="PatchEvents\PatchDispatcher.cs" />
+    <Compile Include="PatchEvents\PatchManager.cs" />
     <Compile Include="PatchEvents\PatchEventAttribute.cs" />
     <Compile Include="PatchEvents\PatchEventType.cs" />
     <Compile Include="PatchEvents\PatchStubs\Console_Patches.cs" />

@@ -12,6 +12,7 @@ using HarmonyLib;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Veilheim.AssetManagers;
+using Veilheim.Blueprints;
 using Veilheim.PatchEvents;
 using Veilheim.UnityWrappers;
 
@@ -34,10 +35,11 @@ namespace Veilheim
             typeof(PrefabManager),
             typeof(PieceManager),
             typeof(ItemManager),
-            typeof(GUIManager)
+            typeof(GUIManager),
+            typeof(PatchManager)
         };
 
-        private readonly List<AssetManager> managers = new List<AssetManager>();
+        private readonly List<Manager> managers = new List<Manager>();
 
         internal static GameObject RootObject;
 
@@ -55,21 +57,20 @@ namespace Veilheim
             // Initialize Logger
             Veilheim.Logger.Init();
 
-            // Create and initialize all managers
+            // Root GameObject for all plugin components
             RootObject = new GameObject("_VeilheimPlugin");
-            GameObject.DontDestroyOnLoad(RootObject);
-
+            DontDestroyOnLoad(RootObject);
+            
+            // Create and initialize all managers
             foreach (Type managerType in managerTypes)
             {
-                managers.Add((AssetManager)RootObject.AddComponent(managerType));
+                managers.Add((Manager)RootObject.AddComponent(managerType));
             }
 
-            foreach (AssetManager manager in managers)
+            foreach (Manager manager in managers)
             {
                 manager.Init();
             }
-
-            PatchDispatcher.Init();
 
             //TODO: load assets with events from manager
             AssetUtils.AssetLoader.LoadAssets();

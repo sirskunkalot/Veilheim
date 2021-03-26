@@ -12,7 +12,7 @@ using Veilheim.PatchEvents;
 
 namespace Veilheim.AssetManagers
 {
-    internal class GUIManager : AssetManager, IPatchEventConsumer
+    internal class GUIManager : Manager, IPatchEventConsumer
     {
         internal static GUIManager Instance { get; private set; }
         
@@ -61,7 +61,7 @@ namespace Veilheim.AssetManagers
                 Background = Instantiate(oldbkg);
                 Background.name = "Background";
                 Background.transform.SetParent(GUIContainer.transform);
-                Background.SetActive(true);
+                Background.SetActive(false);
 
                 RectTransform tf = Background.transform as RectTransform;
                 tf.localPosition = new Vector3(0, -100, 0);

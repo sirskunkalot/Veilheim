@@ -12,7 +12,7 @@ using Veilheim.PatchEvents;
 
 namespace Veilheim.AssetManagers
 {
-    internal class PieceManager : AssetManager, IPatchEventConsumer
+    internal class PieceManager : Manager, IPatchEventConsumer
     {
         internal static PieceManager Instance { get; private set; }
 
@@ -37,7 +37,7 @@ namespace Veilheim.AssetManagers
             PieceTableContainer = new GameObject("PieceTables");
             PieceTableContainer.transform.parent = VeilheimPlugin.RootObject.transform;
 
-            Debug.Log("Initialized PieceManager");
+            Logger.LogInfo("Initialized PieceManager");
         }
 
         internal void AddPieceTable(GameObject prefab)
