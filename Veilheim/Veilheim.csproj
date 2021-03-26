@@ -359,6 +359,7 @@
   <ItemGroup>
     <Compile Include="AssetEntities\LocalizationDef.cs" />
     <Compile Include="AssetManagers\AssetManager.cs" />
+    <Compile Include="AssetManagers\GUIManager.cs" />
     <Compile Include="AssetManagers\ItemManager.cs" />
     <Compile Include="AssetManagers\LocalizationManager.cs" />
     <Compile Include="AssetManagers\PieceManager.cs" />

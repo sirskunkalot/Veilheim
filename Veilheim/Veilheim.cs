@@ -33,14 +33,13 @@ namespace Veilheim
             typeof(LocalizationManager),
             typeof(PrefabManager),
             typeof(PieceManager),
-            typeof(ItemManager)
+            typeof(ItemManager),
+            typeof(GUIManager)
         };
 
         private readonly List<AssetManager> managers = new List<AssetManager>();
 
         internal static GameObject RootObject;
-
-        //private readonly List<IDestroyable> m_destroyables = new List<IDestroyable>();
 
         private Harmony m_harmony;
         
@@ -70,12 +69,9 @@ namespace Veilheim
                 manager.Init();
             }
 
-            //TODO: destroy managers, no need for an interface anymore
-            /*AssetManager.Init();
-            m_destroyables.Add(AssetManager.Instance);*/
-
             PatchDispatcher.Init();
 
+            //TODO: load assets with events from manager
             AssetUtils.AssetLoader.LoadAssets();
 
             Veilheim.Logger.LogInfo($"{PluginName} v{PluginVersion} loaded");
@@ -95,10 +91,7 @@ namespace Veilheim
         {
             Veilheim.Logger.LogInfo($"Destroying {PluginName} v{PluginVersion}");
 
-            /*foreach (var destroyable in m_destroyables)
-            {
-                destroyable.Destroy();
-            }*/
+            //TODO: destroy managers, no need for an interface anymore
 
             Veilheim.Logger.Destroy();
 
