@@ -12,58 +12,12 @@ using System.Linq;
 using UnityEngine;
 using Veilheim.AssetEntities;
 using Veilheim.AssetManagers;
-using Veilheim.Configurations;
 using Object = UnityEngine.Object;
 
 namespace Veilheim.Blueprints
 {
-    internal class PieceEntry
-    {
-        public PieceEntry(string _line)
-        {
-            line = _line;
-            var parts = line.Split(';');
-            name = parts[0].TrimStart('$');
-            posX = float.Parse(parts[2]);
-            posY = float.Parse(parts[3]);
-            posZ = float.Parse(parts[4]);
-            rotX = float.Parse(parts[5]);
-            rotY = float.Parse(parts[6]);
-            rotZ = float.Parse(parts[7]);
-            rotW = float.Parse(parts[8]);
-            additionalInfo = parts[9];
-        }
-
-        public string line { get; set; }
-        public string name { get; set; }
-        public float posX { get; set; }
-        public float posY { get; set; }
-        public float posZ { get; set; }
-        public float rotX { get; set; }
-        public float rotY { get; set; }
-        public float rotZ { get; set; }
-        public float rotW { get; set; }
-        public string additionalInfo { get; set; }
-
-        public Vector3 GetPosition()
-        {
-            return new Vector3(posX, posY, posZ);
-        }
-
-        public Quaternion GetRotation()
-        {
-            return new Quaternion(rotX, rotY, rotZ, rotW);
-        }
-    }
-
     internal class Blueprint
     {
-        public static readonly Dictionary<string, Blueprint> m_blueprints = new Dictionary<string, Blueprint>();
-
-        //public static GameObject m_stub;
-
-        public static float selectionRadius = 10.0f;
-
         /// <summary>
         ///     Name of the blueprint instance. Translates to &lt;m_name&gt;.blueprint in the filesystem
         /// </summary>
@@ -92,18 +46,6 @@ namespace Veilheim.Blueprints
         {
             m_name = name;
             m_prefabname = $"piece_blueprint ({name})";
-        }
-
-        public static string GetBlueprintPath()
-        {
-            //TODO: save per profile or world or global?
-            var path = Path.Combine(Configuration.ConfigIniPath, "blueprints");
-            if (!Directory.Exists(path))
-            {
-                Directory.CreateDirectory(path);
-            }
-
-            return path;
         }
 
         /// <summary>
@@ -232,7 +174,7 @@ namespace Veilheim.Blueprints
             Texture2D thumbnail = ScaleTexture(screenShot, 160, height);
 
             // Save to file
-            File.WriteAllBytes(Path.Combine(GetBlueprintPath(), m_name + ".png"), thumbnail.EncodeToPNG());
+            File.WriteAllBytes(Path.Combine(BlueprintManager.BlueprintPath, m_name + ".png"), thumbnail.EncodeToPNG());
 
             // Destroy properly
             Object.Destroy(screenShot);
@@ -241,22 +183,20 @@ namespace Veilheim.Blueprints
 
         public bool Save()
         {
-            var path = GetBlueprintPath();
-
             if (m_pieceEntries == null)
             {
                 Logger.LogWarning("No pieces stored to save");
             }
             else
             {
-                using (TextWriter tw = new StreamWriter(Path.Combine(path, m_name + ".blueprint")))
+                using (TextWriter tw = new StreamWriter(Path.Combine(BlueprintManager.BlueprintPath, m_name + ".blueprint")))
                 {
                     foreach (var piece in m_pieceEntries)
                     {
                         tw.WriteLine(piece.line);
                     }
 
-                    Logger.LogDebug("Wrote " + m_pieceEntries.Length + " pieces to " + Path.Combine(path, m_name + ".blueprint"));
+                    Logger.LogDebug("Wrote " + m_pieceEntries.Length + " pieces to " + Path.Combine(BlueprintManager.BlueprintPath, m_name + ".blueprint"));
                 }
             }
 
@@ -265,9 +205,8 @@ namespace Veilheim.Blueprints
 
         public bool Load()
         {
-            var path = GetBlueprintPath();
-            var lines = File.ReadAllLines(Path.Combine(path, m_name + ".blueprint")).ToList();
-            Logger.LogDebug("read " + lines.Count + " pieces from " + Path.Combine(path, m_name + ".blueprint"));
+            var lines = File.ReadAllLines(Path.Combine(BlueprintManager.BlueprintPath, m_name + ".blueprint")).ToList();
+            Logger.LogDebug("read " + lines.Count + " pieces from " + Path.Combine(BlueprintManager.BlueprintPath, m_name + ".blueprint"));
 
             if (m_pieceEntries == null)
             {
@@ -319,10 +258,10 @@ namespace Veilheim.Blueprints
 
             var piece = m_prefab.GetComponent<Piece>();
 
-            if (File.Exists(Path.Combine(GetBlueprintPath(), m_name + ".png")))
+            if (File.Exists(Path.Combine(BlueprintManager.BlueprintPath, m_name + ".png")))
             {
                 var tex = new Texture2D(2, 2);
-                tex.LoadImage(File.ReadAllBytes(Path.Combine(GetBlueprintPath(), m_name + ".png")));
+                tex.LoadImage(File.ReadAllBytes(Path.Combine(BlueprintManager.BlueprintPath, m_name + ".png")));
 
                 piece.m_icon = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), Vector2.zero);
             }
@@ -494,11 +433,11 @@ namespace Veilheim.Blueprints
                 newbp.m_prefabname = $"piece_blueprint ({newbp.m_name})";
                 if (newbp.Save())
                 {
-                    if (m_blueprints.ContainsKey(newbp.m_name))
+                    if (BlueprintManager.Instance.m_blueprints.ContainsKey(newbp.m_name))
                     {
-                        Blueprint oldbp = m_blueprints[newbp.m_name];
+                        Blueprint oldbp = BlueprintManager.Instance.m_blueprints[newbp.m_name];
                         oldbp.Destroy();
-                        m_blueprints.Remove(newbp.m_name);
+                        BlueprintManager.Instance.m_blueprints.Remove(newbp.m_name);
                     }
 
                     VeilheimPlugin.Instance.StartCoroutine(AddBlueprint());
@@ -526,7 +465,7 @@ namespace Veilheim.Blueprints
 
                 Player.m_localPlayer.UpdateKnownRecipesList();
                 Player.m_localPlayer.UpdateAvailablePiecesList();
-                m_blueprints.Add(newbp.m_name, newbp);
+                BlueprintManager.Instance.m_blueprints.Add(newbp.m_name, newbp);
 
                 Logger.LogInfo("Blueprint created");
 

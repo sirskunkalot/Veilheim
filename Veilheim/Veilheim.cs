@@ -36,7 +36,8 @@ namespace Veilheim
             typeof(PieceManager),
             typeof(ItemManager),
             typeof(GUIManager),
-            typeof(PatchManager)
+            typeof(PatchManager),
+            typeof(BlueprintManager)
         };
 
         private readonly List<Manager> managers = new List<Manager>();

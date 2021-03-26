@@ -358,6 +358,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssetEntities\LocalizationDef.cs" />
+    <Compile Include="Blueprints\BlueprintManager.cs" />
+    <Compile Include="Blueprints\PieceEntry.cs" />
     <Compile Include="Manager.cs" />
     <Compile Include="AssetManagers\GUIManager.cs" />
     <Compile Include="AssetManagers\ItemManager.cs" />
@@ -370,7 +372,6 @@
     <Compile Include="AssetEntities\PieceDef.cs" />
     <Compile Include="AssetEntities\RequirementDef.cs" />
     <Compile Include="Blueprints\Blueprint.cs" />
-    <Compile Include="Blueprints\BlueprintHooks.cs" />
     <Compile Include="Blueprints\FlattenTerrain.cs" />
     <Compile Include="Configurations\Sections\ProductionInputAmountServerConfiguration.cs" />
     <Compile Include="ConsoleCommands\ConsoleHooks.cs" />
