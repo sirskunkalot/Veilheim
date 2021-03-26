@@ -78,9 +78,10 @@ namespace Veilheim.Configurations.GUI
                 bool sectionEnabled = configSection.IsEnabled;
                 GameObject section = CreateSection(property.Name, sectionEnabled, ContentGrid.transform);
                 ((RectTransform)section.transform).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,
-                    BaseConfig.GetProps(property.PropertyType).Count(x => x.Name != nameof(BaseConfig.IsEnabled)) * 30f + 40f + 10f);
-                ((RectTransform)section.transform.Find("Panel")).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, BaseConfig.GetProps(property.PropertyType).Count(x => x.Name != nameof(BaseConfig.IsEnabled)) * 30f+10f);
-                ((RectTransform)section.transform.Find("Panel")).SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal,300f);
+                    BaseConfig.GetProps(property.PropertyType).Count(x => x.Name != nameof(BaseConfig.IsEnabled)) * 30f + 40f + 20f);
+                ((RectTransform)section.transform.Find("Panel")).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, BaseConfig.GetProps(property.PropertyType).Count(x => x.Name != nameof(BaseConfig.IsEnabled)) * 30f + 15f);
+                ((RectTransform)section.transform.Find("Panel")).SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 465f);
+                section.GetComponent<Text>().fontStyle = FontStyle.Bold;
                 foreach (var sectionProperty in BaseConfig.GetProps(property.PropertyType).Where(x => x.Name != nameof(BaseConfig.IsEnabled)))
                 {
                     GameObject entry = null;
@@ -102,44 +103,49 @@ namespace Veilheim.Configurations.GUI
                 }
             }
 
-
-            foreach (var property in Configuration.Current.GetSections().Where(x => typeof(ISyncableSection).IsAssignableFrom(x.PropertyType)))
+            if (Configuration.PlayerIsAdmin)
             {
-                BaseConfig configSection = property.GetValue(Configuration.Current, null) as BaseConfig;
-                bool sectionEnabled = configSection.IsEnabled;
-                GameObject section = CreateSection(property.Name, sectionEnabled, ContentGrid.transform);
-                ((RectTransform)section.transform).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,
-                    BaseConfig.GetProps(property.PropertyType).Count(x => x.Name != nameof(BaseConfig.IsEnabled)) * 30f + 40f + 10f);
-                ((RectTransform)section.transform.Find("Panel")).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, BaseConfig.GetProps(property.PropertyType).Count(x => x.Name != nameof(BaseConfig.IsEnabled)) * 30f+10f);
-                ((RectTransform)section.transform.Find("Panel")).SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal,300f);
-
-                foreach (var sectionProperty in BaseConfig.GetProps(property.PropertyType).Where(x => x.Name != nameof(BaseConfig.IsEnabled)))
+                foreach (var property in Configuration.Current.GetSections().Where(x => typeof(ISyncableSection).IsAssignableFrom(x.PropertyType)))
                 {
-                    GameObject entry = null;
-                    if (sectionProperty.PropertyType == typeof(bool))
-                    {
-                        entry = AddEntry(sectionProperty.Name, configSection.GetValue<bool>(sectionProperty.Name), section.transform.Find("Panel").transform);
-                    }
-                    else if (sectionProperty.PropertyType == typeof(int))
-                    {
-                        entry = AddEntry(sectionProperty.Name, configSection.GetValue<int>(sectionProperty.Name), section.transform.Find("Panel").transform);
-                    }
-                    else if (sectionProperty.PropertyType == typeof(float))
-                    {
-                        entry = AddEntry(sectionProperty.Name, configSection.GetValue<float>(sectionProperty.Name), section.transform.Find("Panel").transform);
-                    }
+                    BaseConfig configSection = property.GetValue(Configuration.Current, null) as BaseConfig;
+                    bool sectionEnabled = configSection.IsEnabled;
+                    GameObject section = CreateSection(property.Name, sectionEnabled, ContentGrid.transform);
+                    ((RectTransform)section.transform).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,
+                        BaseConfig.GetProps(property.PropertyType).Count(x => x.Name != nameof(BaseConfig.IsEnabled)) * 30f + 40f + 20f);
+                    ((RectTransform)section.transform.Find("Panel")).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, BaseConfig.GetProps(property.PropertyType).Count(x => x.Name != nameof(BaseConfig.IsEnabled)) * 30f + 15f);
+                    ((RectTransform)section.transform.Find("Panel")).SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 465f);
 
-                    entry.SetActive(true);
-                    entries.Add(entry);
+                    ((RectTransform) section.transform.Find("Panel")).gameObject.GetComponent<Image>().color = new Color(0.5f,61f/255f,0f,0.5f);
+                    section.GetComponent<Text>().fontStyle = FontStyle.Bold;
+
+                    foreach (var sectionProperty in BaseConfig.GetProps(property.PropertyType).Where(x => x.Name != nameof(BaseConfig.IsEnabled)))
+                    {
+                        GameObject entry = null;
+                        if (sectionProperty.PropertyType == typeof(bool))
+                        {
+                            entry = AddEntry(sectionProperty.Name, configSection.GetValue<bool>(sectionProperty.Name), section.transform.Find("Panel").transform);
+                        }
+                        else if (sectionProperty.PropertyType == typeof(int))
+                        {
+                            entry = AddEntry(sectionProperty.Name, configSection.GetValue<int>(sectionProperty.Name), section.transform.Find("Panel").transform);
+                        }
+                        else if (sectionProperty.PropertyType == typeof(float))
+                        {
+                            entry = AddEntry(sectionProperty.Name, configSection.GetValue<float>(sectionProperty.Name), section.transform.Find("Panel").transform);
+                        }
+
+                        entry.SetActive(true);
+                        entries.Add(entry);
+                    }
                 }
-            }
-
-            foreach (var entry in entries)
-            {
-                Logger.LogWarning($"{entry.name}: {entry.activeSelf}");
             }
 
             VeilheimPlugin.Instance.Invoke(nameof(VeilheimPlugin.EnableConfigGui), 0.001f);
+        }
+
+        public static void UpdateValuesFromConfiguration()
+        {
+
         }
 
         private static GameObject CreateSection(string sectionName, bool isEnabled, Transform parentTransform)
@@ -193,24 +199,52 @@ namespace Veilheim.Configurations.GUI
             return newEntry;
         }
 
-
-
         public static void RPC_IsAdmin(long sender, bool isAdmin)
         {
             if (ZNet.instance.IsClientInstance())
             {
+                Logger.LogDebug("Received player admin status: " + isAdmin);
                 Configuration.PlayerIsAdmin = isAdmin;
             }
             else
             {
+                Logger.LogDebug("Requesting player admin status for peer #" + sender);
                 var peer = ZNet.instance.m_peers.FirstOrDefault(x => x.m_uid == sender);
                 if (peer != null)
                 {
                     bool result = ZNet.instance.m_adminList.Contains(peer.m_socket.GetHostName());
                     ZRoutedRpc.instance.InvokeRoutedRPC(sender, nameof(RPC_IsAdmin), result);
                 }
-
             }
         }
+
+        [PatchEvent(typeof(Player), nameof(Player.InCutscene), PatchEventType.Postfix)]
+        public static void GUITakesInput(Player instance, ref bool result)
+        {
+            if (GUIRoot != null)
+            {
+                if (GUIRoot.activeSelf)
+                {
+                    result = true;
+                }
+            }
+        }
+
+        [PatchEvent(typeof(ZNet), nameof(ZNet.RPC_PeerInfo), PatchEventType.Postfix)]
+        public static void RequestPlayerAdminStatus(ZNet instance)
+        {
+            if (ZNet.instance.IsClientInstance())
+            {
+                ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(ConfigurationGUI.RPC_IsAdmin), false);
+            }
+        }
+
+        [PatchEvent(typeof(Game), nameof(Game.Start), PatchEventType.Prefix)]
+        public static void Register_RPC_PlayerAdminStatus(Game instance)
+        {
+            // Config Sync
+            ZRoutedRpc.instance.Register(nameof(ConfigurationGUI.RPC_IsAdmin), new Action<long, bool>(ConfigurationGUI.RPC_IsAdmin));
+        }
+
     }
 }
