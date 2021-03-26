@@ -359,7 +359,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssetEntities\LocalizationDef.cs" />
-    <Compile Include="AssetManagers\AssetManager.cs" />
+    <Compile Include="Blueprints\BlueprintManager.cs" />
+    <Compile Include="Blueprints\PieceEntry.cs" />
+    <Compile Include="Manager.cs" />
+    <Compile Include="AssetManagers\GUIManager.cs" />
     <Compile Include="AssetManagers\ItemManager.cs" />
     <Compile Include="AssetManagers\LocalizationManager.cs" />
     <Compile Include="AssetManagers\PieceManager.cs" />
@@ -370,7 +373,6 @@
     <Compile Include="AssetEntities\PieceDef.cs" />
     <Compile Include="AssetEntities\RequirementDef.cs" />
     <Compile Include="Blueprints\Blueprint.cs" />
-    <Compile Include="Blueprints\BlueprintHooks.cs" />
     <Compile Include="Blueprints\FlattenTerrain.cs" />
     <Compile Include="Configurations\GUI\ConfigurationGUI.cs" />
     <Compile Include="Configurations\Sections\ProductionInputAmountServerConfiguration.cs" />
@@ -388,7 +390,7 @@
     <Compile Include="Map\SharedMapSystem.cs" />
     <Compile Include="Patches\Debug.cs" />
     <Compile Include="Patches\ProductionInputAmounts.cs" />
-    <Compile Include="PatchEvents\PatchDispatcher.cs" />
+    <Compile Include="PatchEvents\PatchManager.cs" />
     <Compile Include="PatchEvents\PatchEventAttribute.cs" />
     <Compile Include="PatchEvents\PatchEventType.cs" />
     <Compile Include="PatchEvents\PatchStubs\Console_Patches.cs" />

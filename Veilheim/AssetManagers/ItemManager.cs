@@ -12,7 +12,7 @@ using Veilheim.PatchEvents;
 
 namespace Veilheim.AssetManagers
 {
-    internal class ItemManager : AssetManager, IPatchEventConsumer
+    internal class ItemManager : Manager, IPatchEventConsumer
     {
         internal static ItemManager Instance { get; private set; }
 

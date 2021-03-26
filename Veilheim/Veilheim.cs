@@ -12,7 +12,7 @@ using HarmonyLib;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Veilheim.AssetManagers;
-using Veilheim.Configurations.GUI;
+using Veilheim.Blueprints;
 using Veilheim.PatchEvents;
 using Veilheim.UnityWrappers;
 
@@ -34,14 +34,15 @@ namespace Veilheim
             typeof(LocalizationManager),
             typeof(PrefabManager),
             typeof(PieceManager),
-            typeof(ItemManager)
+            typeof(ItemManager),
+            typeof(GUIManager),
+            typeof(PatchManager),
+            typeof(BlueprintManager)
         };
 
-        private readonly List<AssetManager> managers = new List<AssetManager>();
+        private readonly List<Manager> managers = new List<Manager>();
 
         internal static GameObject RootObject;
-
-        //private readonly List<IDestroyable> m_destroyables = new List<IDestroyable>();
 
         private Harmony m_harmony;
         
@@ -57,26 +58,22 @@ namespace Veilheim
             // Initialize Logger
             Veilheim.Logger.Init();
 
-            // Create and initialize all managers
+            // Root GameObject for all plugin components
             RootObject = new GameObject("_VeilheimPlugin");
-            GameObject.DontDestroyOnLoad(RootObject);
-
+            DontDestroyOnLoad(RootObject);
+            
+            // Create and initialize all managers
             foreach (Type managerType in managerTypes)
             {
-                managers.Add((AssetManager)RootObject.AddComponent(managerType));
+                managers.Add((Manager)RootObject.AddComponent(managerType));
             }
 
-            foreach (AssetManager manager in managers)
+            foreach (Manager manager in managers)
             {
                 manager.Init();
             }
 
-            //TODO: destroy managers, no need for an interface anymore
-            /*AssetManager.Init();
-            m_destroyables.Add(AssetManager.Instance);*/
-
-            PatchDispatcher.Init();
-
+            //TODO: load assets with events from manager
             AssetUtils.AssetLoader.LoadAssets();
 
             Veilheim.Logger.LogInfo($"{PluginName} v{PluginVersion} loaded");
@@ -86,11 +83,8 @@ namespace Veilheim
 #if DEBUG
         private void Update()
         {
-            // Set a breakpoint here to break on F6 key press
             if (Input.GetKeyDown(KeyCode.F6))
-            {
-                ConfigurationGUI.CreateConfigurationGUIRoot();
-                ConfigurationGUI.ToggleGUI();
+            { // Set a breakpoint here to break on F6 key press
             }
         }
 #endif
@@ -99,10 +93,7 @@ namespace Veilheim
         {
             Veilheim.Logger.LogInfo($"Destroying {PluginName} v{PluginVersion}");
 
-            /*foreach (var destroyable in m_destroyables)
-            {
-                destroyable.Destroy();
-            }*/
+            //TODO: destroy managers, no need for an interface anymore
 
             Veilheim.Logger.Destroy();
 
@@ -114,13 +105,8 @@ namespace Veilheim
             // Display version in main menu
             if (SceneManager.GetActiveScene().name == "start")
             {
-                GUI.Label(new Rect(Screen.width - 100, 5, 100, 25), $"{PluginName} v{PluginVersion}");
+                GUI.Label(new Rect(Screen.width - PluginName.Length * 12, 5, PluginName.Length * 12, 25), $"{PluginName} v{PluginVersion}");
             }
-        }
-
-        internal void EnableConfigGui()
-        {
-            ConfigurationGUI.EnableEntries();
         }
     }
 }

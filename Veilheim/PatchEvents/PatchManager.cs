@@ -1,7 +1,7 @@
 ﻿// Veilheim
 // a Valheim mod
 // 
-// File:    PatchDispatcher.cs
+// File:    PatchManager.cs
 // Project: Veilheim
 
 using System;
@@ -16,13 +16,24 @@ namespace Veilheim.PatchEvents
     /// <summary>
     ///     Dispatcher to register events in their respective Harmony Patch class
     /// </summary>
-    public class PatchDispatcher
+    internal class PatchManager : Manager
     {
-        public static PatchDispatcher Instance;
+        internal static PatchManager Instance { get; private set; }
 
-        private readonly MethodInfo addHarmonyEvent;
+        private MethodInfo addHarmonyEvent;
 
-        public PatchDispatcher()
+        private void Awake()
+        {
+            if (Instance != null)
+            {
+                Logger.LogError($"Two instances of singleton {GetType()}");
+                return;
+            }
+
+            Instance = this;
+        }
+
+        internal override void Init()
         {
             try
             {
@@ -47,7 +58,7 @@ namespace Veilheim.PatchEvents
 
                         // make method generic (harmony patch class) and invoke it
                         var generic = addHarmonyEvent.MakeGenericMethod(patchClass.Item1);
-                        generic.Invoke(null, new object[] {payload.Item1, payload.Item2.EventType});
+                        generic.Invoke(null, new object[] { payload.Item1, payload.Item2.EventType });
 
                         // Remove from original list
                         payloadMethods.Remove(payload);
@@ -65,6 +76,8 @@ namespace Veilheim.PatchEvents
             {
                 Logger.LogError(ex.Message + Environment.NewLine + ex.StackTrace);
             }
+            
+            Logger.LogInfo("Initialized PatchManager");
         }
 
         /// <summary>
@@ -144,12 +157,6 @@ namespace Veilheim.PatchEvents
             {
                 Logger.LogError(ex.Message + Environment.NewLine + ex.StackTrace);
             }
-        }
-
-        public static void Init()
-        {
-            Instance = new PatchDispatcher();
-            Logger.LogInfo("Patchdispatcher activated");
         }
     }
 }

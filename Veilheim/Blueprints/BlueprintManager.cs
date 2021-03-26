@@ -1,20 +1,73 @@
 ﻿// Veilheim
 // a Valheim mod
 // 
-// File:    BlueprintHooks.cs
+// File:    BlueprintManager.cs
 // Project: Veilheim
 
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEngine;
 using Veilheim.AssetManagers;
+using Veilheim.Configurations;
 using Veilheim.PatchEvents;
 
 namespace Veilheim.Blueprints
 {
-    internal class BlueprintHooks : IPatchEventConsumer
+    internal class BlueprintManager : Manager, IPatchEventConsumer
     {
-        [PatchEvent(typeof(ZNet), nameof(ZNet.Awake), PatchEventType.Postfix)]
+        internal static BlueprintManager Instance { get; private set; }
+
+        internal static string BlueprintPath = Path.Combine(Configuration.ConfigIniPath, "blueprints");
+        
+        internal float selectionRadius = 10.0f;
+
+        internal readonly Dictionary<string, Blueprint> m_blueprints = new Dictionary<string, Blueprint>();
+
+        private void Awake()
+        {
+            if (Instance != null)
+            {
+                Logger.LogError($"Two instances of singleton {GetType()}");
+                return;
+            }
+
+            Instance = this;
+        }
+
+        internal override void Init()
+        {
+            //TODO: save per profile or world or global?
+            if (!Directory.Exists(BlueprintPath))
+            {
+                Directory.CreateDirectory(BlueprintPath);
+            }
+
+            // Client only - how to do? or just ignore - there are no bps and maybe someday there will be a server-wide directory of blueprints for sharing :)
+            Logger.LogMessage("Loading known blueprints");
+
+            // Try to load all saved blueprints
+            foreach (var name in Directory.EnumerateFiles(BlueprintPath, "*.blueprint").Select(Path.GetFileNameWithoutExtension))
+            {
+                if (!m_blueprints.ContainsKey(name))
+                {
+                    var bp = new Blueprint(name);
+                    if (bp.Load())
+                    {
+                        m_blueprints.Add(name, bp);
+                    }
+                    else
+                    {
+                        Logger.LogWarning($"Could not load blueprint {name}");
+                    }
+                }
+            }
+
+            Logger.LogInfo("BlueprintManager Initialized");
+        }
+
+        /*[PatchEvent(typeof(ZNet), nameof(ZNet.Awake), PatchEventType.Postfix)]
         public static void LoadKnownBlueprints(ZNet instance)
         {
             // Client only
@@ -39,7 +92,7 @@ namespace Veilheim.Blueprints
                     }
                 }
             }
-        }
+        }*/
 
         [PatchEvent(typeof(ZNetScene), nameof(ZNetScene.Awake), PatchEventType.Postfix)]
         public static void RegisterKnownBlueprints(ZNetScene instance)
@@ -50,7 +103,7 @@ namespace Veilheim.Blueprints
                 Logger.LogMessage("Registering known blueprints");
 
                 // Create prefabs for all known blueprints
-                foreach (var bp in Blueprint.m_blueprints.Values)
+                foreach (var bp in Instance.m_blueprints.Values)
                 {
                     bp.CreatePrefab();
                 }
@@ -76,16 +129,16 @@ namespace Veilheim.Blueprints
                     var circleProjector = instance.m_placementGhost.GetComponent<CircleProjector>();
                     if (circleProjector != null)
                     {
-                        Object.Destroy(circleProjector);
+                        Destroy(circleProjector);
                     }
 
-                    var bpname = $"blueprint{Blueprint.m_blueprints.Count() + 1:000}";
+                    var bpname = $"blueprint{Instance.m_blueprints.Count() + 1:000}";
                     Logger.LogInfo($"Capturing blueprint {bpname}");
 
                     if (Player.m_localPlayer.m_hoveringPiece != null)
                     {
                         var bp = new Blueprint(bpname);
-                        if (bp.Capture(Player.m_localPlayer.m_hoveringPiece.transform.position, Blueprint.selectionRadius, 1.0f))
+                        if (bp.Capture(Player.m_localPlayer.m_hoveringPiece.transform.position, Instance.selectionRadius, 1.0f))
                         {
                             TextInput.instance.m_queuedSign = new Blueprint.BlueprintSaveGUI(bp);
                             TextInput.instance.Show($"Save Blueprint ({bp.GetPieceCount()} pieces captured)", bpname, 50);
@@ -124,12 +177,12 @@ namespace Veilheim.Blueprints
                 {
                     if (Input.GetKey(KeyCode.LeftControl))
                     {
-                        Vector2 extent = Blueprint.m_blueprints.First(x => $"piece_blueprint ({x.Key})" == piece.name).Value.GetExtent();
+                        Vector2 extent = Instance.m_blueprints.First(x => $"piece_blueprint ({x.Key})" == piece.name).Value.GetExtent();
                         FlattenTerrain.FlattenForBlueprint(instance.m_placementGhost.transform, extent.x, extent.y,
-                            Blueprint.m_blueprints.First(x => $"piece_blueprint ({x.Key})" == piece.name).Value.m_pieceEntries);
+                            Instance.m_blueprints.First(x => $"piece_blueprint ({x.Key})" == piece.name).Value.m_pieceEntries);
                     }
 
-                    Blueprint bp = Blueprint.m_blueprints[piece.m_name];
+                    Blueprint bp = Instance.m_blueprints[piece.m_name];
                     var transform = instance.m_placementGhost.transform;
                     var position = instance.m_placementGhost.transform.position;
                     var rotation = instance.m_placementGhost.transform.rotation;
@@ -151,7 +204,7 @@ namespace Veilheim.Blueprints
                         }
 
                         // Instantiate a new object with the new prefab
-                        GameObject gameObject2 = Object.Instantiate(prefab, entryPosition, entryQuat);
+                        GameObject gameObject2 = Instantiate(prefab, entryPosition, entryQuat);
 
                         CraftingStation componentInChildren = gameObject2.GetComponentInChildren<CraftingStation>();
                         if (componentInChildren)
@@ -230,16 +283,16 @@ namespace Veilheim.Blueprints
 
                         if (Input.GetAxis("Mouse ScrollWheel") < 0f)
                         {
-                            Blueprint.selectionRadius -= 2f;
-                            if (Blueprint.selectionRadius < 2f)
+                            Instance.selectionRadius -= 2f;
+                            if (Instance.selectionRadius < 2f)
                             {
-                                Blueprint.selectionRadius = 2f;
+                                Instance.selectionRadius = 2f;
                             }
                         }
 
                         if (Input.GetAxis("Mouse ScrollWheel") > 0f)
                         {
-                            Blueprint.selectionRadius += 2f;
+                            Instance.selectionRadius += 2f;
                         }
 
                         if (!instance.m_placementMarkerInstance)
@@ -258,12 +311,12 @@ namespace Veilheim.Blueprints
                             circleProjector.Start();
                         }
 
-                        if (circleProjector.m_radius != Blueprint.selectionRadius)
+                        if (circleProjector.m_radius != Instance.selectionRadius)
                         {
-                            circleProjector.m_radius = Blueprint.selectionRadius;
+                            circleProjector.m_radius = Instance.selectionRadius;
                             circleProjector.m_nrOfSegments = (int)circleProjector.m_radius * 4;
                             circleProjector.Update();
-                            Logger.LogDebug($"Setting radius to {Blueprint.selectionRadius}");
+                            Logger.LogDebug($"Setting radius to {Instance.selectionRadius}");
                         }
                     }
                     else
@@ -271,7 +324,7 @@ namespace Veilheim.Blueprints
                         // Destroy placement marker instance to get rid of the circleprojector
                         if (instance.m_placementMarkerInstance)
                         {
-                            Object.DestroyImmediate(instance.m_placementMarkerInstance);
+                            DestroyImmediate(instance.m_placementMarkerInstance);
                         }
 
                         if (!piece.name.StartsWith("piece_blueprint"))

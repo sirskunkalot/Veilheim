@@ -14,7 +14,7 @@ namespace Veilheim.AssetManagers
     /// <summary>
     ///     Handles translation of asset bundle content.
     /// </summary>
-    internal class LocalizationManager : AssetManager, IPatchEventConsumer
+    internal class LocalizationManager : Manager, IPatchEventConsumer
     {
         public static LocalizationManager Instance { get; private set; }
 
