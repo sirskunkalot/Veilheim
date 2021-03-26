@@ -219,7 +219,7 @@ namespace Veilheim.Configurations.GUI
         }
 
         [PatchEvent(typeof(Player), nameof(Player.InCutscene), PatchEventType.Postfix)]
-        public static void GUITakesInput(Player instance, ref bool result)
+        public static void GUIVisible(Player instance, ref bool result)
         {
             if (GUIRoot != null)
             {
