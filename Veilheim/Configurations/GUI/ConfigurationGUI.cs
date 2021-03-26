@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using Steamworks;
 using UnityEngine;
 using UnityEngine.PlayerLoop;
@@ -44,9 +45,16 @@ namespace Veilheim.Configurations.GUI
             GUIRoot.SetActive(!GUIRoot.activeSelf);
         }
 
+        public static void EnableEntries()
+        {
+            foreach (var entry in entries)
+            {
+                entry.SetActive(true);
+            }
+        }
+
         public static void CreateConfigurationGUIRoot()
         {
-            Assembly asm = Assembly.GetAssembly(typeof(UnityEngine.UI.Text));
 
             if (GUIRoot != null)
             {
@@ -61,29 +69,32 @@ namespace Veilheim.Configurations.GUI
             GUIRoot.SetActive(false);
             ContentGrid = GUIRoot.GetComponentInChildren<VerticalLayoutGroup>();
 
-
             foreach (var property in Configuration.Current.GetSections().Where(x => !typeof(ISyncableSection).IsAssignableFrom(x.PropertyType)))
             {
                 BaseConfig configSection = property.GetValue(Configuration.Current, null) as BaseConfig;
                 bool sectionEnabled = configSection.IsEnabled;
                 GameObject section = CreateSection(property.Name, sectionEnabled, ContentGrid.transform);
-
+                ((RectTransform)section.transform).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,
+                    BaseConfig.GetProps(property.PropertyType).Count(x => x.Name != nameof(BaseConfig.IsEnabled)) * 30f + 40f + 10f);
+                ((RectTransform)section.transform.Find("Panel")).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, BaseConfig.GetProps(property.PropertyType).Count(x => x.Name != nameof(BaseConfig.IsEnabled)) * 30f+10f);
+                ((RectTransform)section.transform.Find("Panel")).SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal,300f);
                 foreach (var sectionProperty in BaseConfig.GetProps(property.PropertyType).Where(x => x.Name != nameof(BaseConfig.IsEnabled)))
                 {
                     GameObject entry = null;
                     if (sectionProperty.PropertyType == typeof(bool))
                     {
-                        entry = AddEntry(sectionProperty.Name, configSection.GetValue<bool>(sectionProperty.Name), section.transform);
+                        entry = AddEntry(sectionProperty.Name, configSection.GetValue<bool>(sectionProperty.Name), section.transform.Find("Panel").transform);
                     }
                     else if (sectionProperty.PropertyType == typeof(int))
                     {
-                        entry = AddEntry(sectionProperty.Name, configSection.GetValue<int>(sectionProperty.Name), section.transform);
+                        entry = AddEntry(sectionProperty.Name, configSection.GetValue<int>(sectionProperty.Name), section.transform.Find("Panel").transform);
                     }
                     else if (sectionProperty.PropertyType == typeof(float))
                     {
-                        entry = AddEntry(sectionProperty.Name, configSection.GetValue<float>(sectionProperty.Name), section.transform);
+                        entry = AddEntry(sectionProperty.Name, configSection.GetValue<float>(sectionProperty.Name), section.transform.Find("Panel").transform);
                     }
 
+                    entry.SetActive(true);
                     entries.Add(entry);
                 }
             }
@@ -94,27 +105,38 @@ namespace Veilheim.Configurations.GUI
                 BaseConfig configSection = property.GetValue(Configuration.Current, null) as BaseConfig;
                 bool sectionEnabled = configSection.IsEnabled;
                 GameObject section = CreateSection(property.Name, sectionEnabled, ContentGrid.transform);
+                ((RectTransform)section.transform).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,
+                    BaseConfig.GetProps(property.PropertyType).Count(x => x.Name != nameof(BaseConfig.IsEnabled)) * 30f + 40f + 10f);
+                ((RectTransform)section.transform.Find("Panel")).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, BaseConfig.GetProps(property.PropertyType).Count(x => x.Name != nameof(BaseConfig.IsEnabled)) * 30f+10f);
+                ((RectTransform)section.transform.Find("Panel")).SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal,300f);
 
                 foreach (var sectionProperty in BaseConfig.GetProps(property.PropertyType).Where(x => x.Name != nameof(BaseConfig.IsEnabled)))
                 {
                     GameObject entry = null;
                     if (sectionProperty.PropertyType == typeof(bool))
                     {
-                        entry = AddEntry(sectionProperty.Name, configSection.GetValue<bool>(sectionProperty.Name), section.transform);
+                        entry = AddEntry(sectionProperty.Name, configSection.GetValue<bool>(sectionProperty.Name), section.transform.Find("Panel").transform);
                     }
                     else if (sectionProperty.PropertyType == typeof(int))
                     {
-                        entry = AddEntry(sectionProperty.Name, configSection.GetValue<int>(sectionProperty.Name), section.transform);
+                        entry = AddEntry(sectionProperty.Name, configSection.GetValue<int>(sectionProperty.Name), section.transform.Find("Panel").transform);
                     }
                     else if (sectionProperty.PropertyType == typeof(float))
                     {
-                        entry = AddEntry(sectionProperty.Name, configSection.GetValue<float>(sectionProperty.Name), section.transform);
+                        entry = AddEntry(sectionProperty.Name, configSection.GetValue<float>(sectionProperty.Name), section.transform.Find("Panel").transform);
                     }
 
+                    entry.SetActive(true);
                     entries.Add(entry);
                 }
             }
 
+            foreach (var entry in entries)
+            {
+                Logger.LogWarning($"{entry.name}: {entry.activeSelf}");
+            }
+
+            VeilheimPlugin.Instance.Invoke(nameof(VeilheimPlugin.EnableConfigGui), 0.001f);
         }
 
         private static GameObject CreateSection(string sectionName, bool isEnabled, Transform parentTransform)
@@ -124,7 +146,7 @@ namespace Veilheim.Configurations.GUI
             newSection.GetComponent<Text>().text = sectionName;
             newSection.GetComponentInChildren<Toggle>().isOn = isEnabled;
 
-            return newSection.GetComponentInChildren<VerticalLayoutGroup>().gameObject;
+            return newSection;
         }
 
         private static GameObject AddEntry(string entryName, bool value, Transform parentTransform)
@@ -164,7 +186,7 @@ namespace Veilheim.Configurations.GUI
         {
             GameObject newEntry = Object.Instantiate(PrefabManager.Instance.GetPrefab("ConfigurationEntry"), parentTransform);
             newEntry.name = "configentry." + entryName;
-            newEntry.GetComponent<Text>().text = entryName + ":";
+            newEntry.transform.Find("ConfigName").GetComponent<Text>().text = entryName + ":";
             return newEntry;
         }
 
