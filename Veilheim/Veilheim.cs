@@ -103,7 +103,7 @@ namespace Veilheim
             // Display version in main menu
             if (SceneManager.GetActiveScene().name == "start")
             {
-                GUI.Label(new Rect(Screen.width - 100, 5, 100, 25), $"{PluginName} v{PluginVersion}");
+                GUI.Label(new Rect(Screen.width - PluginName.Length * 12, 5, PluginName.Length * 12, 25), $"{PluginName} v{PluginVersion}");
             }
         }
     }
