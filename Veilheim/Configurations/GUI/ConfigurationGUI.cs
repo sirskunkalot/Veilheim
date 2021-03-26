@@ -15,11 +15,12 @@ using UnityEngine.PlayerLoop;
 using UnityEngine.UI;
 using Veilheim.AssetManagers;
 using Veilheim.AssetUtils;
+using Veilheim.PatchEvents;
 using Object = UnityEngine.Object;
 
 namespace Veilheim.Configurations.GUI
 {
-    public class ConfigurationGUI
+    public class ConfigurationGUI : IPatchEventConsumer
     {
 
         private static GameObject GUIRoot;
@@ -40,9 +41,11 @@ namespace Veilheim.Configurations.GUI
             GUIRoot.SetActive(false);
         }
 
-        public static void ToggleGUI()
+        public static bool ToggleGUI()
         {
-            GUIRoot.SetActive(!GUIRoot.activeSelf);
+            bool newState = !GUIRoot.activeSelf;
+            GUIRoot.SetActive(newState);
+            return newState;
         }
 
         public static void EnableEntries()
@@ -209,6 +212,5 @@ namespace Veilheim.Configurations.GUI
 
             }
         }
-
     }
 }

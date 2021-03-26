@@ -13,6 +13,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Veilheim.AssetManagers;
 using Veilheim.Blueprints;
+using Veilheim.Configurations.GUI;
 using Veilheim.PatchEvents;
 using Veilheim.UnityWrappers;
 
@@ -45,7 +46,7 @@ namespace Veilheim
         internal static GameObject RootObject;
 
         private Harmony m_harmony;
-        
+
         private void Awake()
         {
             // Force load custom Unity assemblies
@@ -61,7 +62,7 @@ namespace Veilheim
             // Root GameObject for all plugin components
             RootObject = new GameObject("_VeilheimPlugin");
             DontDestroyOnLoad(RootObject);
-            
+
             // Create and initialize all managers
             foreach (Type managerType in managerTypes)
             {
@@ -85,6 +86,9 @@ namespace Veilheim
         {
             if (Input.GetKeyDown(KeyCode.F6))
             { // Set a breakpoint here to break on F6 key press
+                ConfigurationGUI.CreateConfigurationGUIRoot();
+                GameCamera.instance.m_mouseCapture = !ConfigurationGUI.ToggleGUI();
+                GameCamera.instance.UpdateMouseCapture();
             }
         }
 #endif
@@ -108,5 +112,11 @@ namespace Veilheim
                 GUI.Label(new Rect(Screen.width - PluginName.Length * 12, 5, PluginName.Length * 12, 25), $"{PluginName} v{PluginVersion}");
             }
         }
+
+        internal void EnableConfigGui()
+        {
+            ConfigurationGUI.EnableEntries();
+        }
+
     }
 }
