@@ -115,9 +115,9 @@ namespace Veilheim.Configurations.GUI
         {
             GameObject newButton = Object.Instantiate(Button, parent);
             newButton.GetComponentInChildren<Text>().text = text;
-            ((RectTransform) newButton.transform).anchorMin = anchorMin;
-            ((RectTransform) newButton.transform).anchorMax = anchorMax;
-            ((RectTransform) newButton.transform).anchoredPosition = position;
+            ((RectTransform)newButton.transform).anchorMin = anchorMin;
+            ((RectTransform)newButton.transform).anchorMax = anchorMax;
+            ((RectTransform)newButton.transform).anchoredPosition = position;
             return newButton;
         }
 
@@ -141,14 +141,14 @@ namespace Veilheim.Configurations.GUI
 
             GUIRoot = Object.Instantiate(PrefabManager.Instance.GetPrefab("ConfigurationGUIRoot"), InventoryGui.instance.m_playerGrid.transform.parent.parent.parent.parent);
             GUIRoot.GetComponent<Image>().sprite = GUIManager.Background.GetComponent<Image>().sprite;
-           
-            GUIRoot.GetComponent<Image>().sprite=Sprite.Create(GUIRoot.GetComponent<Image>().sprite.texture,new Rect(0, 2048-1018, 443, 1018 - 686),new Vector2(0f,0f));
+
+            GUIRoot.GetComponent<Image>().sprite = Sprite.Create(GUIRoot.GetComponent<Image>().sprite.texture, new Rect(0, 2048 - 1018, 443, 1018 - 686), new Vector2(0f, 0f));
 
             var cancelButton = CreateButton("Cancel", GUIRoot.transform, new Vector2(1, 0), new Vector2(1, 0), new Vector2(-280f, -40f));
-            var okButton = CreateButton("OK",GUIRoot.transform,new Vector2(1, 0), new Vector2(1, 0), new Vector2(-80f, -40f));
+            var okButton = CreateButton("OK", GUIRoot.transform, new Vector2(1, 0), new Vector2(1, 0), new Vector2(-80f, -40f));
             cancelButton.GetComponentInChildren<Button>().onClick.AddListener(new UnityAction(DisableGUIRoot));
             cancelButton.SetActive(true);
-            
+
             okButton.SetActive(true);
             okButton.GetComponentInChildren<Button>().onClick.AddListener(new UnityAction(OnOKClick));
 
@@ -236,25 +236,28 @@ namespace Veilheim.Configurations.GUI
         {
             foreach (var sectionProperty in Configuration.Current.GetSections())
             {
-                Logger.LogDebug("Getting values for section " + sectionProperty.Name);
-                GameObject section = sections.First(x => x.name == "section." + sectionProperty.Name);
-                section.transform.Find("Toggle").gameObject.GetComponent<Toggle>().isOn = Configuration.GetValue<bool>(sectionProperty.Name + "." + nameof(BaseConfig.IsEnabled)); ;
-
-
-                foreach (var entryProperty in BaseConfig.GetProps(sectionProperty.PropertyType).Where(x => x.Name != nameof(BaseConfig.IsEnabled)))
+                if (Configuration.PlayerIsAdmin && typeof(ISyncableSection).IsAssignableFrom(sectionProperty.PropertyType))
                 {
-                    string path = sectionProperty.Name + "." + entryProperty.Name;
-                    if (Configuration.GetValueType(path) == typeof(bool))
+                    Logger.LogDebug("Getting values for section " + sectionProperty.Name);
+                    GameObject section = sections.First(x => x.name == "section." + sectionProperty.Name);
+                    section.transform.Find("Toggle").gameObject.GetComponent<Toggle>().isOn =
+                        Configuration.GetValue<bool>(sectionProperty.Name + "." + nameof(BaseConfig.IsEnabled));
+
+                    foreach (var entryProperty in BaseConfig.GetProps(sectionProperty.PropertyType).Where(x => x.Name != nameof(BaseConfig.IsEnabled)))
                     {
-                        entries.First(x => x.name == path).GetComponentInChildren<Toggle>().isOn = Configuration.GetValue<bool>(path);
-                    }
-                    else if (Configuration.GetValueType(path) == typeof(int))
-                    {
-                        entries.First(x => x.name == path).GetComponentInChildren<InputField>().text = Configuration.GetValue<int>(path).ToString();
-                    }
-                    else if (Configuration.GetValueType(path) == typeof(float))
-                    {
-                        entries.First(x => x.name == path).GetComponentInChildren<InputField>().text = Configuration.GetValue<float>(path).ToString("F");
+                        string path = sectionProperty.Name + "." + entryProperty.Name;
+                        if (Configuration.GetValueType(path) == typeof(bool))
+                        {
+                            entries.First(x => x.name == path).GetComponentInChildren<Toggle>().isOn = Configuration.GetValue<bool>(path);
+                        }
+                        else if (Configuration.GetValueType(path) == typeof(int))
+                        {
+                            entries.First(x => x.name == path).GetComponentInChildren<InputField>().text = Configuration.GetValue<int>(path).ToString();
+                        }
+                        else if (Configuration.GetValueType(path) == typeof(float))
+                        {
+                            entries.First(x => x.name == path).GetComponentInChildren<InputField>().text = Configuration.GetValue<float>(path).ToString("F");
+                        }
                     }
                 }
             }
@@ -316,7 +319,7 @@ namespace Veilheim.Configurations.GUI
             newEntry.name = "configentry." + entryName;
             newEntry.transform.Find("ConfigName").GetComponent<Text>().text = entryName + ":";
             newEntry.transform.Find("ConfigName").GetComponent<Text>().font = TextInput.instance.m_topic.font;
-            newEntry.transform.Find("InputText").Find("Text").GetComponent<Text>().font=TextInput.instance.m_topic.font;
+            newEntry.transform.Find("InputText").Find("Text").GetComponent<Text>().font = TextInput.instance.m_topic.font;
             return newEntry;
         }
 
