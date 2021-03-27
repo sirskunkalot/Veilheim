@@ -333,7 +333,12 @@ namespace Veilheim.Configurations
             }
         }
 
-
+        /// <summary>
+        /// Set value in configuration, send syncable's to the server
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="propertyPath"></param>
+        /// <param name="value"></param>
         public static void SetValue<T>(string propertyPath, T value) where T : IEquatable<T>
         {
             string[] pathParts = propertyPath.Split('.');
@@ -370,6 +375,12 @@ namespace Veilheim.Configurations
             }
         }
 
+        /// <summary>
+        /// Get value from configuration by name
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="propertyPath">Propertypath (section.entry)</param>
+        /// <returns>configuration value</returns>
         public static T GetValue<T>(string propertyPath)
         {
             string[] pathParts = propertyPath.Split('.');
@@ -396,6 +407,11 @@ namespace Veilheim.Configurations
             return (T)entryProperty.GetValue(sectionValue, null);
         }
 
+        /// <summary>
+        /// Get type of configuration entry
+        /// </summary>
+        /// <param name="propertyPath">Property path (section.entry)</param>
+        /// <returns>Type of configuration value</returns>
         public static Type GetValueType(string propertyPath)
         {
             string[] pathParts = propertyPath.Split('.');
