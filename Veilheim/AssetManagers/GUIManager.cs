@@ -7,6 +7,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 using Veilheim.AssetEntities;
 using Veilheim.PatchEvents;
 
@@ -19,6 +20,8 @@ namespace Veilheim.AssetManagers
         internal static GameObject GUIContainer;
 
         internal static GameObject Background;
+
+        internal static GameObject Button;
 
         private bool loaded = false;
 
@@ -69,9 +72,22 @@ namespace Veilheim.AssetManagers
                 tf.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 257);
                 tf.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 320);
                 tf.localScale = new Vector3(1f, 1f, 1f);
-                
+
+                Button = TextInput.instance.m_panel.transform.Find("OK").gameObject;
+
                 loaded = true;
             }
+        }
+
+
+        public GameObject CreateButton(string text, Transform parent, Vector2 anchorMin, Vector2 anchorMax, Vector2 position)
+        {
+            GameObject newButton = Object.Instantiate(Button, parent);
+            newButton.GetComponentInChildren<Text>().text = text;
+            ((RectTransform) newButton.transform).anchorMin = anchorMin;
+            ((RectTransform) newButton.transform).anchorMax = anchorMax;
+            ((RectTransform) newButton.transform).anchoredPosition = position;
+            return newButton;
         }
     }
 }

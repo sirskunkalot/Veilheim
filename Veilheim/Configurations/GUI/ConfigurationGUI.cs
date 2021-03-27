@@ -120,8 +120,13 @@ namespace Veilheim.Configurations.GUI
 
             GUIRoot = Object.Instantiate(PrefabManager.Instance.GetPrefab("ConfigurationGUIRoot"), InventoryGui.instance.m_playerGrid.transform.parent.parent.parent.parent);
 
-            GUIRoot.transform.Find("CancelButton").gameObject.GetComponent<Button>().onClick.AddListener(new UnityAction(DisableGUIRoot));
-            GUIRoot.transform.Find("OKButton").gameObject.GetComponent<Button>().onClick.AddListener(new UnityAction(OnOKClick));
+            var cancelButton = GUIManager.Instance.CreateButton("Cancel", GUIRoot.transform, new Vector2(1, 0), new Vector2(1, 0), new Vector2(-280f, -40f));
+            var okButton = GUIManager.Instance.CreateButton("OK",GUIRoot.transform,new Vector2(1, 0), new Vector2(1, 0), new Vector2(-80f, -40f));
+            cancelButton.GetComponentInChildren<Button>().onClick.AddListener(new UnityAction(DisableGUIRoot));
+            cancelButton.SetActive(true);
+            
+            okButton.SetActive(true);
+            okButton.GetComponentInChildren<Button>().onClick.AddListener(new UnityAction(OnOKClick));
 
             GUIRoot.SetActive(false);
             ContentGrid = GUIRoot.GetComponentInChildren<VerticalLayoutGroup>();
