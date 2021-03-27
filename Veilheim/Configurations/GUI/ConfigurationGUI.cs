@@ -44,7 +44,6 @@ namespace Veilheim.Configurations.GUI
             GUIRoot.SetActive(false);
             GameCamera.instance.m_mouseCapture = true;
             GameCamera.instance.UpdateMouseCapture();
-
         }
 
         public static bool ToggleGUI()
@@ -143,6 +142,10 @@ namespace Veilheim.Configurations.GUI
             GUIRoot.GetComponent<Image>().sprite = GUIManager.Background.GetComponent<Image>().sprite;
 
             GUIRoot.GetComponent<Image>().sprite = Sprite.Create(GUIRoot.GetComponent<Image>().sprite.texture, new Rect(0, 2048 - 1018, 443, 1018 - 686), new Vector2(0f, 0f));
+
+            GUIRoot.transform.Find("Header").GetComponent<Text>().font = TextInput.instance.m_topic.font;
+            GUIRoot.transform.Find("Header").GetComponent<Text>().color = TextInput.instance.m_topic.color;
+            GUIRoot.transform.Find("Header").GetComponent<Text>().fontSize = TextInput.instance.m_topic.fontSize + 5;
 
             var cancelButton = CreateButton("Cancel", GUIRoot.transform, new Vector2(1, 0), new Vector2(1, 0), new Vector2(-280f, -40f));
             var okButton = CreateButton("OK", GUIRoot.transform, new Vector2(1, 0), new Vector2(1, 0), new Vector2(-80f, -40f));
