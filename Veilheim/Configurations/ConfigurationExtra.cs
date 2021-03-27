@@ -356,11 +356,11 @@ namespace Veilheim.Configurations
                 throw new Exception($"Could not find property (entry) for {pathParts[1]}");
             }
 
-            // Logger.LogDebug($"Setting Property value for {propertyPath} -> {value}");
             bool equal = value.Equals((T) entryProperty.GetValue(sectionValue, null));
             entryProperty.SetValue(sectionValue, value, null);
             if (!equal)
             {
+                Logger.LogDebug($"Setting Property value for {propertyPath} -> {value}");
                 if (typeof(ISyncableSection).IsAssignableFrom(sectionProperty.PropertyType))
                 {
                     var zPgk = new ZPackage();

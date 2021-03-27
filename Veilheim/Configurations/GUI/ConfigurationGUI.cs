@@ -71,7 +71,7 @@ namespace Veilheim.Configurations.GUI
             foreach (var sectionProperty in Configuration.Current.GetSections())
             {
                 GameObject section = sections.First(x => x.name == "section." + sectionProperty.Name);
-                bool sectionEnabled = section.GetComponentInChildren<Toggle>().isOn;
+                bool sectionEnabled = section.transform.Find("Toggle").gameObject.GetComponent<Toggle>().isOn;
                 Configuration.SetValue(sectionProperty.Name + "." + nameof(BaseConfig.IsEnabled), sectionEnabled);
 
                 foreach (var entryProperty in BaseConfig.GetProps(sectionProperty.PropertyType).Where(x => x.Name != nameof(BaseConfig.IsEnabled)))
@@ -135,7 +135,11 @@ namespace Veilheim.Configurations.GUI
                     BaseConfig.GetProps(sectionProperty.PropertyType).Count(x => x.Name != nameof(BaseConfig.IsEnabled)) * 30f + 40f + 20f);
                 ((RectTransform)section.transform.Find("Panel")).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, BaseConfig.GetProps(sectionProperty.PropertyType).Count(x => x.Name != nameof(BaseConfig.IsEnabled)) * 30f + 15f);
                 ((RectTransform)section.transform.Find("Panel")).SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 465f);
-                section.GetComponent<Text>().fontStyle = FontStyle.Bold;
+                section.GetComponent<Text>().fontStyle = FontStyle.Normal;
+                section.GetComponent<Text>().font = TextInput.instance.m_topic.font;
+                section.GetComponent<Text>().fontSize += 3;
+
+                ((RectTransform)section.transform.Find("Panel")).gameObject.GetComponent<Image>().color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
 
                 foreach (var entryProperty in BaseConfig.GetProps(sectionProperty.PropertyType).Where(x => x.Name != nameof(BaseConfig.IsEnabled)))
                 {
@@ -172,7 +176,6 @@ namespace Veilheim.Configurations.GUI
                     ((RectTransform)section.transform.Find("Panel")).SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 465f);
 
                     ((RectTransform)section.transform.Find("Panel")).gameObject.GetComponent<Image>().color = new Color(0.5f, 61f / 255f, 0f, 0.5f);
-                    section.GetComponent<Text>().fontStyle = FontStyle.Bold;
 
                     foreach (var entryProperty in BaseConfig.GetProps(sectionProperty.PropertyType).Where(x => x.Name != nameof(BaseConfig.IsEnabled)))
                     {
@@ -234,6 +237,10 @@ namespace Veilheim.Configurations.GUI
             GameObject newSection = Object.Instantiate(PrefabManager.Instance.GetPrefab("ConfigurationSection"), parentTransform);
             sections.Add(newSection);
             newSection.GetComponent<Text>().text = sectionName;
+            newSection.GetComponent<Text>().fontStyle = FontStyle.Normal;
+            newSection.GetComponent<Text>().font = TextInput.instance.m_topic.font;
+            newSection.GetComponent<Text>().fontSize += 3;
+
             newSection.GetComponentInChildren<Toggle>().isOn = isEnabled;
             newSection.name = "section." + sectionName;
 
@@ -278,6 +285,8 @@ namespace Veilheim.Configurations.GUI
             GameObject newEntry = Object.Instantiate(PrefabManager.Instance.GetPrefab("ConfigurationEntry"), parentTransform);
             newEntry.name = "configentry." + entryName;
             newEntry.transform.Find("ConfigName").GetComponent<Text>().text = entryName + ":";
+            newEntry.transform.Find("ConfigName").GetComponent<Text>().font = TextInput.instance.m_topic.font;
+            newEntry.transform.Find("InputText").Find("Text").GetComponent<Text>().font=TextInput.instance.m_topic.font;
             return newEntry;
         }
 
