@@ -52,6 +52,11 @@ namespace Veilheim.Configurations.GUI
         {
             if (GUIManager.PixelFix == null)
             {
+                if (GUIRoot != null)
+                {
+                    Object.Destroy(GUIRoot);
+                    GUIRoot = null;
+                }
                 return false;
             }
 
