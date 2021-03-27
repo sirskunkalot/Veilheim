@@ -240,6 +240,7 @@ namespace Veilheim.Configurations.GUI
             newSection.GetComponent<Text>().fontStyle = FontStyle.Normal;
             newSection.GetComponent<Text>().font = TextInput.instance.m_topic.font;
             newSection.GetComponent<Text>().fontSize += 3;
+            newSection.GetComponent<Text>().color = TextInput.instance.m_topic.color;
 
             newSection.GetComponentInChildren<Toggle>().isOn = isEnabled;
             newSection.name = "section." + sectionName;
