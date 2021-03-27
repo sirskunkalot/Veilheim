@@ -5,6 +5,7 @@
 // Project: Veilheim
 
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -27,7 +28,7 @@ namespace Veilheim.AssetManagers
 
         internal Font AveriaSerif;
 
-        internal Font AveriaSans;
+        internal Font AveriaSerifBold;
 
         private bool needsLoad = true;
 
@@ -111,29 +112,15 @@ namespace Veilheim.AssetManagers
 
                 // Fonts
                 var fonts = Resources.FindObjectsOfTypeAll<Font>();
-                Font serif = null;
-                Font sans = null;
-                foreach (var font in fonts)
-                {
-                    if (font.name.StartsWith("AveriaSerifLibre-Regular"))
-                    {
-                        serif = font;
-                    }
-                    if (font.name.StartsWith("AveriaSansLibre-Regular"))
-                    {
-                        sans = font;
-                    }
-                }
 
-                if (serif == null || sans == null)
+                AveriaSerif = fonts.FirstOrDefault(x => x.name == "AveriaSerifLibre-Regular");
+                AveriaSerifBold = fonts.FirstOrDefault(x => x.name == "AveriaSerifLibre-Bold");
+                if (AveriaSerifBold == null || AveriaSerif == null)
                 {
                     Logger.LogError("Fonts not found");
                     needsLoad = false;
                     return;
                 }
-
-                AveriaSerif = serif;
-                AveriaSans = sans;
 
                 // GUI components (ouch, my memory hurts... :))
                 var objects = Resources.FindObjectsOfTypeAll<GameObject>();
