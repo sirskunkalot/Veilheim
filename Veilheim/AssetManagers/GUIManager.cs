@@ -133,7 +133,7 @@ namespace Veilheim.AssetManagers
                 AveriaSerif = serif;
                 AveriaSans = sans;
 
-                // GUI components
+                // GUI components (ouch, my memory hurts... :))
                 var objects = Resources.FindObjectsOfTypeAll<GameObject>();
                 GameObject ingameGui = null;
                 foreach (var obj in objects)
