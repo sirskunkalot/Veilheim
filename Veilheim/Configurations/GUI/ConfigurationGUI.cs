@@ -118,10 +118,12 @@ namespace Veilheim.Configurations.GUI
                 return;
             }
 
-            GUIRoot = Object.Instantiate(GUIManager.Instance.GetGUIPrefab("ConfigurationGUIRoot"), InventoryGui.instance.m_playerGrid.transform.parent.parent.parent.parent);
+            //GUIRoot = Object.Instantiate(GUIManager.Instance.GetGUIPrefab("ConfigurationGUIRoot"), InventoryGui.instance.m_playerGrid.transform.parent.parent.parent.parent);
+            GUIRoot = Object.Instantiate(GUIManager.Instance.GetGUIPrefab("ConfigurationGUIRoot"));
+            GUIRoot.transform.SetParent(GUIManager.GUIContainer.transform, false);
             GUIRoot.SetActive(true);
 
-            //GUIRoot.GetComponent<Image>().sprite=Sprite.Create(GUIRoot.GetComponent<Image>().sprite.texture,new Rect(0, 2048-1018, 443, 1018 - 686),new Vector2(0f,0f));
+            GUIRoot.GetComponent<Image>().sprite = GUIManager.Instance.CreateSpriteFromAtlas(new Rect(0, 2048 - 1018, 443, 1018 - 686), new Vector2(0f, 0f));
 
             var cancelButton = GUIManager.Instance.CreateButton("Cancel", GUIRoot.transform, new Vector2(1, 0), new Vector2(1, 0), new Vector2(-280f, -40f));
             var okButton = GUIManager.Instance.CreateButton("OK",GUIRoot.transform,new Vector2(1, 0), new Vector2(1, 0), new Vector2(-80f, -40f));
@@ -150,7 +152,8 @@ namespace Veilheim.Configurations.GUI
                 ((RectTransform)section.transform.Find("Panel")).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, BaseConfig.GetProps(sectionProperty.PropertyType).Count(x => x.Name != nameof(BaseConfig.IsEnabled)) * 30f + 15f);
                 ((RectTransform)section.transform.Find("Panel")).SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 465f);
                 section.GetComponent<Text>().fontStyle = FontStyle.Normal;
-                section.GetComponent<Text>().font = TextInput.instance.m_topic.font;
+                //section.GetComponent<Text>().font = TextInput.instance.m_topic.font;
+                section.GetComponent<Text>().font = GUIManager.Instance.AveriaSans;
                 section.GetComponent<Text>().fontSize += 3;
 
                 ((RectTransform)section.transform.Find("Panel")).gameObject.GetComponent<Image>().color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
@@ -251,11 +254,13 @@ namespace Veilheim.Configurations.GUI
         {
             GameObject newSection = Object.Instantiate(GUIManager.Instance.GetGUIPrefab("ConfigurationSection"), parentTransform);
             sections.Add(newSection);
-            newSection.GetComponent<Text>().text = sectionName;
-            newSection.GetComponent<Text>().fontStyle = FontStyle.Normal;
-            newSection.GetComponent<Text>().font = TextInput.instance.m_topic.font;
-            newSection.GetComponent<Text>().fontSize += 3;
-            newSection.GetComponent<Text>().color = TextInput.instance.m_topic.color;
+            var text = newSection.GetComponent<Text>();
+            text.text = sectionName;
+            text.fontStyle = FontStyle.Normal;
+            //text.font = TextInput.instance.m_topic.font;
+            text.font = GUIManager.Instance.AveriaSans;
+            text.fontSize += 3;
+            //text.color = TextInput.instance.m_topic.color;
 
             newSection.GetComponentInChildren<Toggle>().isOn = isEnabled;
             newSection.name = "section." + sectionName;
@@ -301,8 +306,10 @@ namespace Veilheim.Configurations.GUI
             GameObject newEntry = Object.Instantiate(GUIManager.Instance.GetGUIPrefab("ConfigurationEntry"), parentTransform);
             newEntry.name = "configentry." + entryName;
             newEntry.transform.Find("ConfigName").GetComponent<Text>().text = entryName + ":";
-            newEntry.transform.Find("ConfigName").GetComponent<Text>().font = TextInput.instance.m_topic.font;
-            newEntry.transform.Find("InputText").Find("Text").GetComponent<Text>().font = TextInput.instance.m_topic.font;
+            //newEntry.transform.Find("ConfigName").GetComponent<Text>().font = TextInput.instance.m_topic.font;
+            newEntry.transform.Find("ConfigName").GetComponent<Text>().font = GUIManager.Instance.AveriaSans;
+            //newEntry.transform.Find("InputText").Find("Text").GetComponent<Text>().font = TextInput.instance.m_topic.font;
+            newEntry.transform.Find("InputText").Find("Text").GetComponent<Text>().font = GUIManager.Instance.AveriaSans;
             return newEntry;
         }
 

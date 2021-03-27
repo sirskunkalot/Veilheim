@@ -8,12 +8,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using Veilheim.AssetEntities;
+using UnityEngine.EventSystems;
 using Veilheim.PatchEvents;
 
 namespace Veilheim.AssetManagers
 {
-    internal class GUIManager : Manager, IPatchEventConsumer
+    internal class GUIManager : Manager, IPatchEventConsumer, IPointerClickHandler
     {
         internal static GUIManager Instance { get; private set; }
         
@@ -46,6 +46,7 @@ namespace Veilheim.AssetManagers
             GUIContainer.transform.SetParent(VeilheimPlugin.RootObject.transform);
             var canvas = GUIContainer.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            GUIContainer.AddComponent<GraphicRaycaster>();
 
             Logger.LogInfo("Initialized GUIManager");
         }
@@ -90,10 +91,10 @@ namespace Veilheim.AssetManagers
                 Texture2D map = null;
                 foreach (var tex in textures)
                 {
-                    if (tex.name.StartsWith("sactx-2048x2048-Uncompressed-UIAtlas"))
+                    // sactx-2048x2048-Uncompressed-UIAtlas-a5f4e704 is in there two times. we need the last one, so just loop everything...
+                    if (tex.name.StartsWith("sactx-2048x2048-Uncompressed-UIAtlas-a5f4e704"))
                     {
                         map = tex;
-                        break;
                     }
                 }
 
@@ -157,6 +158,11 @@ namespace Veilheim.AssetManagers
 
                 needsLoad = false;
             }
+        }
+
+        public void OnPointerClick(PointerEventData eventData)
+        {
+            Logger.LogMessage(eventData.GetObjectString());
         }
 
         internal GameObject CreateButton(string text, Transform parent, Vector2 anchorMin, Vector2 anchorMax, Vector2 position)
