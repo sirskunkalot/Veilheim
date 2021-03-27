@@ -18,6 +18,8 @@ namespace Veilheim.AssetManagers
         internal static GUIManager Instance { get; private set; }
         
         internal static GameObject GUIContainer;
+        
+        internal static GameObject PixelFix;
 
         internal Dictionary<string, GameObject> GUIPrefabs = new Dictionary<string, GameObject>();
         
@@ -136,18 +138,43 @@ namespace Veilheim.AssetManagers
                 // GUI components (ouch, my memory hurts... :))
                 var objects = Resources.FindObjectsOfTypeAll<GameObject>();
                 GameObject ingameGui = null;
+                //GameObject pixelFix = null;
                 foreach (var obj in objects)
                 {
                     if (obj.name.Equals("IngameGui"))
                     {
                         ingameGui = obj;
+                    }
+                    
+                    if (ingameGui != null)
+                    {
                         break;
                     }
+
+                    /*if (obj.name.Equals("_GameMain"))
+                    {
+                        pixelFix = obj.transform.Find("GUI/PixelFix").gameObject;
+                    }*/
+
+                    /*if (ingameGui != null && pixelFix != null)
+                    {
+                        break;
+                    }*/
                 }
 
+                /*if (ingameGui == null || pixelFix == null)
+                {
+                    Logger.LogError("GameObjects not found");
+                    needsLoad = false;
+                    return;
+                }
+
+                // reference to PixelFix for High DPI displays
+                PixelFix = pixelFix;*/
+                
                 if (ingameGui == null)
                 {
-                    Logger.LogError("IngameGui not found");
+                    Logger.LogError("GameObjects not found");
                     needsLoad = false;
                     return;
                 }
@@ -157,6 +184,12 @@ namespace Veilheim.AssetManagers
                 AddGUIPrefab("BaseButton", button);
 
                 needsLoad = false;
+            }
+
+            if (PixelFix == null && SceneManager.GetActiveScene().name == "main" && SceneManager.GetActiveScene().isLoaded)
+            {
+                var gamemain = GameObject.Find("_GameMain");
+                PixelFix = gamemain.transform.Find("GUI/PixelFix").gameObject;
             }
         }
 

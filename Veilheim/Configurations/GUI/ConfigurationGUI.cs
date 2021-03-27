@@ -50,9 +50,32 @@ namespace Veilheim.Configurations.GUI
 
         public static bool ToggleGUI()
         {
-            bool newState = !GUIRoot.activeSelf;
-            GUIRoot.SetActive(newState);
-            return newState;
+            if (GUIManager.PixelFix == null)
+            {
+                return false;
+            }
+
+            if (GUIRoot == null)
+            {
+                CreateConfigurationGUIRoot();
+            }
+            
+            bool setActive = !GUIRoot.activeSelf;
+            GUIRoot.SetActive(setActive);
+
+            if (setActive)
+            {
+                UpdateValuesFromConfiguration();
+                GameCamera.instance.m_mouseCapture = false;
+                GameCamera.instance.UpdateMouseCapture();
+            }
+            else
+            {
+                GameCamera.instance.m_mouseCapture = true;
+                GameCamera.instance.UpdateMouseCapture();
+            }
+            
+            return setActive;
         }
 
         public static void EnableEntries()
@@ -72,58 +95,12 @@ namespace Veilheim.Configurations.GUI
             DisableGUIRoot();
         }
 
-        private static void ApplyValuesToConfiguration()
-        {
-            foreach (var sectionProperty in Configuration.Current.GetSections())
-            {
-                GameObject section = sections.First(x => x.name == "section." + sectionProperty.Name);
-                bool sectionEnabled = section.transform.Find("Toggle").gameObject.GetComponent<Toggle>().isOn;
-                Configuration.SetValue(sectionProperty.Name + "." + nameof(BaseConfig.IsEnabled), sectionEnabled);
-
-                foreach (var entryProperty in BaseConfig.GetProps(sectionProperty.PropertyType).Where(x => x.Name != nameof(BaseConfig.IsEnabled)))
-                {
-                    string path = sectionProperty.Name + "." + entryProperty.Name;
-                    if (Configuration.GetValueType(path) == typeof(bool))
-                    {
-                        bool value = entries.First(x => x.name == path).GetComponentInChildren<Toggle>().isOn;
-                        Configuration.SetValue(path, value);
-                    }
-                    else if (Configuration.GetValueType(path) == typeof(int))
-                    {
-                        int value = 0;
-                        string valueString = entries.First(x => x.name == path).GetComponentInChildren<InputField>().text;
-
-                        if (int.TryParse(valueString, out value))
-                        {
-                            Configuration.SetValue(path, value);
-                        }
-                    }
-                    else if (Configuration.GetValueType(path) == typeof(float))
-                    {
-                        float value = 0;
-                        string valueString = entries.First(x => x.name == path).GetComponentInChildren<InputField>().text;
-
-                        if (float.TryParse(valueString, out value))
-                        {
-                            Configuration.SetValue(path, value);
-                        }
-                    }
-                }
-            }
-        }
-
         public static void CreateConfigurationGUIRoot()
         {
-            if (GUIRoot != null && Configuration.Current != null)
-            {
-                UpdateValuesFromConfiguration();
-                return;
-            }
-
             //GUIRoot = Object.Instantiate(GUIManager.Instance.GetGUIPrefab("ConfigurationGUIRoot"), InventoryGui.instance.m_playerGrid.transform.parent.parent.parent.parent);
             GUIRoot = Object.Instantiate(GUIManager.Instance.GetGUIPrefab("ConfigurationGUIRoot"));
-            GUIRoot.transform.SetParent(GUIManager.GUIContainer.transform, false);
-            GUIRoot.SetActive(true);
+            //GUIRoot.transform.SetParent(GUIManager.GUIContainer.transform, false);
+            GUIRoot.transform.SetParent(GUIManager.PixelFix.transform, false);
 
             GUIRoot.GetComponent<Image>().sprite = GUIManager.Instance.CreateSpriteFromAtlas(new Rect(0, 2048 - 1018, 443, 1018 - 686), new Vector2(0f, 0f));
 
@@ -134,22 +111,21 @@ namespace Veilheim.Configurations.GUI
             text.fontSize = text.fontSize + 5;
 
             var cancelButton = GUIManager.Instance.CreateButton("Cancel", GUIRoot.transform, new Vector2(1, 0), new Vector2(1, 0), new Vector2(-280f, -40f));
-            var okButton = GUIManager.Instance.CreateButton("OK",GUIRoot.transform,new Vector2(1, 0), new Vector2(1, 0), new Vector2(-80f, -40f));
             cancelButton.GetComponentInChildren<Button>().onClick.AddListener(new UnityAction(DisableGUIRoot));
             cancelButton.SetActive(true);
 
+            var okButton = GUIManager.Instance.CreateButton("OK", GUIRoot.transform, new Vector2(1, 0), new Vector2(1, 0), new Vector2(-80f, -40f));
             okButton.GetComponentInChildren<Button>().onClick.AddListener(new UnityAction(OnOKClick));
             okButton.SetActive(true);
 
-            GUIRoot.SetActive(true);
             ContentGrid = GUIRoot.GetComponentInChildren<VerticalLayoutGroup>();
-
-            //VeilheimPlugin.Instance.Invoke(nameof(VeilheimPlugin.EnableConfigGui), 0.001f);
+            
+            InitValuesFromConfiguration();
+            EnableEntries();
         }
 
         public static void InitValuesFromConfiguration()
         {
-
             foreach (var sectionProperty in Configuration.Current.GetSections().Where(x => !typeof(ISyncableSection).IsAssignableFrom(x.PropertyType)))
             {
                 BaseConfig configSection = sectionProperty.GetValue(Configuration.Current, null) as BaseConfig;
@@ -319,6 +295,46 @@ namespace Veilheim.Configurations.GUI
             //newEntry.transform.Find("InputText").Find("Text").GetComponent<Text>().font = TextInput.instance.m_topic.font;
             newEntry.transform.Find("InputText").Find("Text").GetComponent<Text>().font = GUIManager.Instance.AveriaSans;
             return newEntry;
+        }
+
+        private static void ApplyValuesToConfiguration()
+        {
+            foreach (var sectionProperty in Configuration.Current.GetSections())
+            {
+                GameObject section = sections.First(x => x.name == "section." + sectionProperty.Name);
+                bool sectionEnabled = section.transform.Find("Toggle").gameObject.GetComponent<Toggle>().isOn;
+                Configuration.SetValue(sectionProperty.Name + "." + nameof(BaseConfig.IsEnabled), sectionEnabled);
+
+                foreach (var entryProperty in BaseConfig.GetProps(sectionProperty.PropertyType).Where(x => x.Name != nameof(BaseConfig.IsEnabled)))
+                {
+                    string path = sectionProperty.Name + "." + entryProperty.Name;
+                    if (Configuration.GetValueType(path) == typeof(bool))
+                    {
+                        bool value = entries.First(x => x.name == path).GetComponentInChildren<Toggle>().isOn;
+                        Configuration.SetValue(path, value);
+                    }
+                    else if (Configuration.GetValueType(path) == typeof(int))
+                    {
+                        int value = 0;
+                        string valueString = entries.First(x => x.name == path).GetComponentInChildren<InputField>().text;
+
+                        if (int.TryParse(valueString, out value))
+                        {
+                            Configuration.SetValue(path, value);
+                        }
+                    }
+                    else if (Configuration.GetValueType(path) == typeof(float))
+                    {
+                        float value = 0;
+                        string valueString = entries.First(x => x.name == path).GetComponentInChildren<InputField>().text;
+
+                        if (float.TryParse(valueString, out value))
+                        {
+                            Configuration.SetValue(path, value);
+                        }
+                    }
+                }
+            }
         }
 
         public static void RPC_IsAdmin(long sender, bool isAdmin)
