@@ -11,6 +11,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using Veilheim.PatchEvents;
+using System;
 
 namespace Veilheim.AssetManagers
 {
@@ -89,94 +90,75 @@ namespace Veilheim.AssetManagers
             // Load valheim GUI assets
             if (needsLoad && SceneManager.GetActiveScene().name == "start" && SceneManager.GetActiveScene().isLoaded)
             {
-                // Texture atlas
-                var textures = Resources.FindObjectsOfTypeAll<Texture2D>();
-                Texture2D map = null;
-                foreach (var tex in textures)
+                try
                 {
-                    // sactx-2048x2048-Uncompressed-UIAtlas-a5f4e704 is in there two times. we need the last one, so just loop everything...
-                    if (tex.name.StartsWith("sactx-2048x2048-Uncompressed-UIAtlas-a5f4e704"))
+                    // Texture Atlas aka Sprite Sheet
+                    var textures = Resources.FindObjectsOfTypeAll<Texture2D>();
+                    foreach (var tex in textures)
                     {
-                        map = tex;
+                        // sactx-2048x2048-Uncompressed-UIAtlas-a5f4e704 is in there two times.
+                        // We need the last one, so yeah, loop everything, why not, right?!
+                        if (tex.name.StartsWith("sactx-2048x2048-Uncompressed-UIAtlas-a5f4e704"))
+                        {
+                            TextureAtlas = tex;
+                        }
                     }
-                }
-
-                if (map == null)
-                {
-                    Logger.LogError("Texture atlas not found");
-                    needsLoad = false;
-                    return;
-                }
-
-                TextureAtlas = map;
-
-                // Fonts
-                var fonts = Resources.FindObjectsOfTypeAll<Font>();
-
-                AveriaSerif = fonts.FirstOrDefault(x => x.name == "AveriaSerifLibre-Regular");
-                AveriaSerifBold = fonts.FirstOrDefault(x => x.name == "AveriaSerifLibre-Bold");
-                if (AveriaSerifBold == null || AveriaSerif == null)
-                {
-                    Logger.LogError("Fonts not found");
-                    needsLoad = false;
-                    return;
-                }
-
-                // GUI components (ouch, my memory hurts... :))
-                var objects = Resources.FindObjectsOfTypeAll<GameObject>();
-                GameObject ingameGui = null;
-                //GameObject pixelFix = null;
-                foreach (var obj in objects)
-                {
-                    if (obj.name.Equals("IngameGui"))
+                    if (TextureAtlas == null)
                     {
-                        ingameGui = obj;
-                    }
-                    
-                    if (ingameGui != null)
-                    {
-                        break;
+                        throw new Exception("Texture atlas not found");
                     }
 
-                    /*if (obj.name.Equals("_GameMain"))
+                    // Fonts
+                    var fonts = Resources.FindObjectsOfTypeAll<Font>();
+                    AveriaSerif = fonts.FirstOrDefault(x => x.name == "AveriaSerifLibre-Regular");
+                    AveriaSerifBold = fonts.FirstOrDefault(x => x.name == "AveriaSerifLibre-Bold");
+                    if (AveriaSerifBold == null || AveriaSerif == null)
                     {
-                        pixelFix = obj.transform.Find("GUI/PixelFix").gameObject;
-                    }*/
+                        throw new Exception("Fonts not found");
+                    }
 
-                    /*if (ingameGui != null && pixelFix != null)
+                    // GUI components (ouch, my memory hurts... :))
+                    var objects = Resources.FindObjectsOfTypeAll<GameObject>();
+                    GameObject ingameGui = null;
+                    foreach (var obj in objects)
                     {
-                        break;
-                    }*/
-                }
+                        if (obj.name.Equals("IngameGui"))
+                        {
+                            ingameGui = obj;
+                            break;
+                        }
+                    }
+                    if (ingameGui == null)
+                    {
+                        throw new Exception("GameObjects not found");
+                    }
 
-                /*if (ingameGui == null || pixelFix == null)
+                    // Base prefab for a valheim style button
+                    var button = Instantiate(ingameGui.transform.Find("TextInput/panel/OK").gameObject);
+                    AddGUIPrefab("BaseButton", button);
+                }
+                catch (Exception ex)
                 {
-                    Logger.LogError("GameObjects not found");
-                    needsLoad = false;
-                    return;
+                    Logger.LogError(ex);
                 }
-
-                // reference to PixelFix for High DPI displays
-                PixelFix = pixelFix;*/
-                
-                if (ingameGui == null)
+                finally
                 {
-                    Logger.LogError("GameObjects not found");
                     needsLoad = false;
-                    return;
                 }
-
-                // Base prefab for a valheim style button
-                var button = Instantiate(ingameGui.transform.Find("TextInput/panel/OK").gameObject);
-                AddGUIPrefab("BaseButton", button);
-
-                needsLoad = false;
             }
 
             if (PixelFix == null && SceneManager.GetActiveScene().name == "main" && SceneManager.GetActiveScene().isLoaded)
             {
-                var gamemain = GameObject.Find("_GameMain");
-                PixelFix = gamemain.transform.Find("GUI/PixelFix").gameObject;
+                /*var gamemain = GameObject.Find("_GameMain");
+                PixelFix = gamemain.transform.Find("GUI/PixelFix").gameObject;*/
+                PixelFix = GameObject.Find("_GameMain/GUI/PixelFix");
+
+                if (PixelFix == null)
+                {
+                    Logger.LogError("PixelFix not found");
+                    needsLoad = false;
+                    return;
+                }
             }
         }
 

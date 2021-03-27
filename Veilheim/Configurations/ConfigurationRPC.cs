@@ -19,11 +19,11 @@ namespace Veilheim.Configurations
         [PatchEvent(typeof(Game), nameof(Game.Start), PatchEventType.Prefix)]
         public static void Register_RPC(Game instance)
         {
-            // Config Sync
-            ZRoutedRpc.instance.Register(nameof(ConfigurationRPC.RPC_ConfigSync), new Action<long, ZPackage>(ConfigurationRPC.RPC_ConfigSync));
-
             // Admin status
-            ZRoutedRpc.instance.Register(nameof(ConfigurationRPC.RPC_IsAdmin), new Action<long, bool>(ConfigurationRPC.RPC_IsAdmin));
+            ZRoutedRpc.instance.Register(nameof(RPC_IsAdmin), new Action<long, bool>(RPC_IsAdmin));
+
+            // Config Sync
+            ZRoutedRpc.instance.Register(nameof(RPC_ConfigSync), new Action<long, ZPackage>(RPC_ConfigSync));
         }
 
         /// <summary>
@@ -33,19 +33,19 @@ namespace Veilheim.Configurations
         [PatchEvent(typeof(ZNet), nameof(ZNet.RPC_PeerInfo), PatchEventType.Postfix)]
         public static void RequestConfigInformation(ZNet instance)
         {
-            if (ZNet.instance.IsClientInstance())
+            if (ZNet.instance.IsClientInstance() || ZNet.instance.IsLocalInstance())
             {
                 Logger.LogInfo("Querying admin status from server");
-                ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(ConfigurationRPC.RPC_IsAdmin), false);
+                ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(RPC_IsAdmin), false);
 
                 Logger.LogInfo("Sending config sync request to server");
-                ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(ConfigurationRPC.RPC_ConfigSync), new ZPackage());
+                ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(RPC_ConfigSync), new ZPackage());
             }
         }
 
         public static void RPC_IsAdmin(long sender, bool isAdmin)
         {
-            if (ZNet.instance.IsClientInstance())
+            if (ZNet.instance.IsClientInstance() || ZNet.instance.IsLocalInstance())
             {
                 Logger.LogDebug("Received player admin status from server");
                 Configuration.PlayerIsAdmin = isAdmin;
@@ -66,8 +66,8 @@ namespace Veilheim.Configurations
         {
             if (ZNet.instance.IsClientInstance())
             {
-                if (configPkg != null && configPkg.Size() > 0 && sender == ZRoutedRpc.instance.GetServerPeerID()
-                ) // Validate the message is from the server and not another client.
+                // Validate the message is from the server and not another client.
+                if (configPkg != null && configPkg.Size() > 0 && sender == ZRoutedRpc.instance.GetServerPeerID())
                 {
                     Logger.LogMessage("Received configuration data from server");
 

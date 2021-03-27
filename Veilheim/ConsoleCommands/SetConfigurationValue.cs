@@ -268,7 +268,6 @@ namespace Veilheim.ConsoleCommands
                 var inputCopy = (input + " ").Trim();
                 TryExecuteCommand(ref input, true);
             }
-
             if (ZNet.instance.IsServerInstance()) // Server
             {
                 var peer = ZNet.instance.GetPeer(sender);
@@ -295,7 +294,7 @@ namespace Veilheim.ConsoleCommands
                     }
                 }
             }
-            else // Client
+            if (ZNet.instance.IsClientInstance()) // Client
             {
                 Logger.LogInfo("RPC_SetConfigurationValue CLIENT");
                 var input = inputPkg.ReadString();

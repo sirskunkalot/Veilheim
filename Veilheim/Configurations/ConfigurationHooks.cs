@@ -4,8 +4,6 @@
 // File:    ConfigurationHooks.cs
 // Project: Veilheim
 
-using System;
-using System.Linq;
 using Veilheim.PatchEvents;
 
 namespace Veilheim.Configurations
