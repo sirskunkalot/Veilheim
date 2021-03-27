@@ -18,13 +18,16 @@ namespace Veilheim.AssetManagers
         internal static GUIManager Instance { get; private set; }
         
         internal static GameObject GUIContainer;
+
         internal Dictionary<string, GameObject> GUIPrefabs = new Dictionary<string, GameObject>();
+        
+        internal Texture2D TextureAtlas;
 
-        internal static GameObject Background;
+        internal Font AveriaSerif;
 
-        internal static GameObject Button;
+        internal Font AveriaSans;
 
-        private bool loaded = false;
+        private bool needsLoad = true;
 
         private void Awake()
         {
@@ -56,7 +59,8 @@ namespace Veilheim.AssetManagers
             }
 
             prefab.name = name;
-            prefab.transform.parent = GUIContainer.transform;
+            //prefab.transform.parent = GUIContainer.transform;
+            prefab.transform.SetParent(GUIContainer.transform, false);
             prefab.SetActive(false);
             GUIPrefabs.Add(name, prefab);
         }
@@ -79,8 +83,56 @@ namespace Veilheim.AssetManagers
         private void OnGUI()
         {
             // Load valheim GUI assets
-            if (!loaded && SceneManager.GetActiveScene().name == "start" && SceneManager.GetActiveScene().isLoaded)
+            if (needsLoad && SceneManager.GetActiveScene().name == "start" && SceneManager.GetActiveScene().isLoaded)
             {
+                // Texture atlas
+                var textures = Resources.FindObjectsOfTypeAll<Texture2D>();
+                Texture2D map = null;
+                foreach (var tex in textures)
+                {
+                    if (tex.name.StartsWith("sactx-2048x2048-Uncompressed-UIAtlas"))
+                    {
+                        map = tex;
+                        break;
+                    }
+                }
+
+                if (map == null)
+                {
+                    Logger.LogError("Texture atlas not found");
+                    needsLoad = false;
+                    return;
+                }
+
+                TextureAtlas = map;
+
+                // Fonts
+                var fonts = Resources.FindObjectsOfTypeAll<Font>();
+                Font serif = null;
+                Font sans = null;
+                foreach (var font in fonts)
+                {
+                    if (font.name.StartsWith("AveriaSerifLibre-Regular"))
+                    {
+                        serif = font;
+                    }
+                    if (font.name.StartsWith("AveriaSansLibre-Regular"))
+                    {
+                        sans = font;
+                    }
+                }
+
+                if (serif == null || sans == null)
+                {
+                    Logger.LogError("Fonts not found");
+                    needsLoad = false;
+                    return;
+                }
+
+                AveriaSerif = serif;
+                AveriaSans = sans;
+
+                // GUI components
                 var objects = Resources.FindObjectsOfTypeAll<GameObject>();
                 GameObject ingameGui = null;
                 foreach (var obj in objects)
@@ -94,40 +146,33 @@ namespace Veilheim.AssetManagers
 
                 if (ingameGui == null)
                 {
-                    Logger.LogWarning("GUI not found");
+                    Logger.LogError("IngameGui not found");
+                    needsLoad = false;
                     return;
                 }
 
-                //var oldbkg = ingameGui.transform.Find("Menu/MenuList/GameObject").gameObject;
+                // Base prefab for a valheim style button
+                var button = Instantiate(ingameGui.transform.Find("TextInput/panel/OK").gameObject);
+                AddGUIPrefab("BaseButton", button);
 
-                /*Background = Instantiate(oldbkg);
-                Background.name = "Background";
-                Background.transform.SetParent(GUIContainer.transform);
-                Background.SetActive(false);
-
-                RectTransform tf = Background.transform as RectTransform;
-                tf.localPosition = new Vector3(0, -100, 0);
-                tf.anchoredPosition = new Vector2(0, 0);
-                tf.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 257);
-                tf.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 320);
-                tf.localScale = new Vector3(1f, 1f, 1f);*/
-
-                Button = Instantiate(ingameGui.transform.Find("TextInput/panel/OK").gameObject);
-                Button.name = "Button";
-                Button.SetActive(false);
-
-                loaded = true;
+                needsLoad = false;
             }
         }
 
         internal GameObject CreateButton(string text, Transform parent, Vector2 anchorMin, Vector2 anchorMax, Vector2 position)
         {
-            GameObject newButton = Instantiate(Button, parent);
+            var baseButton = GetGUIPrefab("BaseButton");
+            GameObject newButton = Instantiate(baseButton, parent);
             newButton.GetComponentInChildren<Text>().text = text;
             ((RectTransform)newButton.transform).anchorMin = anchorMin;
             ((RectTransform)newButton.transform).anchorMax = anchorMax;
             ((RectTransform)newButton.transform).anchoredPosition = position;
             return newButton;
+        }
+
+        internal Sprite CreateSpriteFromAtlas(Rect rect, Vector2 pivot)
+        {
+            return Sprite.Create(TextureAtlas, rect, pivot);
         }
     }
 }

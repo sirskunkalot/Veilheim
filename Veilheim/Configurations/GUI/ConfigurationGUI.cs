@@ -118,20 +118,20 @@ namespace Veilheim.Configurations.GUI
                 return;
             }
 
-            GUIRoot = GUIManager.Instance.GetGUIPrefab("ConfigurationGUIRoot");
+            GUIRoot = Object.Instantiate(GUIManager.Instance.GetGUIPrefab("ConfigurationGUIRoot"), InventoryGui.instance.m_playerGrid.transform.parent.parent.parent.parent);
             GUIRoot.SetActive(true);
 
-            GUIRoot.GetComponent<Image>().sprite=Sprite.Create(GUIRoot.GetComponent<Image>().sprite.texture,new Rect(0, 2048-1018, 443, 1018 - 686),new Vector2(0f,0f));
+            //GUIRoot.GetComponent<Image>().sprite=Sprite.Create(GUIRoot.GetComponent<Image>().sprite.texture,new Rect(0, 2048-1018, 443, 1018 - 686),new Vector2(0f,0f));
 
             var cancelButton = GUIManager.Instance.CreateButton("Cancel", GUIRoot.transform, new Vector2(1, 0), new Vector2(1, 0), new Vector2(-280f, -40f));
             var okButton = GUIManager.Instance.CreateButton("OK",GUIRoot.transform,new Vector2(1, 0), new Vector2(1, 0), new Vector2(-80f, -40f));
             cancelButton.GetComponentInChildren<Button>().onClick.AddListener(new UnityAction(DisableGUIRoot));
             cancelButton.SetActive(true);
 
-            okButton.SetActive(true);
             okButton.GetComponentInChildren<Button>().onClick.AddListener(new UnityAction(OnOKClick));
+            okButton.SetActive(true);
 
-            GUIRoot.SetActive(false);
+            GUIRoot.SetActive(true);
             ContentGrid = GUIRoot.GetComponentInChildren<VerticalLayoutGroup>();
 
             //VeilheimPlugin.Instance.Invoke(nameof(VeilheimPlugin.EnableConfigGui), 0.001f);
