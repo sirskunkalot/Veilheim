@@ -41,8 +41,11 @@ namespace Veilheim.Configurations.GUI
         public static void DisableGUIRoot()
         {
             GUIRoot.SetActive(false);
-            /*GameCamera.instance.m_mouseCapture = true;
-            GameCamera.instance.UpdateMouseCapture();*/
+            if (GameCamera.instance)
+            {
+                GameCamera.instance.m_mouseCapture = true;
+                GameCamera.instance.UpdateMouseCapture();
+            }
         }
 
         public static bool ToggleGUI()

@@ -89,8 +89,11 @@ namespace Veilheim
             if (Input.GetKeyDown(KeyCode.F6))
             { // Set a breakpoint here to break on F6 key press
                 ConfigurationGUI.CreateConfigurationGUIRoot();
-                /*GameCamera.instance.m_mouseCapture = !ConfigurationGUI.ToggleGUI();
-                GameCamera.instance.UpdateMouseCapture();*/
+                if (GameCamera.instance)
+                {
+                    GameCamera.instance.m_mouseCapture = !ConfigurationGUI.ToggleGUI();
+                    GameCamera.instance.UpdateMouseCapture();
+                }
             }
 
         }
