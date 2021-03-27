@@ -238,7 +238,7 @@ namespace Veilheim.Configurations.GUI
             {
                 Logger.LogDebug("Getting values for section " + sectionProperty.Name);
                 GameObject section = sections.First(x => x.name == "section." + sectionProperty.Name);
-                section.GetComponentInChildren<Toggle>().isOn = Configuration.GetValue<bool>(sectionProperty.Name + "." + nameof(BaseConfig.IsEnabled)); ;
+                section.transform.Find("Toggle").gameObject.GetComponent<Toggle>().isOn = Configuration.GetValue<bool>(sectionProperty.Name + "." + nameof(BaseConfig.IsEnabled)); ;
 
 
                 foreach (var entryProperty in BaseConfig.GetProps(sectionProperty.PropertyType).Where(x => x.Name != nameof(BaseConfig.IsEnabled)))
