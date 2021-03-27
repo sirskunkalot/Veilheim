@@ -18,6 +18,7 @@ namespace Veilheim.AssetManagers
         internal static GUIManager Instance { get; private set; }
         
         internal static GameObject GUIContainer;
+        internal Dictionary<string, GameObject> GUIPrefabs = new Dictionary<string, GameObject>();
 
         internal static GameObject Background;
 
@@ -46,22 +47,60 @@ namespace Veilheim.AssetManagers
             Logger.LogInfo("Initialized GUIManager");
         }
 
+        internal void AddGUIPrefab(string name, GameObject prefab)
+        {
+            if (GUIPrefabs.ContainsKey(name))
+            {
+                Logger.LogWarning($"GUIPrefab {name} already exists");
+                return;
+            }
+
+            prefab.name = name;
+            prefab.transform.parent = GUIContainer.transform;
+            prefab.SetActive(false);
+            GUIPrefabs.Add(name, prefab);
+        }
+
+        /// <summary>
+        /// Returns an existing prefab with given name, or null if none exist.
+        /// </summary>
+        /// <param name="name">Name of the prefab to search for</param>
+        /// <returns></returns>
+        internal GameObject GetGUIPrefab(string name)
+        {
+            if (GUIPrefabs.ContainsKey(name))
+            {
+                return GUIPrefabs[name];
+            }
+
+            return null;
+        }
+
         private void OnGUI()
         {
             // Load valheim GUI assets
             if (!loaded && SceneManager.GetActiveScene().name == "start" && SceneManager.GetActiveScene().isLoaded)
             {
-                GameObject startGui = GameObject.Find("StartGui");
-                
-                if (startGui == null)
+                var objects = Resources.FindObjectsOfTypeAll<GameObject>();
+                GameObject ingameGui = null;
+                foreach (var obj in objects)
+                {
+                    if (obj.name.Equals("IngameGui"))
+                    {
+                        ingameGui = obj;
+                        break;
+                    }
+                }
+
+                if (ingameGui == null)
                 {
                     Logger.LogWarning("GUI not found");
                     return;
                 }
 
-                var oldbkg = startGui.transform.Find("Menu/MenuList/GameObject").gameObject;
+                //var oldbkg = ingameGui.transform.Find("Menu/MenuList/GameObject").gameObject;
 
-                Background = Instantiate(oldbkg);
+                /*Background = Instantiate(oldbkg);
                 Background.name = "Background";
                 Background.transform.SetParent(GUIContainer.transform);
                 Background.SetActive(false);
@@ -71,10 +110,24 @@ namespace Veilheim.AssetManagers
                 tf.anchoredPosition = new Vector2(0, 0);
                 tf.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 257);
                 tf.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 320);
-                tf.localScale = new Vector3(1f, 1f, 1f);
+                tf.localScale = new Vector3(1f, 1f, 1f);*/
+
+                Button = Instantiate(ingameGui.transform.Find("TextInput/panel/OK").gameObject);
+                Button.name = "Button";
+                Button.SetActive(false);
 
                 loaded = true;
             }
+        }
+
+        internal GameObject CreateButton(string text, Transform parent, Vector2 anchorMin, Vector2 anchorMax, Vector2 position)
+        {
+            GameObject newButton = Instantiate(Button, parent);
+            newButton.GetComponentInChildren<Text>().text = text;
+            ((RectTransform)newButton.transform).anchorMin = anchorMin;
+            ((RectTransform)newButton.transform).anchorMax = anchorMax;
+            ((RectTransform)newButton.transform).anchoredPosition = position;
+            return newButton;
         }
     }
 }

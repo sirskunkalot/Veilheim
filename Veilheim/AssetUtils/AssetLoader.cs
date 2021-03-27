@@ -40,9 +40,9 @@ namespace Veilheim.AssetUtils
             assetBundle.Unload(false);
 
             assetBundle = LoadAssetBundleFromResources("configurationgui");
-            LoadPrefab(assetBundle, "ConfigurationEntry");
-            LoadPrefab(assetBundle, "ConfigurationGUIRoot");
-            LoadPrefab(assetBundle, "ConfigurationSection");
+            LoadGUIPrefab(assetBundle, "ConfigurationEntry");
+            LoadGUIPrefab(assetBundle, "ConfigurationSection");
+            LoadGUIPrefab(assetBundle, "ConfigurationGUIRoot");
             assetBundle.Unload(false);
         }
 
@@ -55,6 +55,17 @@ namespace Veilheim.AssetUtils
         {
             var prefab = assetBundle.LoadAsset<GameObject>(assetName);
             PrefabManager.Instance.AddPrefab(assetName, prefab);
+        }
+
+        /// <summary>
+        ///     Load a GUI prefab from a bundle and register it in the <see cref="GUIManager" />.
+        /// </summary>
+        /// <param name="assetBundle"></param>
+        /// <param name="assetName"></param>
+        public static void LoadGUIPrefab(AssetBundle assetBundle, string assetName)
+        {
+            var prefab = assetBundle.LoadAsset<GameObject>(assetName);
+            GUIManager.Instance.AddGUIPrefab(assetName, prefab);
         }
 
         /// <summary>

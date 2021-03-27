@@ -13,6 +13,7 @@ using Steamworks;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.PlayerLoop;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using Veilheim.AssetManagers;
 using Veilheim.AssetUtils;
@@ -31,8 +32,6 @@ namespace Veilheim.Configurations.GUI
         private static List<GameObject> entries = new List<GameObject>();
 
         private static List<GameObject> sections = new List<GameObject>();
-
-        private static GameObject Button;
 
         public static void EnableGUIRoot()
         {
@@ -108,41 +107,21 @@ namespace Veilheim.Configurations.GUI
             }
         }
 
-        private static GameObject CreateButton(string text, Transform parent, Vector2 anchorMin, Vector2 anchorMax, Vector2 position)
-        {
-            GameObject newButton = Object.Instantiate(Button, parent);
-            newButton.GetComponentInChildren<Text>().text = text;
-            ((RectTransform) newButton.transform).anchorMin = anchorMin;
-            ((RectTransform) newButton.transform).anchorMax = anchorMax;
-            ((RectTransform) newButton.transform).anchoredPosition = position;
-            return newButton;
-        }
-
-
         public static void CreateConfigurationGUIRoot()
         {
-
-            if (GUIRoot != null)
+            if (GUIRoot != null && Configuration.Current != null)
             {
                 UpdateValuesFromConfiguration();
                 return;
             }
 
-            if (Button == null)
-            {
-                Button = Object.Instantiate(TextInput.instance.m_panel.transform.Find("OK").gameObject);
-            }
+            GUIRoot = GUIManager.Instance.GetGUIPrefab("ConfigurationGUIRoot");
+            GUIRoot.SetActive(true);
 
-            sections.Clear();
-            entries.Clear();
-
-            GUIRoot = Object.Instantiate(PrefabManager.Instance.GetPrefab("ConfigurationGUIRoot"), InventoryGui.instance.m_playerGrid.transform.parent.parent.parent.parent);
-            GUIRoot.GetComponent<Image>().sprite = GUIManager.Background.GetComponent<Image>().sprite;
-           
             GUIRoot.GetComponent<Image>().sprite=Sprite.Create(GUIRoot.GetComponent<Image>().sprite.texture,new Rect(0, 2048-1018, 443, 1018 - 686),new Vector2(0f,0f));
 
-            var cancelButton = CreateButton("Cancel", GUIRoot.transform, new Vector2(1, 0), new Vector2(1, 0), new Vector2(-280f, -40f));
-            var okButton = CreateButton("OK",GUIRoot.transform,new Vector2(1, 0), new Vector2(1, 0), new Vector2(-80f, -40f));
+            var cancelButton = GUIManager.Instance.CreateButton("Cancel", GUIRoot.transform, new Vector2(1, 0), new Vector2(1, 0), new Vector2(-280f, -40f));
+            var okButton = GUIManager.Instance.CreateButton("OK",GUIRoot.transform,new Vector2(1, 0), new Vector2(1, 0), new Vector2(-80f, -40f));
             cancelButton.GetComponentInChildren<Button>().onClick.AddListener(new UnityAction(DisableGUIRoot));
             cancelButton.SetActive(true);
             
@@ -151,6 +130,12 @@ namespace Veilheim.Configurations.GUI
 
             GUIRoot.SetActive(false);
             ContentGrid = GUIRoot.GetComponentInChildren<VerticalLayoutGroup>();
+
+            //VeilheimPlugin.Instance.Invoke(nameof(VeilheimPlugin.EnableConfigGui), 0.001f);
+        }
+
+        public static void InitValuesFromConfiguration()
+        {
 
             foreach (var sectionProperty in Configuration.Current.GetSections().Where(x => !typeof(ISyncableSection).IsAssignableFrom(x.PropertyType)))
             {
@@ -225,8 +210,6 @@ namespace Veilheim.Configurations.GUI
                     }
                 }
             }
-
-            VeilheimPlugin.Instance.Invoke(nameof(VeilheimPlugin.EnableConfigGui), 0.001f);
         }
 
         public static void UpdateValuesFromConfiguration()
@@ -234,24 +217,27 @@ namespace Veilheim.Configurations.GUI
             foreach (var sectionProperty in Configuration.Current.GetSections())
             {
                 Logger.LogDebug("Getting values for section " + sectionProperty.Name);
-                GameObject section = sections.First(x => x.name == "section." + sectionProperty.Name);
-                section.GetComponentInChildren<Toggle>().isOn = Configuration.GetValue<bool>(sectionProperty.Name + "." + nameof(BaseConfig.IsEnabled)); ;
+                GameObject section = sections.FirstOrDefault(x => x.name == "section." + sectionProperty.Name);
 
-
-                foreach (var entryProperty in BaseConfig.GetProps(sectionProperty.PropertyType).Where(x => x.Name != nameof(BaseConfig.IsEnabled)))
+                if (section != null)
                 {
-                    string path = sectionProperty.Name + "." + entryProperty.Name;
-                    if (Configuration.GetValueType(path) == typeof(bool))
+                    section.GetComponentInChildren<Toggle>().isOn = Configuration.GetValue<bool>(sectionProperty.Name + "." + nameof(BaseConfig.IsEnabled)); ;
+
+                    foreach (var entryProperty in BaseConfig.GetProps(sectionProperty.PropertyType).Where(x => x.Name != nameof(BaseConfig.IsEnabled)))
                     {
-                        entries.First(x => x.name == path).GetComponentInChildren<Toggle>().isOn = Configuration.GetValue<bool>(path);
-                    }
-                    else if (Configuration.GetValueType(path) == typeof(int))
-                    {
-                        entries.First(x => x.name == path).GetComponentInChildren<InputField>().text = Configuration.GetValue<int>(path).ToString();
-                    }
-                    else if (Configuration.GetValueType(path) == typeof(float))
-                    {
-                        entries.First(x => x.name == path).GetComponentInChildren<InputField>().text = Configuration.GetValue<float>(path).ToString("F");
+                        string path = sectionProperty.Name + "." + entryProperty.Name;
+                        if (Configuration.GetValueType(path) == typeof(bool))
+                        {
+                            entries.First(x => x.name == path).GetComponentInChildren<Toggle>().isOn = Configuration.GetValue<bool>(path);
+                        }
+                        else if (Configuration.GetValueType(path) == typeof(int))
+                        {
+                            entries.First(x => x.name == path).GetComponentInChildren<InputField>().text = Configuration.GetValue<int>(path).ToString();
+                        }
+                        else if (Configuration.GetValueType(path) == typeof(float))
+                        {
+                            entries.First(x => x.name == path).GetComponentInChildren<InputField>().text = Configuration.GetValue<float>(path).ToString("F");
+                        }
                     }
                 }
             }
@@ -260,7 +246,7 @@ namespace Veilheim.Configurations.GUI
 
         private static GameObject CreateSection(string sectionName, bool isEnabled, Transform parentTransform)
         {
-            GameObject newSection = Object.Instantiate(PrefabManager.Instance.GetPrefab("ConfigurationSection"), parentTransform);
+            GameObject newSection = Object.Instantiate(GUIManager.Instance.GetGUIPrefab("ConfigurationSection"), parentTransform);
             sections.Add(newSection);
             newSection.GetComponent<Text>().text = sectionName;
             newSection.GetComponent<Text>().fontStyle = FontStyle.Normal;
@@ -309,7 +295,7 @@ namespace Veilheim.Configurations.GUI
 
         private static GameObject AddEntry(string entryName, Transform parentTransform)
         {
-            GameObject newEntry = Object.Instantiate(PrefabManager.Instance.GetPrefab("ConfigurationEntry"), parentTransform);
+            GameObject newEntry = Object.Instantiate(GUIManager.Instance.GetGUIPrefab("ConfigurationEntry"), parentTransform);
             newEntry.name = "configentry." + entryName;
             newEntry.transform.Find("ConfigName").GetComponent<Text>().text = entryName + ":";
             newEntry.transform.Find("ConfigName").GetComponent<Text>().font = TextInput.instance.m_topic.font;
@@ -319,12 +305,16 @@ namespace Veilheim.Configurations.GUI
 
         public static void RPC_IsAdmin(long sender, bool isAdmin)
         {
+            if (ZNet.instance.IsLocalInstance())
+            {
+                Configuration.PlayerIsAdmin = true;
+            }
             if (ZNet.instance.IsClientInstance())
             {
                 Logger.LogDebug("Received player admin status: " + isAdmin);
                 Configuration.PlayerIsAdmin = isAdmin;
             }
-            else
+            if (ZNet.instance.IsServerInstance())
             {
                 Logger.LogDebug("Requesting player admin status for peer #" + sender);
                 var peer = ZNet.instance.m_peers.FirstOrDefault(x => x.m_uid == sender);
@@ -351,7 +341,7 @@ namespace Veilheim.Configurations.GUI
         [PatchEvent(typeof(ZNet), nameof(ZNet.RPC_PeerInfo), PatchEventType.Postfix)]
         public static void RequestPlayerAdminStatus(ZNet instance)
         {
-            if (ZNet.instance.IsClientInstance())
+            if (ZNet.instance.IsLocalInstance() || ZNet.instance.IsClientInstance())
             {
                 ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(ConfigurationGUI.RPC_IsAdmin), false);
             }
