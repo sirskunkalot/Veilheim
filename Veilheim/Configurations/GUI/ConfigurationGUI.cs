@@ -41,6 +41,9 @@ namespace Veilheim.Configurations.GUI
         public static void DisableGUIRoot()
         {
             GUIRoot.SetActive(false);
+            GameCamera.instance.m_mouseCapture = true;
+            GameCamera.instance.UpdateMouseCapture();
+
         }
 
         public static bool ToggleGUI()
@@ -124,7 +127,7 @@ namespace Veilheim.Configurations.GUI
             var okButton = GUIManager.Instance.CreateButton("OK",GUIRoot.transform,new Vector2(1, 0), new Vector2(1, 0), new Vector2(-80f, -40f));
             cancelButton.GetComponentInChildren<Button>().onClick.AddListener(new UnityAction(DisableGUIRoot));
             cancelButton.SetActive(true);
-            
+
             okButton.SetActive(true);
             okButton.GetComponentInChildren<Button>().onClick.AddListener(new UnityAction(OnOKClick));
 
@@ -216,12 +219,12 @@ namespace Veilheim.Configurations.GUI
         {
             foreach (var sectionProperty in Configuration.Current.GetSections())
             {
-                Logger.LogDebug("Getting values for section " + sectionProperty.Name);
-                GameObject section = sections.FirstOrDefault(x => x.name == "section." + sectionProperty.Name);
-
-                if (section != null)
+                if (Configuration.PlayerIsAdmin && typeof(ISyncableSection).IsAssignableFrom(sectionProperty.PropertyType))
                 {
-                    section.GetComponentInChildren<Toggle>().isOn = Configuration.GetValue<bool>(sectionProperty.Name + "." + nameof(BaseConfig.IsEnabled)); ;
+                    Logger.LogDebug("Getting values for section " + sectionProperty.Name);
+                    GameObject section = sections.First(x => x.name == "section." + sectionProperty.Name);
+                    section.transform.Find("Toggle").gameObject.GetComponent<Toggle>().isOn =
+                        Configuration.GetValue<bool>(sectionProperty.Name + "." + nameof(BaseConfig.IsEnabled));
 
                     foreach (var entryProperty in BaseConfig.GetProps(sectionProperty.PropertyType).Where(x => x.Name != nameof(BaseConfig.IsEnabled)))
                     {
@@ -299,7 +302,7 @@ namespace Veilheim.Configurations.GUI
             newEntry.name = "configentry." + entryName;
             newEntry.transform.Find("ConfigName").GetComponent<Text>().text = entryName + ":";
             newEntry.transform.Find("ConfigName").GetComponent<Text>().font = TextInput.instance.m_topic.font;
-            newEntry.transform.Find("InputText").Find("Text").GetComponent<Text>().font=TextInput.instance.m_topic.font;
+            newEntry.transform.Find("InputText").Find("Text").GetComponent<Text>().font = TextInput.instance.m_topic.font;
             return newEntry;
         }
 
@@ -326,8 +329,8 @@ namespace Veilheim.Configurations.GUI
             }
         }
 
-        [PatchEvent(typeof(Player), nameof(Player.InCutscene), PatchEventType.Postfix)]
-        public static void GUIVisible(Player instance, ref bool result)
+        [PatchEvent(typeof(Menu), nameof(Menu.IsVisible), PatchEventType.Postfix)]
+        public static void GUIVisible2(ref bool result)
         {
             if (GUIRoot != null)
             {
