@@ -11,6 +11,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using Steamworks;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.PlayerLoop;
 using UnityEngine.UI;
 using Veilheim.AssetManagers;
@@ -56,11 +57,61 @@ namespace Veilheim.Configurations.GUI
             }
         }
 
+        public static void OnOKClick()
+        {
+            Logger.LogDebug("Clicked OK");
+
+            ApplyValuesToConfiguration();
+
+            DisableGUIRoot();
+        }
+
+        private static void ApplyValuesToConfiguration()
+        {
+            foreach (var sectionProperty in Configuration.Current.GetSections())
+            {
+                GameObject section = sections.First(x => x.name == "section." + sectionProperty.Name);
+                bool sectionEnabled = section.GetComponentInChildren<Toggle>().isOn;
+                Configuration.SetValue(sectionProperty.Name + "." + nameof(BaseConfig.IsEnabled), sectionEnabled);
+
+                foreach (var entryProperty in BaseConfig.GetProps(sectionProperty.PropertyType).Where(x => x.Name != nameof(BaseConfig.IsEnabled)))
+                {
+                    string path = sectionProperty.Name + "." + entryProperty.Name;
+                    if (Configuration.GetValueType(path) == typeof(bool))
+                    {
+                        bool value = entries.First(x => x.name == path).GetComponentInChildren<Toggle>().isOn;
+                        Configuration.SetValue(path, value);
+                    }
+                    else if (Configuration.GetValueType(path) == typeof(int))
+                    {
+                        int value = 0;
+                        string valueString = entries.First(x => x.name == path).GetComponentInChildren<InputField>().text;
+
+                        if (int.TryParse(valueString, out value))
+                        {
+                            Configuration.SetValue(path, value);
+                        }
+                    }
+                    else if (Configuration.GetValueType(path) == typeof(float))
+                    {
+                        float value = 0;
+                        string valueString = entries.First(x => x.name == path).GetComponentInChildren<InputField>().text;
+
+                        if (float.TryParse(valueString, out value))
+                        {
+                            Configuration.SetValue(path, value);
+                        }
+                    }
+                }
+            }
+        }
+
         public static void CreateConfigurationGUIRoot()
         {
 
             if (GUIRoot != null)
             {
+                UpdateValuesFromConfiguration();
                 return;
             }
 
@@ -69,35 +120,40 @@ namespace Veilheim.Configurations.GUI
 
             GUIRoot = Object.Instantiate(PrefabManager.Instance.GetPrefab("ConfigurationGUIRoot"), InventoryGui.instance.m_playerGrid.transform.parent.parent.parent.parent);
 
+            GUIRoot.transform.Find("CancelButton").gameObject.GetComponent<Button>().onClick.AddListener(new UnityAction(DisableGUIRoot));
+            GUIRoot.transform.Find("OKButton").gameObject.GetComponent<Button>().onClick.AddListener(new UnityAction(OnOKClick));
+
             GUIRoot.SetActive(false);
             ContentGrid = GUIRoot.GetComponentInChildren<VerticalLayoutGroup>();
 
-            foreach (var property in Configuration.Current.GetSections().Where(x => !typeof(ISyncableSection).IsAssignableFrom(x.PropertyType)))
+            foreach (var sectionProperty in Configuration.Current.GetSections().Where(x => !typeof(ISyncableSection).IsAssignableFrom(x.PropertyType)))
             {
-                BaseConfig configSection = property.GetValue(Configuration.Current, null) as BaseConfig;
+                BaseConfig configSection = sectionProperty.GetValue(Configuration.Current, null) as BaseConfig;
                 bool sectionEnabled = configSection.IsEnabled;
-                GameObject section = CreateSection(property.Name, sectionEnabled, ContentGrid.transform);
+                GameObject section = CreateSection(sectionProperty.Name, sectionEnabled, ContentGrid.transform);
                 ((RectTransform)section.transform).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,
-                    BaseConfig.GetProps(property.PropertyType).Count(x => x.Name != nameof(BaseConfig.IsEnabled)) * 30f + 40f + 20f);
-                ((RectTransform)section.transform.Find("Panel")).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, BaseConfig.GetProps(property.PropertyType).Count(x => x.Name != nameof(BaseConfig.IsEnabled)) * 30f + 15f);
+                    BaseConfig.GetProps(sectionProperty.PropertyType).Count(x => x.Name != nameof(BaseConfig.IsEnabled)) * 30f + 40f + 20f);
+                ((RectTransform)section.transform.Find("Panel")).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, BaseConfig.GetProps(sectionProperty.PropertyType).Count(x => x.Name != nameof(BaseConfig.IsEnabled)) * 30f + 15f);
                 ((RectTransform)section.transform.Find("Panel")).SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 465f);
                 section.GetComponent<Text>().fontStyle = FontStyle.Bold;
-                foreach (var sectionProperty in BaseConfig.GetProps(property.PropertyType).Where(x => x.Name != nameof(BaseConfig.IsEnabled)))
+
+                foreach (var entryProperty in BaseConfig.GetProps(sectionProperty.PropertyType).Where(x => x.Name != nameof(BaseConfig.IsEnabled)))
                 {
                     GameObject entry = null;
-                    if (sectionProperty.PropertyType == typeof(bool))
+                    if (entryProperty.PropertyType == typeof(bool))
                     {
-                        entry = AddEntry(sectionProperty.Name, configSection.GetValue<bool>(sectionProperty.Name), section.transform.Find("Panel").transform);
+                        entry = AddEntry(entryProperty.Name, configSection.GetValue<bool>(entryProperty.Name), section.transform.Find("Panel").transform);
                     }
-                    else if (sectionProperty.PropertyType == typeof(int))
+                    else if (entryProperty.PropertyType == typeof(int))
                     {
-                        entry = AddEntry(sectionProperty.Name, configSection.GetValue<int>(sectionProperty.Name), section.transform.Find("Panel").transform);
+                        entry = AddEntry(entryProperty.Name, configSection.GetValue<int>(entryProperty.Name), section.transform.Find("Panel").transform);
                     }
-                    else if (sectionProperty.PropertyType == typeof(float))
+                    else if (entryProperty.PropertyType == typeof(float))
                     {
-                        entry = AddEntry(sectionProperty.Name, configSection.GetValue<float>(sectionProperty.Name), section.transform.Find("Panel").transform);
+                        entry = AddEntry(entryProperty.Name, configSection.GetValue<float>(entryProperty.Name), section.transform.Find("Panel").transform);
                     }
 
+                    entry.name = sectionProperty.Name + "." + entryProperty.Name;
                     entry.SetActive(true);
                     entries.Add(entry);
                 }
@@ -105,35 +161,36 @@ namespace Veilheim.Configurations.GUI
 
             if (Configuration.PlayerIsAdmin)
             {
-                foreach (var property in Configuration.Current.GetSections().Where(x => typeof(ISyncableSection).IsAssignableFrom(x.PropertyType)))
+                foreach (var sectionProperty in Configuration.Current.GetSections().Where(x => typeof(ISyncableSection).IsAssignableFrom(x.PropertyType)))
                 {
-                    BaseConfig configSection = property.GetValue(Configuration.Current, null) as BaseConfig;
+                    BaseConfig configSection = sectionProperty.GetValue(Configuration.Current, null) as BaseConfig;
                     bool sectionEnabled = configSection.IsEnabled;
-                    GameObject section = CreateSection(property.Name, sectionEnabled, ContentGrid.transform);
+                    GameObject section = CreateSection(sectionProperty.Name, sectionEnabled, ContentGrid.transform);
                     ((RectTransform)section.transform).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,
-                        BaseConfig.GetProps(property.PropertyType).Count(x => x.Name != nameof(BaseConfig.IsEnabled)) * 30f + 40f + 20f);
-                    ((RectTransform)section.transform.Find("Panel")).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, BaseConfig.GetProps(property.PropertyType).Count(x => x.Name != nameof(BaseConfig.IsEnabled)) * 30f + 15f);
+                        BaseConfig.GetProps(sectionProperty.PropertyType).Count(x => x.Name != nameof(BaseConfig.IsEnabled)) * 30f + 40f + 20f);
+                    ((RectTransform)section.transform.Find("Panel")).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, BaseConfig.GetProps(sectionProperty.PropertyType).Count(x => x.Name != nameof(BaseConfig.IsEnabled)) * 30f + 15f);
                     ((RectTransform)section.transform.Find("Panel")).SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 465f);
 
-                    ((RectTransform) section.transform.Find("Panel")).gameObject.GetComponent<Image>().color = new Color(0.5f,61f/255f,0f,0.5f);
+                    ((RectTransform)section.transform.Find("Panel")).gameObject.GetComponent<Image>().color = new Color(0.5f, 61f / 255f, 0f, 0.5f);
                     section.GetComponent<Text>().fontStyle = FontStyle.Bold;
 
-                    foreach (var sectionProperty in BaseConfig.GetProps(property.PropertyType).Where(x => x.Name != nameof(BaseConfig.IsEnabled)))
+                    foreach (var entryProperty in BaseConfig.GetProps(sectionProperty.PropertyType).Where(x => x.Name != nameof(BaseConfig.IsEnabled)))
                     {
                         GameObject entry = null;
-                        if (sectionProperty.PropertyType == typeof(bool))
+                        if (entryProperty.PropertyType == typeof(bool))
                         {
-                            entry = AddEntry(sectionProperty.Name, configSection.GetValue<bool>(sectionProperty.Name), section.transform.Find("Panel").transform);
+                            entry = AddEntry(entryProperty.Name, configSection.GetValue<bool>(entryProperty.Name), section.transform.Find("Panel").transform);
                         }
-                        else if (sectionProperty.PropertyType == typeof(int))
+                        else if (entryProperty.PropertyType == typeof(int))
                         {
-                            entry = AddEntry(sectionProperty.Name, configSection.GetValue<int>(sectionProperty.Name), section.transform.Find("Panel").transform);
+                            entry = AddEntry(entryProperty.Name, configSection.GetValue<int>(entryProperty.Name), section.transform.Find("Panel").transform);
                         }
-                        else if (sectionProperty.PropertyType == typeof(float))
+                        else if (entryProperty.PropertyType == typeof(float))
                         {
-                            entry = AddEntry(sectionProperty.Name, configSection.GetValue<float>(sectionProperty.Name), section.transform.Find("Panel").transform);
+                            entry = AddEntry(entryProperty.Name, configSection.GetValue<float>(entryProperty.Name), section.transform.Find("Panel").transform);
                         }
 
+                        entry.name = sectionProperty.Name + "." + entryProperty.Name;
                         entry.SetActive(true);
                         entries.Add(entry);
                     }
@@ -145,6 +202,30 @@ namespace Veilheim.Configurations.GUI
 
         public static void UpdateValuesFromConfiguration()
         {
+            foreach (var sectionProperty in Configuration.Current.GetSections())
+            {
+                Logger.LogDebug("Getting values for section " + sectionProperty.Name);
+                GameObject section = sections.First(x => x.name == "section." + sectionProperty.Name);
+                section.GetComponentInChildren<Toggle>().isOn = Configuration.GetValue<bool>(sectionProperty.Name + "." + nameof(BaseConfig.IsEnabled)); ;
+
+
+                foreach (var entryProperty in BaseConfig.GetProps(sectionProperty.PropertyType).Where(x => x.Name != nameof(BaseConfig.IsEnabled)))
+                {
+                    string path = sectionProperty.Name + "." + entryProperty.Name;
+                    if (Configuration.GetValueType(path) == typeof(bool))
+                    {
+                        entries.First(x => x.name == path).GetComponentInChildren<Toggle>().isOn = Configuration.GetValue<bool>(path);
+                    }
+                    else if (Configuration.GetValueType(path) == typeof(int))
+                    {
+                        entries.First(x => x.name == path).GetComponentInChildren<InputField>().text = Configuration.GetValue<int>(path).ToString();
+                    }
+                    else if (Configuration.GetValueType(path) == typeof(float))
+                    {
+                        entries.First(x => x.name == path).GetComponentInChildren<InputField>().text = Configuration.GetValue<float>(path).ToString("F");
+                    }
+                }
+            }
 
         }
 
@@ -154,6 +235,7 @@ namespace Veilheim.Configurations.GUI
             sections.Add(newSection);
             newSection.GetComponent<Text>().text = sectionName;
             newSection.GetComponentInChildren<Toggle>().isOn = isEnabled;
+            newSection.name = "section." + sectionName;
 
             return newSection;
         }
