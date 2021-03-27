@@ -9,10 +9,12 @@ using System.Collections.Generic;
 using System.Reflection;
 using BepInEx;
 using HarmonyLib;
+using Steamworks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Veilheim.AssetManagers;
 using Veilheim.Blueprints;
+using Veilheim.Configurations;
 using Veilheim.Configurations.GUI;
 using Veilheim.PatchEvents;
 using Veilheim.UnityWrappers;
@@ -81,7 +83,7 @@ namespace Veilheim
             Instance = this;
         }
 
-#if DEBUG
+
         private void Update()
         {
             if (Input.GetKeyDown(KeyCode.F6))
@@ -90,8 +92,9 @@ namespace Veilheim
                 /*GameCamera.instance.m_mouseCapture = !ConfigurationGUI.ToggleGUI();
                 GameCamera.instance.UpdateMouseCapture();*/
             }
+
         }
-#endif
+
 
         private void OnDestroy()
         {
