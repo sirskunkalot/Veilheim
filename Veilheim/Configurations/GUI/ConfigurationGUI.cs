@@ -42,6 +42,9 @@ namespace Veilheim.Configurations.GUI
         public static void DisableGUIRoot()
         {
             GUIRoot.SetActive(false);
+            GameCamera.instance.m_mouseCapture = true;
+            GameCamera.instance.UpdateMouseCapture();
+
         }
 
         public static bool ToggleGUI()
@@ -336,8 +339,8 @@ namespace Veilheim.Configurations.GUI
             }
         }
 
-        [PatchEvent(typeof(Player), nameof(Player.InCutscene), PatchEventType.Postfix)]
-        public static void GUIVisible(Player instance, ref bool result)
+        [PatchEvent(typeof(Menu), nameof(Menu.IsVisible), PatchEventType.Postfix)]
+        public static void GUIVisible2(ref bool result)
         {
             if (GUIRoot != null)
             {
