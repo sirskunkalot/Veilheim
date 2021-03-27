@@ -361,6 +361,7 @@
     <Compile Include="AssetEntities\LocalizationDef.cs" />
     <Compile Include="Blueprints\BlueprintManager.cs" />
     <Compile Include="Blueprints\PieceEntry.cs" />
+    <Compile Include="Extensions\ObjectExtensions.cs" />
     <Compile Include="Manager.cs" />
     <Compile Include="AssetManagers\GUIManager.cs" />
     <Compile Include="AssetManagers\ItemManager.cs" />
@@ -411,11 +412,7 @@
     <Compile Include="PatchEvents\IPatchEventConsumer.cs" />
     <Compile Include="Properties\IgnoreAccessModifiers.cs" />
     <Compile Include="Util\CommandLinePasswordPatch.cs" />
-    <Compile Include="Util\ConsumablesConfig.cs" />
     <Compile Include="Extensions\PlayerExtensions.cs" />
-    <Compile Include="Util\PrefabCreator.cs" />
-    <Compile Include="Util\RecipeConfig.cs" />
-    <Compile Include="Util\Utils.cs" />
     <Compile Include="Extensions\ZPackageExtension.cs" />
     <Compile Include="Veilheim.cs" />
     <Compile Include="Configurations\ActivationTime.cs" />
