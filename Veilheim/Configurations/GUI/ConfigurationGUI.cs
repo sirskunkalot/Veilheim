@@ -32,6 +32,8 @@ namespace Veilheim.Configurations.GUI
 
         private static List<GameObject> sections = new List<GameObject>();
 
+        private static GameObject Button;
+
         public static void EnableGUIRoot()
         {
             GUIRoot.SetActive(true);
@@ -106,6 +108,17 @@ namespace Veilheim.Configurations.GUI
             }
         }
 
+        private static GameObject CreateButton(string text, Transform parent, Vector2 anchorMin, Vector2 anchorMax, Vector2 position)
+        {
+            GameObject newButton = Object.Instantiate(Button, parent);
+            newButton.GetComponentInChildren<Text>().text = text;
+            ((RectTransform) newButton.transform).anchorMin = anchorMin;
+            ((RectTransform) newButton.transform).anchorMax = anchorMax;
+            ((RectTransform) newButton.transform).anchoredPosition = position;
+            return newButton;
+        }
+
+
         public static void CreateConfigurationGUIRoot()
         {
 
@@ -115,13 +128,21 @@ namespace Veilheim.Configurations.GUI
                 return;
             }
 
+            if (Button == null)
+            {
+                Button = Object.Instantiate(TextInput.instance.m_panel.transform.Find("OK").gameObject);
+            }
+
             sections.Clear();
             entries.Clear();
 
             GUIRoot = Object.Instantiate(PrefabManager.Instance.GetPrefab("ConfigurationGUIRoot"), InventoryGui.instance.m_playerGrid.transform.parent.parent.parent.parent);
+            GUIRoot.GetComponent<Image>().sprite = GUIManager.Background.GetComponent<Image>().sprite;
+           
+            GUIRoot.GetComponent<Image>().sprite=Sprite.Create(GUIRoot.GetComponent<Image>().sprite.texture,new Rect(0, 2048-1018, 443, 1018 - 686),new Vector2(0f,0f));
 
-            var cancelButton = GUIManager.Instance.CreateButton("Cancel", GUIRoot.transform, new Vector2(1, 0), new Vector2(1, 0), new Vector2(-280f, -40f));
-            var okButton = GUIManager.Instance.CreateButton("OK",GUIRoot.transform,new Vector2(1, 0), new Vector2(1, 0), new Vector2(-80f, -40f));
+            var cancelButton = CreateButton("Cancel", GUIRoot.transform, new Vector2(1, 0), new Vector2(1, 0), new Vector2(-280f, -40f));
+            var okButton = CreateButton("OK",GUIRoot.transform,new Vector2(1, 0), new Vector2(1, 0), new Vector2(-80f, -40f));
             cancelButton.GetComponentInChildren<Button>().onClick.AddListener(new UnityAction(DisableGUIRoot));
             cancelButton.SetActive(true);
             

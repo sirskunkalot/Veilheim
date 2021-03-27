@@ -73,21 +73,8 @@ namespace Veilheim.AssetManagers
                 tf.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 320);
                 tf.localScale = new Vector3(1f, 1f, 1f);
 
-                Button = TextInput.instance.m_panel.transform.Find("OK").gameObject;
-
                 loaded = true;
             }
-        }
-
-
-        public GameObject CreateButton(string text, Transform parent, Vector2 anchorMin, Vector2 anchorMax, Vector2 position)
-        {
-            GameObject newButton = Object.Instantiate(Button, parent);
-            newButton.GetComponentInChildren<Text>().text = text;
-            ((RectTransform) newButton.transform).anchorMin = anchorMin;
-            ((RectTransform) newButton.transform).anchorMax = anchorMax;
-            ((RectTransform) newButton.transform).anchoredPosition = position;
-            return newButton;
         }
     }
 }
