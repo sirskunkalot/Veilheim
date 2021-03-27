@@ -397,6 +397,7 @@
     <Compile Include="PatchEvents\PatchStubs\GameCamera_Patches.cs" />
     <Compile Include="PatchEvents\PatchStubs\Game_Patches.cs" />
     <Compile Include="PatchEvents\PatchStubs\Localization_Patches.cs" />
+    <Compile Include="PatchEvents\PatchStubs\Menu_Patches.cs" />
     <Compile Include="PatchEvents\PatchStubs\Minimap_Patches.cs" />
     <Compile Include="PatchEvents\PatchStubs\ObjectDB_Patches.cs" />
     <Compile Include="PatchEvents\PatchStubs\Player_Patches.cs" />
