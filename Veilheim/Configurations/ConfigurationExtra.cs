@@ -16,6 +16,7 @@ using IniParser;
 using IniParser.Model;
 using IniParser.Parser;
 using UnityEngine;
+using Veilheim.ConsoleCommands;
 
 namespace Veilheim.Configurations
 {
@@ -23,6 +24,8 @@ namespace Veilheim.Configurations
     public partial class Configuration
     {
         internal static readonly List<PropertyInfo> propertyCache;
+
+        internal static bool PlayerIsAdmin = false;
 
         static Configuration()
         {
@@ -47,7 +50,7 @@ namespace Veilheim.Configurations
                 property.SetValue(this, section, null);
 
                 // and finally cache the default values
-                ((BaseConfig) section).CacheDefaults();
+                ((BaseConfig)section).CacheDefaults();
             }
         }
 
@@ -144,6 +147,11 @@ namespace Veilheim.Configurations
             return sb.ToString();
         }
 
+        public IEnumerable<PropertyInfo> GetSections()
+        {
+            return propertyCache;
+        }
+
 
         /// <summary>
         ///     Save full config
@@ -222,7 +230,7 @@ namespace Veilheim.Configurations
                 var valueAsString = value.ToString();
                 if (value is float)
                 {
-                    valueAsString = ((float) value).ToString(CultureInfo.InvariantCulture.NumberFormat);
+                    valueAsString = ((float)value).ToString(CultureInfo.InvariantCulture.NumberFormat);
                 }
 
                 // Special case 'IsEnabled' is already handled above
@@ -267,7 +275,7 @@ namespace Veilheim.Configurations
 
                 if (method != null)
                 {
-                    var result = method.Invoke(null, new object[] {configdata, keyName});
+                    var result = method.Invoke(null, new object[] { configdata, keyName });
                     property.SetValue(config, result, null);
                 }
             }
@@ -307,7 +315,7 @@ namespace Veilheim.Configurations
                     if (ini.Sections.ContainsSection(property.Name))
                     {
                         var result = property.PropertyType.GetMethod("LoadIni", BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
-                            ?.Invoke(null, new object[] {ini, property.Name});
+                            ?.Invoke(null, new object[] { ini, property.Name });
                         if (result == null)
                         {
                             throw new Exception($"LoadIni method not found on Type {property.PropertyType.Name}");
@@ -323,6 +331,95 @@ namespace Veilheim.Configurations
 
                 Logger.LogError($"while parsing {Environment.NewLine}{inputString}");
             }
+        }
+
+
+        public static void SetValue<T>(string propertyPath, T value) where T : IEquatable<T>
+        {
+            string[] pathParts = propertyPath.Split('.');
+            if (pathParts.Length != 2)
+            {
+                throw new Exception($"Not a suitable propertyPath: {propertyPath}");
+            }
+
+            PropertyInfo sectionProperty = typeof(Configuration).GetProperty(pathParts[0], BindingFlags.Public | BindingFlags.Instance);
+            if (sectionProperty == null)
+            {
+                throw new Exception($"Could not find property (section) for {pathParts[0]}");
+            }
+
+            BaseConfig sectionValue = sectionProperty.GetValue(Configuration.Current, null) as BaseConfig;
+
+            PropertyInfo entryProperty = sectionValue.GetType().GetProperty(pathParts[1], BindingFlags.Public | BindingFlags.Instance);
+            if (entryProperty == null)
+            {
+                throw new Exception($"Could not find property (entry) for {pathParts[1]}");
+            }
+
+            bool equal = value.Equals((T) entryProperty.GetValue(sectionValue, null));
+            entryProperty.SetValue(sectionValue, value, null);
+            if (!equal)
+            {
+                Logger.LogDebug($"Setting Property value for {propertyPath} -> {value}");
+                if (typeof(ISyncableSection).IsAssignableFrom(sectionProperty.PropertyType))
+                {
+                    var zPgk = new ZPackage();
+                    zPgk.Write($"setvalue {sectionProperty.Name}.{entryProperty.Name} {value}");
+                    ZRoutedRpc.instance.InvokeRoutedRPC(nameof(SetConfigurationValue.RPC_SetConfigurationValue), zPgk);
+                }
+            }
+        }
+
+        public static T GetValue<T>(string propertyPath)
+        {
+            string[] pathParts = propertyPath.Split('.');
+            if (pathParts.Length != 2)
+            {
+                throw new Exception($"Not a suitable propertyPath: {propertyPath}");
+            }
+
+            PropertyInfo sectionProperty = typeof(Configuration).GetProperty(pathParts[0], BindingFlags.Public | BindingFlags.Instance);
+            if (sectionProperty == null)
+            {
+                throw new Exception($"Could not find property (section) for {pathParts[0]}");
+            }
+
+            BaseConfig sectionValue = sectionProperty.GetValue(Configuration.Current, null) as BaseConfig;
+
+            PropertyInfo entryProperty = sectionValue.GetType().GetProperty(pathParts[1], BindingFlags.Public | BindingFlags.Instance);
+            if (entryProperty == null)
+            {
+                throw new Exception($"Could not find property (entry) for {pathParts[1]}");
+            }
+
+            // Logger.LogDebug($"Reading Property value for {propertyPath} -> {entryProperty.GetValue(sectionValue, null)}");
+            return (T)entryProperty.GetValue(sectionValue, null);
+        }
+
+        public static Type GetValueType(string propertyPath)
+        {
+            string[] pathParts = propertyPath.Split('.');
+            if (pathParts.Length != 2)
+            {
+                throw new Exception($"Not a suitable propertyPath: {propertyPath}");
+            }
+
+            PropertyInfo sectionProperty = typeof(Configuration).GetProperty(pathParts[0], BindingFlags.Public | BindingFlags.Instance);
+            if (sectionProperty == null)
+            {
+                throw new Exception($"Could not find property (section) for {pathParts[0]}");
+            }
+
+            BaseConfig sectionValue = sectionProperty.GetValue(Configuration.Current, null) as BaseConfig;
+
+            PropertyInfo entryProperty = sectionValue.GetType().GetProperty(pathParts[1], BindingFlags.Public | BindingFlags.Instance);
+            if (entryProperty == null)
+            {
+                throw new Exception($"Could not find property (entry) for {pathParts[1]}");
+            }
+
+            // Logger.LogDebug($"Reading Property type for {propertyPath} -> {entryProperty.PropertyType.Name}");
+            return entryProperty.PropertyType;
         }
     }
 
@@ -356,7 +453,7 @@ namespace Veilheim.Configurations
 
         public static bool GetBool(this KeyDataCollection data, string key)
         {
-            var truevals = new[] {"y", "yes", "true"};
+            var truevals = new[] { "y", "yes", "true" };
             return truevals.Contains(data[key].ToLower());
         }
 

@@ -11,7 +11,7 @@ using Veilheim.PatchEvents;
 
 namespace Veilheim.AssetManagers
 {
-    internal class PrefabManager : AssetManager, IPatchEventConsumer
+    internal class PrefabManager : Manager, IPatchEventConsumer
     {
         internal static PrefabManager Instance { get; private set; }
         internal static GameObject PrefabContainer;

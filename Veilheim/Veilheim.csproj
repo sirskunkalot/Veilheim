@@ -13,6 +13,7 @@
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
+    <AssemblyVersion>0.0.14.7754</AssemblyVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -358,7 +359,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssetEntities\LocalizationDef.cs" />
-    <Compile Include="AssetManagers\AssetManager.cs" />
+    <Compile Include="Blueprints\BlueprintManager.cs" />
+    <Compile Include="Blueprints\PieceEntry.cs" />
+    <Compile Include="Manager.cs" />
+    <Compile Include="AssetManagers\GUIManager.cs" />
     <Compile Include="AssetManagers\ItemManager.cs" />
     <Compile Include="AssetManagers\LocalizationManager.cs" />
     <Compile Include="AssetManagers\PieceManager.cs" />
@@ -369,8 +373,8 @@
     <Compile Include="AssetEntities\PieceDef.cs" />
     <Compile Include="AssetEntities\RequirementDef.cs" />
     <Compile Include="Blueprints\Blueprint.cs" />
-    <Compile Include="Blueprints\BlueprintHooks.cs" />
     <Compile Include="Blueprints\FlattenTerrain.cs" />
+    <Compile Include="Configurations\GUI\ConfigurationGUI.cs" />
     <Compile Include="Configurations\Sections\ProductionInputAmountServerConfiguration.cs" />
     <Compile Include="ConsoleCommands\ConsoleHooks.cs" />
     <Compile Include="Extensions\ObjectDBExtensions.cs" />
@@ -386,13 +390,14 @@
     <Compile Include="Map\SharedMapSystem.cs" />
     <Compile Include="Patches\Debug.cs" />
     <Compile Include="Patches\ProductionInputAmounts.cs" />
-    <Compile Include="PatchEvents\PatchDispatcher.cs" />
+    <Compile Include="PatchEvents\PatchManager.cs" />
     <Compile Include="PatchEvents\PatchEventAttribute.cs" />
     <Compile Include="PatchEvents\PatchEventType.cs" />
     <Compile Include="PatchEvents\PatchStubs\Console_Patches.cs" />
     <Compile Include="PatchEvents\PatchStubs\GameCamera_Patches.cs" />
     <Compile Include="PatchEvents\PatchStubs\Game_Patches.cs" />
     <Compile Include="PatchEvents\PatchStubs\Localization_Patches.cs" />
+    <Compile Include="PatchEvents\PatchStubs\Menu_Patches.cs" />
     <Compile Include="PatchEvents\PatchStubs\Minimap_Patches.cs" />
     <Compile Include="PatchEvents\PatchStubs\ObjectDB_Patches.cs" />
     <Compile Include="PatchEvents\PatchStubs\Player_Patches.cs" />
@@ -435,8 +440,10 @@
     <EmbeddedResource Include="AssetBundles\blueprints" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="AssetBundles\configurationgui" />
     <None Include="AssetBundles\trashfire" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>powershell.exe -ExecutionPolicy RemoteSigned -File "$(SolutionDir)publish.ps1" -Target "$(ConfigurationName)" -TargetPath "$(TargetDir.TrimEnd('\'))" -TargetAssembly "$(TargetFileName)" -ValheimPath "$(ValheimDir.TrimEnd('\'))"</PostBuildEvent>

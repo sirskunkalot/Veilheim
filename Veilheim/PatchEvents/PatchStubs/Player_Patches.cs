@@ -136,4 +136,103 @@ namespace Veilheim.PatchEvents.PatchStubs
         }
     }
 
+    [HarmonyPatch(typeof(Player), nameof(Player.TakeInput))]
+    public class Player_TakeInput_Patch
+    {
+        public delegate void BlockingPrefixHandler(Player instance, ref bool cancel, ref bool __result);
+
+        public delegate void PostfixHandler(Player instance, ref bool __result);
+
+        public delegate void PrefixHandler(Player instance, ref bool __result);
+
+        public static event PrefixHandler PrefixEvent;
+
+        public static event BlockingPrefixHandler BlockingPrefixEvent;
+
+        public static event PostfixHandler PostfixEvent;
+
+
+        private static bool Prefix(Player __instance, ref bool __result)
+        {
+            var cancel = false;
+            BlockingPrefixEvent?.Invoke(__instance, ref cancel, ref __result);
+
+            if (!cancel)
+            {
+                try
+                {
+                    PrefixEvent?.Invoke(__instance, ref __result);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex.Message + Environment.NewLine + ex.StackTrace);
+                }
+            }
+
+            return !cancel;
+        }
+
+        private static void Postfix(Player __instance, ref bool __result)
+        {
+            try
+            {
+                PostfixEvent?.Invoke(__instance, ref __result);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.Message + Environment.NewLine + ex.StackTrace);
+            }
+        }
+    }
+
+
+    [HarmonyPatch(typeof(Player), nameof(Player.InCutscene))]
+    public class Player_InCutScene_Patch
+    {
+        public delegate void BlockingPrefixHandler(Player instance, ref bool cancel, ref bool __result);
+
+        public delegate void PostfixHandler(Player instance, ref bool __result);
+
+        public delegate void PrefixHandler(Player instance, ref bool __result);
+
+        public static event PrefixHandler PrefixEvent;
+
+        public static event BlockingPrefixHandler BlockingPrefixEvent;
+
+        public static event PostfixHandler PostfixEvent;
+
+
+        private static bool Prefix(Player __instance, ref bool __result)
+        {
+            var cancel = false;
+            BlockingPrefixEvent?.Invoke(__instance, ref cancel, ref __result);
+
+            if (!cancel)
+            {
+                try
+                {
+                    PrefixEvent?.Invoke(__instance, ref __result);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex.Message + Environment.NewLine + ex.StackTrace);
+                }
+            }
+
+            return !cancel;
+        }
+
+        private static void Postfix(Player __instance, ref bool __result)
+        {
+            try
+            {
+                PostfixEvent?.Invoke(__instance, ref __result);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.Message + Environment.NewLine + ex.StackTrace);
+            }
+        }
+    }
+
 }

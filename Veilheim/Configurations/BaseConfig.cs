@@ -27,6 +27,25 @@ namespace Veilheim.Configurations
 
         public event PropertyChangedEventHandler PropertyChanged;
 
+        private bool _isEnabled;
+
+        public EventHandler<SectionStatusChangeEventArgs> SectionStatusChangedEvent;
+
+        public bool IsEnabled
+        {
+            get => _isEnabled;
+            set
+            {
+                if (value != _isEnabled)
+                {
+                    SectionStatusChangedEvent?.Invoke(this, new SectionStatusChangeEventArgs(value));
+                }
+
+                _isEnabled = value;
+            }
+        }
+
+
         internal static IEnumerable<PropertyInfo> GetProps<T>()
         {
             return GetProps(typeof(T));
@@ -66,6 +85,11 @@ namespace Veilheim.Configurations
             return defaultValueCache[sectionType][propertyName];
         }
 
+        public U GetValue<U>(string propertyName)
+        {
+            return (U) GetProps(GetType()).FirstOrDefault(x => x.Name == propertyName).GetValue(this, null);
+        }
+
         public U GetDefault<U>(string propertyName)
         {
             return (U) defaultValueCache[GetType()][propertyName];
@@ -91,24 +115,8 @@ namespace Veilheim.Configurations
     public abstract class BaseConfig<T> : BaseConfig, IConfig where T : IConfig, INotifyPropertyChanged, new()
     {
         public static IniData iniUpdated = null;
-        private bool _isEnabled;
 
 
-        public EventHandler<SectionStatusChangeEventArgs> SectionStatusChangedEvent;
-
-        public bool IsEnabled
-        {
-            get => _isEnabled;
-            set
-            {
-                if (value != _isEnabled)
-                {
-                    SectionStatusChangedEvent?.Invoke(this, new SectionStatusChangeEventArgs(value));
-                }
-
-                _isEnabled = value;
-            }
-        }
 
         public void LoadIniData(KeyDataCollection data)
         {
