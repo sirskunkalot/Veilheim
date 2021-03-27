@@ -214,7 +214,7 @@ namespace Veilheim.Map
         [PatchEvent(typeof(Minimap), nameof(Minimap.SetMapData), PatchEventType.Postfix)]
         public static void InitialSendRequest(Minimap instance)
         {
-            // if (Configuration.Current.MapServer.IsEnabled && Configuration.Current.MapServer.shareMapProgression)
+            if (Configuration.Current.MapServer.IsEnabled && Configuration.Current.MapServer.shareMapProgression)
             {
                 Logger.LogInfo("Sending Map data initially to server");
                 // After login, send map data to server (and get new map data back)
