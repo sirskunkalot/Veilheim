@@ -337,29 +337,6 @@ namespace Veilheim.Configurations.GUI
             }
         }
 
-        public static void RPC_IsAdmin(long sender, bool isAdmin)
-        {
-            if (ZNet.instance.IsLocalInstance())
-            {
-                Configuration.PlayerIsAdmin = true;
-            }
-            if (ZNet.instance.IsClientInstance())
-            {
-                Logger.LogDebug("Received player admin status: " + isAdmin);
-                Configuration.PlayerIsAdmin = isAdmin;
-            }
-            if (ZNet.instance.IsServerInstance())
-            {
-                Logger.LogDebug("Requesting player admin status for peer #" + sender);
-                var peer = ZNet.instance.m_peers.FirstOrDefault(x => x.m_uid == sender);
-                if (peer != null)
-                {
-                    bool result = ZNet.instance.m_adminList.Contains(peer.m_socket.GetHostName());
-                    ZRoutedRpc.instance.InvokeRoutedRPC(sender, nameof(RPC_IsAdmin), result);
-                }
-            }
-        }
-
         [PatchEvent(typeof(Menu), nameof(Menu.IsVisible), PatchEventType.Postfix)]
         public static void GUIVisible2(ref bool result)
         {
@@ -371,22 +348,5 @@ namespace Veilheim.Configurations.GUI
                 }
             }
         }
-
-        [PatchEvent(typeof(ZNet), nameof(ZNet.RPC_PeerInfo), PatchEventType.Postfix)]
-        public static void RequestPlayerAdminStatus(ZNet instance)
-        {
-            if (ZNet.instance.IsLocalInstance() || ZNet.instance.IsClientInstance())
-            {
-                ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(ConfigurationGUI.RPC_IsAdmin), false);
-            }
-        }
-
-        [PatchEvent(typeof(Game), nameof(Game.Start), PatchEventType.Prefix)]
-        public static void Register_RPC_PlayerAdminStatus(Game instance)
-        {
-            // Config Sync
-            ZRoutedRpc.instance.Register(nameof(ConfigurationGUI.RPC_IsAdmin), new Action<long, bool>(ConfigurationGUI.RPC_IsAdmin));
-        }
-
     }
 }
