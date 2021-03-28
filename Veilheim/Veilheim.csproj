@@ -379,7 +379,7 @@
     <Compile Include="Configurations\Sections\ProductionInputAmountServerConfiguration.cs" />
     <Compile Include="ConsoleCommands\ConsoleHooks.cs" />
     <Compile Include="Extensions\ObjectDBExtensions.cs" />
-    <Compile Include="Configurations\ConfigSync.cs" />
+    <Compile Include="Configurations\ConfigurationRPC.cs" />
     <Compile Include="IDestroyable.cs" />
     <Compile Include="Extensions\ZNetExtensions.cs" />
     <Compile Include="Logger.cs" />

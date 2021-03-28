@@ -87,7 +87,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4532567691368232}
-  - component: {fileID: 7542516206864540218}
+  - component: {fileID: 240431685282981427}
   - component: {fileID: 114730043459820791}
   m_Layer: 10
   m_Name: piece_blueprint
@@ -111,7 +111,7 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &7542516206864540218
+--- !u!114 &240431685282981427
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -144,7 +144,7 @@ MonoBehaviour:
   m_icon: {fileID: 21300000, guid: 801998e39579c01469e3a1f02e0975d6, type: 3}
   m_name: $piece_blueprint
   m_description: $piece_blueprint_desc
-  m_enabled: 0
+  m_enabled: 1
   m_category: 100
   m_isUpgrade: 0
   m_comfort: 0
