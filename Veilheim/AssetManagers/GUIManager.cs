@@ -19,20 +19,50 @@ namespace Veilheim.AssetManagers
     internal class GUIManager : Manager, IPatchEventConsumer, IPointerClickHandler
     {
         internal static GUIManager Instance { get; private set; }
-        
+
         internal static GameObject GUIContainer;
-        
+
         internal static GameObject PixelFix;
 
         internal Dictionary<string, GameObject> GUIPrefabs = new Dictionary<string, GameObject>();
-        
+
         internal Texture2D TextureAtlas;
+
+        internal Texture2D TextureAtlas2;
 
         internal Font AveriaSerif;
 
         internal Font AveriaSerifBold;
 
         private bool needsLoad = true;
+
+        private Sprite _checkbox;
+
+        private Sprite _checkboxMarker;
+
+        internal Sprite Checkbox
+        {
+            get
+            {
+                if (_checkbox == null)
+                {
+                    _checkbox = Resources.FindObjectsOfTypeAll<Sprite>().FirstOrDefault(x => x.name == "checkbox");
+                }
+                return _checkbox;
+            }
+        }
+
+        internal Sprite CheckboxMarker
+        {
+            get
+            {
+                if (_checkboxMarker == null)
+                {
+                    _checkboxMarker = Resources.FindObjectsOfTypeAll<Sprite>().FirstOrDefault(x => x.name == "checkbox_marker");
+                }
+                return _checkboxMarker;
+            }
+        }
 
         private void Awake()
         {
@@ -95,16 +125,10 @@ namespace Veilheim.AssetManagers
                 {
                     // Texture Atlas aka Sprite Sheet
                     var textures = Resources.FindObjectsOfTypeAll<Texture2D>();
-                    foreach (var tex in textures)
-                    {
-                        // sactx-2048x2048-Uncompressed-UIAtlas-a5f4e704 is in there two times.
-                        // We need the last one, so yeah, loop everything, why not, right?!
-                        if (tex.name.StartsWith("sactx-2048x2048-Uncompressed-UIAtlas-a5f4e704"))
-                        {
-                            TextureAtlas = tex;
-                        }
-                    }
-                    if (TextureAtlas == null)
+                    TextureAtlas = textures.LastOrDefault(x => x.name == "sactx-2048x2048-Uncompressed-UIAtlas-a5f4e704");
+                    TextureAtlas2 = textures.FirstOrDefault(x => x.name == "sactx-2048x2048-Uncompressed-UIAtlas-a5f4e704");
+
+                    if (TextureAtlas == null || TextureAtlas2 == null)
                     {
                         throw new Exception("Texture atlas not found");
                     }
@@ -179,20 +203,48 @@ namespace Veilheim.AssetManagers
             return newButton;
         }
 
-        internal Sprite CreateSpriteFromAtlas(Rect rect, Vector2 pivot)
+        internal Sprite CreateSpriteFromAtlas(Rect rect, Vector2 pivot, float pixelsPerUnit = 50f, uint extrude = 0, SpriteMeshType meshType = SpriteMeshType.FullRect, Vector4 border = new Vector4())
         {
-            return Sprite.Create(TextureAtlas, rect, pivot);
+            return Sprite.Create(TextureAtlas, rect, pivot, pixelsPerUnit, extrude, meshType, border);
+        }
+
+        internal Sprite CreateSpriteFromAtlas2(Rect rect, Vector2 pivot, float pixelsPerUnit = 50f, uint extrude = 0, SpriteMeshType meshType = SpriteMeshType.FullRect, Vector4 border = new Vector4())
+        {
+            return Sprite.Create(TextureAtlas2, rect, pivot, pixelsPerUnit, extrude, meshType, border);
         }
 
         public void ApplyInputFieldStyle(InputField field)
         {
             GameObject go = field.gameObject;
 
-            go.GetComponent<Image>().sprite = Sprite.Create(TextureAtlas, new Rect(0, 2048 - 156, 139, 36), new Vector2(0.5f, 0.5f), 50f, 0,
-                SpriteMeshType.FullRect, new Vector4(5, 5, 5, 5));
+            go.GetComponent<Image>().sprite = CreateSpriteFromAtlas(new Rect(0, 2048 - 156, 139, 36), new Vector2(0.5f, 0.5f), 50f, 0, SpriteMeshType.FullRect, new Vector4(5, 5, 5, 5));
             go.transform.Find("Placeholder").GetComponent<Text>().font = AveriaSerifBold;
             go.transform.Find("Text").GetComponent<Text>().font = AveriaSerifBold;
             go.transform.Find("Text").GetComponent<Text>().color = new Color(1, 1, 1, 1);
+        }
+
+        public void ApplyToogleStyle(Toggle toggle)
+        {
+
+            ColorBlock tinter = new ColorBlock()
+            {
+                colorMultiplier = 1f,
+                disabledColor = new Color(0.784f, 0.784f, 0.784f, 0.502f),
+                fadeDuration = 0.1f,
+                highlightedColor = new Color(1f, 1f, 1f, 1f),
+                normalColor = new Color(0.61f, 0.61f, 0.61f, 1f),
+                pressedColor = new Color(0.784f, 0.784f, 0.784f, 1f),
+                selectedColor = new Color(1f, 1f, 1f, 1f)
+            };
+            toggle.toggleTransition = Toggle.ToggleTransition.Fade;
+            toggle.colors = tinter;
+
+            toggle.gameObject.transform.Find("Background").GetComponent<Image>().sprite = Checkbox;
+
+            toggle.gameObject.transform.Find("Background/Checkmark").GetComponent<Image>().color = new Color(1f, 0.678f, 0.103f, 1f);
+
+            toggle.gameObject.transform.Find("Background/Checkmark").GetComponent<Image>().sprite = CheckboxMarker;
+            toggle.gameObject.transform.Find("Background/Checkmark").GetComponent<Image>().maskable = true;
         }
     }
 }

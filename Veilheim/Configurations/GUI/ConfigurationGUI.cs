@@ -131,7 +131,7 @@ namespace Veilheim.Configurations.GUI
                 var section = CreateSection(sectionProperty, sectionEnabled, ContentGrid.transform);
                 // ((RectTransform) section.transform).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, BaseConfig.GetProps(sectionProperty.PropertyType).Count(x => x.Name != nameof(BaseConfig.IsEnabled)) * 70f + 40f + 20f);
                 // ((RectTransform) section.transform.Find("Panel")).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, BaseConfig.GetProps(sectionProperty.PropertyType).Count(x => x.Name != nameof(BaseConfig.IsEnabled)) * 70f + 15f);
-                ((RectTransform)section.transform.Find("Panel")).SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 465f);
+                ((RectTransform)section.transform.Find("Panel")).SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 680f);
                 section.GetComponent<Text>().fontStyle = FontStyle.Normal;
                 section.GetComponent<Text>().font = GUIManager.Instance.AveriaSerifBold;
                 section.GetComponent<Text>().fontSize += 3;
@@ -170,7 +170,7 @@ namespace Veilheim.Configurations.GUI
                     var section = CreateSection(sectionProperty, sectionEnabled, ContentGrid.transform);
                     // ((RectTransform) section.transform).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, BaseConfig.GetProps(sectionProperty.PropertyType).Count(x => x.Name != nameof(BaseConfig.IsEnabled)) * 70f + 40f + 20f);
                     // ((RectTransform) section.transform.Find("Panel")).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, BaseConfig.GetProps(sectionProperty.PropertyType).Count(x => x.Name != nameof(BaseConfig.IsEnabled)) * 70f + 15f);
-                    ((RectTransform)section.transform.Find("Panel")).SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 465f);
+                    ((RectTransform)section.transform.Find("Panel")).SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 680f);
                     ((RectTransform)section.transform.Find("Panel")).gameObject.GetComponent<Image>().color = new Color(0.5f, 61f / 255f, 0f, 0.5f);
 
                     section.GetComponent<Text>().fontSize += 3;
@@ -245,6 +245,7 @@ namespace Veilheim.Configurations.GUI
         private static GameObject CreateSection(PropertyInfo property, bool isEnabled, Transform parentTransform)
         {
             var newSection = Object.Instantiate(GUIManager.Instance.GetGUIPrefab("ConfigurationSection"), parentTransform);
+            GUIManager.Instance.ApplyToogleStyle(newSection.transform.Find("Toggle").GetComponent<Toggle>());
             sections.Add(newSection);
             var text = newSection.GetComponent<Text>();
             text.text = Configuration.GetSectionDescription(property);
@@ -323,6 +324,7 @@ namespace Veilheim.Configurations.GUI
         {
             var newEntry = Object.Instantiate(GUIManager.Instance.GetGUIPrefab("ConfigurationEntry"), parentTransform);
             newEntry.name = "configentry." + entryProperty.Name;
+            GUIManager.Instance.ApplyToogleStyle(newEntry.transform.Find("InputToggle").GetComponent<Toggle>());
 
             newEntry.transform.Find("ConfigName").GetComponent<Text>().text = Configuration.GetEntryDescription(entryProperty) + ":" + Environment.NewLine + $"({entryProperty.Name}, default: {defaultValue})";
             newEntry.transform.Find("ConfigName").GetComponent<Text>().font = GUIManager.Instance.AveriaSerifBold;
