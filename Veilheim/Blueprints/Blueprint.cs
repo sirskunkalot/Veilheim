@@ -124,7 +124,7 @@ namespace Veilheim.Blueprints
             uint i = 0;
             foreach (var piece in pieces)
             {
-                var v1 = new Vector3(piece.m_nview.GetZDO().m_position.x - bottomleft.x, piece.m_nview.GetZDO().m_position.y - bottomleft.y,
+                var pos = new Vector3(piece.m_nview.GetZDO().m_position.x - bottomleft.x, piece.m_nview.GetZDO().m_position.y - bottomleft.y,
                     piece.m_nview.GetZDO().m_position.z - bottomleft.z);
 
                 var quat = piece.m_nview.GetZDO().m_rotation;
@@ -133,9 +133,7 @@ namespace Veilheim.Blueprints
 
                 var additionalInfo = piece.GetComponent<TextReceiver>() != null ? piece.GetComponent<TextReceiver>().GetText() : "";
 
-                var line = string.Join(";", piece.name.Split('(')[0], piece.m_category.ToString(), v1.x.ToString("F5"), v1.y.ToString("F5"),
-                    v1.z.ToString("F5"), quat.x.ToString("F5"), quat.y.ToString("F5"), quat.z.ToString("F5"), quat.w.ToString("F5"), additionalInfo);
-                m_pieceEntries[i++] = new PieceEntry(line);
+                m_pieceEntries[i++] = new PieceEntry(piece.name, piece.m_category.ToString(), pos, quat, additionalInfo);
             }
 
             return true;
