@@ -22,47 +22,23 @@ namespace Veilheim.AssetManagers
 
         internal static GameObject GUIContainer;
 
-        internal static GameObject PixelFix;
-
         internal Dictionary<string, GameObject> GUIPrefabs = new Dictionary<string, GameObject>();
 
-        internal Texture2D TextureAtlas;
+        internal static GameObject PixelFix { get; private set; }
 
-        internal Texture2D TextureAtlas2;
+        internal Texture2D TextureAtlas { get; private set; }
 
-        internal Font AveriaSerif;
+        internal Texture2D TextureAtlas2 { get; private set; }
 
-        internal Font AveriaSerifBold;
+        internal Font AveriaSerif { get; private set; }
+
+        internal Font AveriaSerifBold { get; private set; }
+
+        internal Sprite Checkbox { get; private set; }
+
+        internal Sprite CheckboxMarker { get; private set; }
 
         private bool needsLoad = true;
-
-        private Sprite _checkbox;
-
-        private Sprite _checkboxMarker;
-
-        internal Sprite Checkbox
-        {
-            get
-            {
-                if (_checkbox == null)
-                {
-                    _checkbox = Resources.FindObjectsOfTypeAll<Sprite>().FirstOrDefault(x => x.name == "checkbox");
-                }
-                return _checkbox;
-            }
-        }
-
-        internal Sprite CheckboxMarker
-        {
-            get
-            {
-                if (_checkboxMarker == null)
-                {
-                    _checkboxMarker = Resources.FindObjectsOfTypeAll<Sprite>().FirstOrDefault(x => x.name == "checkbox_marker");
-                }
-                return _checkboxMarker;
-            }
-        }
 
         private void Awake()
         {
@@ -95,7 +71,6 @@ namespace Veilheim.AssetManagers
             }
 
             prefab.name = name;
-            //prefab.transform.parent = GUIContainer.transform;
             prefab.transform.SetParent(GUIContainer.transform, false);
             prefab.SetActive(false);
             GUIPrefabs.Add(name, prefab);
@@ -127,10 +102,18 @@ namespace Veilheim.AssetManagers
                     var textures = Resources.FindObjectsOfTypeAll<Texture2D>();
                     TextureAtlas = textures.LastOrDefault(x => x.name == "sactx-2048x2048-Uncompressed-UIAtlas-a5f4e704");
                     TextureAtlas2 = textures.FirstOrDefault(x => x.name == "sactx-2048x2048-Uncompressed-UIAtlas-a5f4e704");
-
                     if (TextureAtlas == null || TextureAtlas2 == null)
                     {
                         throw new Exception("Texture atlas not found");
+                    }
+
+                    // Sprites
+                    var sprites = Resources.FindObjectsOfTypeAll<Sprite>();
+                    Checkbox = sprites.FirstOrDefault(x => x.name == "checkbox");
+                    CheckboxMarker = sprites.FirstOrDefault(x => x.name == "checkbox_marker");
+                    if (Checkbox == null || CheckboxMarker == null)
+                    {
+                        throw new Exception("Sprites not found");
                     }
 
                     // Fonts
