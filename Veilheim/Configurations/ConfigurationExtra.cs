@@ -437,6 +437,30 @@ namespace Veilheim.Configurations
             // Logger.LogDebug($"Reading Property type for {propertyPath} -> {entryProperty.PropertyType.Name}");
             return entryProperty.PropertyType;
         }
+
+        public static string GetSectionDescription(PropertyInfo property)
+        {
+            if (property.PropertyType.GetCustomAttribute<ConfigurationSectionAttribute>() == null)
+            {
+                Logger.LogError($"Configuration-Section {property.Name} has no ConfigurationSection attribute");
+                return property.Name;
+            }
+
+            ConfigurationSectionAttribute csa = property.PropertyType.GetCustomAttribute<ConfigurationSectionAttribute>();
+            return csa.Comment;
+        }
+
+        public static string GetEntryDescription(PropertyInfo property)
+        {
+            if (property.GetCustomAttribute<ConfigurationAttribute>() == null)
+            {
+                Logger.LogError($"Configuration-Value {property.Name} has no Configuration attribute");
+                return property.Name;
+            }
+
+            ConfigurationAttribute csa = property.GetCustomAttribute<ConfigurationAttribute>();
+            return csa.Comment;
+        }
     }
 
     public static class StringExtensions

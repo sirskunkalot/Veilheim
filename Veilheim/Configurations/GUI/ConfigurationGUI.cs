@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
 using Veilheim.AssetManagers;
@@ -125,35 +126,34 @@ namespace Veilheim.Configurations.GUI
         {
             foreach (var sectionProperty in Configuration.Current.GetSections().Where(x => !typeof(ISyncableSection).IsAssignableFrom(x.PropertyType)))
             {
+
                 var configSection = sectionProperty.GetValue(Configuration.Current, null) as BaseConfig;
                 var sectionEnabled = configSection.IsEnabled;
-                var section = CreateSection(sectionProperty.Name, sectionEnabled, ContentGrid.transform);
-                ((RectTransform) section.transform).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,
-                    BaseConfig.GetProps(sectionProperty.PropertyType).Count(x => x.Name != nameof(BaseConfig.IsEnabled)) * 30f + 40f + 20f);
-                ((RectTransform) section.transform.Find("Panel")).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,
-                    BaseConfig.GetProps(sectionProperty.PropertyType).Count(x => x.Name != nameof(BaseConfig.IsEnabled)) * 30f + 15f);
-                ((RectTransform) section.transform.Find("Panel")).SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 465f);
+                var section = CreateSection(sectionProperty, sectionEnabled, ContentGrid.transform);
+                // ((RectTransform) section.transform).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, BaseConfig.GetProps(sectionProperty.PropertyType).Count(x => x.Name != nameof(BaseConfig.IsEnabled)) * 70f + 40f + 20f);
+                // ((RectTransform) section.transform.Find("Panel")).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, BaseConfig.GetProps(sectionProperty.PropertyType).Count(x => x.Name != nameof(BaseConfig.IsEnabled)) * 70f + 15f);
+                ((RectTransform)section.transform.Find("Panel")).SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 465f);
                 section.GetComponent<Text>().fontStyle = FontStyle.Normal;
-
                 section.GetComponent<Text>().font = GUIManager.Instance.AveriaSerifBold;
                 section.GetComponent<Text>().fontSize += 3;
 
-                ((RectTransform) section.transform.Find("Panel")).gameObject.GetComponent<Image>().color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
+                ((RectTransform)section.transform.Find("Panel")).gameObject.GetComponent<Image>().color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
 
+                float maxHeight = 0f;
                 foreach (var entryProperty in BaseConfig.GetProps(sectionProperty.PropertyType).Where(x => x.Name != nameof(BaseConfig.IsEnabled)))
                 {
                     GameObject entry = null;
                     if (entryProperty.PropertyType == typeof(bool))
                     {
-                        entry = AddEntry(entryProperty.Name, configSection.GetValue<bool>(entryProperty.Name), section.transform.Find("Panel").transform);
+                        entry = AddEntry(entryProperty, configSection.GetValue<bool>(entryProperty.Name), section.transform.Find("Panel").transform, configSection.GetDefault(configSection.GetType(), entryProperty.Name));
                     }
                     else if (entryProperty.PropertyType == typeof(int))
                     {
-                        entry = AddEntry(entryProperty.Name, configSection.GetValue<int>(entryProperty.Name), section.transform.Find("Panel").transform);
+                        entry = AddEntry(entryProperty, configSection.GetValue<int>(entryProperty.Name), section.transform.Find("Panel").transform, configSection.GetDefault(configSection.GetType(), entryProperty.Name));
                     }
                     else if (entryProperty.PropertyType == typeof(float))
                     {
-                        entry = AddEntry(entryProperty.Name, configSection.GetValue<float>(entryProperty.Name), section.transform.Find("Panel").transform);
+                        entry = AddEntry(entryProperty, configSection.GetValue<float>(entryProperty.Name), section.transform.Find("Panel").transform, configSection.GetDefault(configSection.GetType(), entryProperty.Name));
                     }
 
                     entry.name = sectionProperty.Name + "." + entryProperty.Name;
@@ -168,29 +168,29 @@ namespace Veilheim.Configurations.GUI
                 {
                     var configSection = sectionProperty.GetValue(Configuration.Current, null) as BaseConfig;
                     var sectionEnabled = configSection.IsEnabled;
-                    var section = CreateSection(sectionProperty.Name, sectionEnabled, ContentGrid.transform);
-                    ((RectTransform) section.transform).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,
-                        BaseConfig.GetProps(sectionProperty.PropertyType).Count(x => x.Name != nameof(BaseConfig.IsEnabled)) * 30f + 40f + 20f);
-                    ((RectTransform) section.transform.Find("Panel")).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,
-                        BaseConfig.GetProps(sectionProperty.PropertyType).Count(x => x.Name != nameof(BaseConfig.IsEnabled)) * 30f + 15f);
-                    ((RectTransform) section.transform.Find("Panel")).SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 465f);
+                    var section = CreateSection(sectionProperty, sectionEnabled, ContentGrid.transform);
+                    // ((RectTransform) section.transform).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, BaseConfig.GetProps(sectionProperty.PropertyType).Count(x => x.Name != nameof(BaseConfig.IsEnabled)) * 70f + 40f + 20f);
+                    // ((RectTransform) section.transform.Find("Panel")).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, BaseConfig.GetProps(sectionProperty.PropertyType).Count(x => x.Name != nameof(BaseConfig.IsEnabled)) * 70f + 15f);
+                    ((RectTransform)section.transform.Find("Panel")).SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 465f);
+                    ((RectTransform)section.transform.Find("Panel")).gameObject.GetComponent<Image>().color = new Color(0.5f, 61f / 255f, 0f, 0.5f);
 
-                    ((RectTransform) section.transform.Find("Panel")).gameObject.GetComponent<Image>().color = new Color(0.5f, 61f / 255f, 0f, 0.5f);
+                    section.GetComponent<Text>().fontSize += 3;
 
+                    float maxHeight = 0f;
                     foreach (var entryProperty in BaseConfig.GetProps(sectionProperty.PropertyType).Where(x => x.Name != nameof(BaseConfig.IsEnabled)))
                     {
                         GameObject entry = null;
                         if (entryProperty.PropertyType == typeof(bool))
                         {
-                            entry = AddEntry(entryProperty.Name, configSection.GetValue<bool>(entryProperty.Name), section.transform.Find("Panel").transform);
+                            entry = AddEntry(entryProperty, configSection.GetValue<bool>(entryProperty.Name), section.transform.Find("Panel").transform, configSection.GetDefault(configSection.GetType(), entryProperty.Name));
                         }
                         else if (entryProperty.PropertyType == typeof(int))
                         {
-                            entry = AddEntry(entryProperty.Name, configSection.GetValue<int>(entryProperty.Name), section.transform.Find("Panel").transform);
+                            entry = AddEntry(entryProperty, configSection.GetValue<int>(entryProperty.Name), section.transform.Find("Panel").transform, configSection.GetDefault(configSection.GetType(), entryProperty.Name));
                         }
                         else if (entryProperty.PropertyType == typeof(float))
                         {
-                            entry = AddEntry(entryProperty.Name, configSection.GetValue<float>(entryProperty.Name), section.transform.Find("Panel").transform);
+                            entry = AddEntry(entryProperty, configSection.GetValue<float>(entryProperty.Name), section.transform.Find("Panel").transform, configSection.GetDefault(configSection.GetType(), entryProperty.Name));
                         }
 
                         entry.name = sectionProperty.Name + "." + entryProperty.Name;
@@ -199,6 +199,7 @@ namespace Veilheim.Configurations.GUI
                     }
                 }
             }
+            VeilheimPlugin.Instance.Invoke(nameof(VeilheimPlugin.UpdateGUI), 0.1f);
         }
 
         /// <summary>
@@ -242,19 +243,19 @@ namespace Veilheim.Configurations.GUI
         /// <param name="isEnabled">is it enabled? (configuration)</param>
         /// <param name="parentTransform">parent</param>
         /// <returns></returns>
-        private static GameObject CreateSection(string sectionName, bool isEnabled, Transform parentTransform)
+        private static GameObject CreateSection(PropertyInfo property, bool isEnabled, Transform parentTransform)
         {
             var newSection = Object.Instantiate(GUIManager.Instance.GetGUIPrefab("ConfigurationSection"), parentTransform);
             sections.Add(newSection);
             var text = newSection.GetComponent<Text>();
-            text.text = sectionName;
+            text.text = Configuration.GetSectionDescription(property);
             text.fontStyle = FontStyle.Normal;
             text.font = GUIManager.Instance.AveriaSerifBold;
             text.fontSize += 3;
             text.color = new Color(1f, 0.7176f, 0.363f, 1f);
 
             newSection.GetComponentInChildren<Toggle>().isOn = isEnabled;
-            newSection.name = "section." + sectionName;
+            newSection.name = "section." + property.Name;
             newSection.SetActive(true);
             return newSection;
         }
@@ -266,9 +267,9 @@ namespace Veilheim.Configurations.GUI
         /// <param name="value">value</param>
         /// <param name="parentTransform">parent</param>
         /// <returns>new entry</returns>
-        private static GameObject AddEntry(string entryName, bool value, Transform parentTransform)
+        private static GameObject AddEntry(PropertyInfo entryProperty, bool value, Transform parentTransform, object defaultValue)
         {
-            var newEntry = AddEntry(entryName, parentTransform);
+            var newEntry = AddEntry(entryProperty, parentTransform, defaultValue);
 
             newEntry.GetComponentInChildren<Toggle>().gameObject.SetActive(true);
             newEntry.GetComponentInChildren<InputField>().gameObject.SetActive(false);
@@ -284,9 +285,9 @@ namespace Veilheim.Configurations.GUI
         /// <param name="value">value</param>
         /// <param name="parentTransform">parent</param>
         /// <returns>new entry</returns>
-        private static GameObject AddEntry(string entryName, int value, Transform parentTransform)
+        private static GameObject AddEntry(PropertyInfo entryProperty, int value, Transform parentTransform, object defaultValue)
         {
-            var newEntry = AddEntry(entryName, parentTransform);
+            var newEntry = AddEntry(entryProperty, parentTransform, defaultValue);
 
             newEntry.GetComponentInChildren<Toggle>().gameObject.SetActive(false);
             newEntry.GetComponentInChildren<InputField>().gameObject.SetActive(true);
@@ -302,9 +303,9 @@ namespace Veilheim.Configurations.GUI
         /// <param name="value">value</param>
         /// <param name="parentTransform">parent</param>
         /// <returns>new entry</returns>
-        private static GameObject AddEntry(string entryName, float value, Transform parentTransform)
+        private static GameObject AddEntry(PropertyInfo entryProperty, float value, Transform parentTransform, object defaultValue)
         {
-            var newEntry = AddEntry(entryName, parentTransform);
+            var newEntry = AddEntry(entryProperty, parentTransform, defaultValue);
 
             newEntry.GetComponentInChildren<Toggle>().gameObject.SetActive(false);
             newEntry.GetComponentInChildren<InputField>().gameObject.SetActive(true);
@@ -319,11 +320,12 @@ namespace Veilheim.Configurations.GUI
         /// <param name="entryName">Name</param>
         /// <param name="parentTransform">parent</param>
         /// <returns>new entry</returns>
-        private static GameObject AddEntry(string entryName, Transform parentTransform)
+        private static GameObject AddEntry(PropertyInfo entryProperty, Transform parentTransform, object defaultValue)
         {
             var newEntry = Object.Instantiate(GUIManager.Instance.GetGUIPrefab("ConfigurationEntry"), parentTransform);
-            newEntry.name = "configentry." + entryName;
-            newEntry.transform.Find("ConfigName").GetComponent<Text>().text = entryName + ":";
+            newEntry.name = "configentry." + entryProperty.Name;
+
+            newEntry.transform.Find("ConfigName").GetComponent<Text>().text = Configuration.GetEntryDescription(entryProperty) + ":" + Environment.NewLine + $"({entryProperty.Name}, default: {defaultValue})";
             newEntry.transform.Find("ConfigName").GetComponent<Text>().font = GUIManager.Instance.AveriaSerifBold;
             newEntry.transform.Find("InputText").Find("Text").GetComponent<Text>().font = GUIManager.Instance.AveriaSerifBold;
             newEntry.SetActive(true);
@@ -441,6 +443,27 @@ namespace Veilheim.Configurations.GUI
         {
             // Config Sync
             ZRoutedRpc.instance.Register(nameof(RPC_IsAdmin), new Action<long, bool>(RPC_IsAdmin));
+        }
+
+        public static void RecalculateHeights()
+        {
+            float maxSectionHeight = 0f;
+            foreach (var section in sections)
+            {
+                float maxHeight = 0f;
+
+                foreach (var entry in entries.Where(x => x.name.StartsWith(section.name.Split('.')[1] + ".")))
+                {
+                    entry.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -maxHeight);
+                    maxHeight += Math.Max(33f, entry.transform.Find("ConfigName").GetComponent<RectTransform>().rect.height + 15f);
+                }
+
+                maxSectionHeight += maxHeight + 50;
+                section.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, maxHeight + 50);
+                section.transform.Find("Panel").GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, maxHeight + 5);
+            }
+            ContentGrid.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, maxSectionHeight);
+            GUIRoot.transform.Find("Canvas/Scroll View").GetComponent<ScrollRect>().normalizedPosition = new Vector2(0, 1);
         }
     }
 }
