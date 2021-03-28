@@ -288,7 +288,7 @@ namespace Veilheim.Map
         [PatchEvent(typeof(Menu), nameof(Menu.IsVisible), PatchEventType.Postfix)]
         public static void PortalGUI_Mouselook_Patch(ref bool result)
         {
-            result |= IsVisible();
+            result |= IsVisible() && TextInput.instance.m_panel.activeSelf;
         }
     }
 }
