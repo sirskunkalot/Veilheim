@@ -98,7 +98,6 @@ namespace Veilheim.Configurations.GUI
         {
             GUIRoot = Object.Instantiate(GUIManager.Instance.GetGUIPrefab("ConfigurationGUIRoot"));
             GUIRoot.transform.SetParent(GUIManager.PixelFix.transform, false);
-
             GUIRoot.GetComponent<Image>().sprite = GUIManager.Instance.CreateSpriteFromAtlas(new Rect(0, 2048 - 1018, 443, 1018 - 686), new Vector2(0f, 0f));
 
             var text = GUIRoot.transform.Find("Header").GetComponent<Text>();
@@ -328,6 +327,7 @@ namespace Veilheim.Configurations.GUI
             newEntry.transform.Find("ConfigName").GetComponent<Text>().text = Configuration.GetEntryDescription(entryProperty) + ":" + Environment.NewLine + $"({entryProperty.Name}, default: {defaultValue})";
             newEntry.transform.Find("ConfigName").GetComponent<Text>().font = GUIManager.Instance.AveriaSerifBold;
             newEntry.transform.Find("InputText").Find("Text").GetComponent<Text>().font = GUIManager.Instance.AveriaSerifBold;
+            GUIManager.Instance.ApplyInputFieldStyle(newEntry.transform.Find("InputText").GetComponent<InputField>());
             newEntry.SetActive(true);
             return newEntry;
         }
