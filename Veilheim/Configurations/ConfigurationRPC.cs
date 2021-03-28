@@ -17,7 +17,7 @@ namespace Veilheim.Configurations
         /// </summary>
         /// <param name="instance"></param>
         [PatchEvent(typeof(Game), nameof(Game.Start), PatchEventType.Prefix)]
-        public static void Register_RPC(Game instance)
+        public static void RegisterRPC(Game instance)
         {
             // Admin status
             ZRoutedRpc.instance.Register(nameof(RPC_IsAdmin), new Action<long, bool>(RPC_IsAdmin));
@@ -33,7 +33,7 @@ namespace Veilheim.Configurations
         [PatchEvent(typeof(ZNet), nameof(ZNet.RPC_PeerInfo), PatchEventType.Postfix)]
         public static void RequestConfigInformation(ZNet instance)
         {
-            if (ZNet.instance.IsClientInstance() || ZNet.instance.IsLocalInstance())
+            if (ZNet.instance.IsClientInstance())
             {
                 Logger.LogInfo("Querying admin status from server");
                 ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(RPC_IsAdmin), false);
@@ -45,7 +45,7 @@ namespace Veilheim.Configurations
 
         public static void RPC_IsAdmin(long sender, bool isAdmin)
         {
-            if (ZNet.instance.IsClientInstance() || ZNet.instance.IsLocalInstance())
+            if (ZNet.instance.IsClientInstance())
             {
                 Logger.LogDebug("Received player admin status from server");
                 Configuration.PlayerIsAdmin = isAdmin;
