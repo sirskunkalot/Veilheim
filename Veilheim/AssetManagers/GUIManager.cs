@@ -12,6 +12,7 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using Veilheim.PatchEvents;
 using System;
+using Steamworks;
 
 namespace Veilheim.AssetManagers
 {
@@ -181,6 +182,17 @@ namespace Veilheim.AssetManagers
         internal Sprite CreateSpriteFromAtlas(Rect rect, Vector2 pivot)
         {
             return Sprite.Create(TextureAtlas, rect, pivot);
+        }
+
+        public void ApplyInputFieldStyle(InputField field)
+        {
+            GameObject go = field.gameObject;
+
+            go.GetComponent<Image>().sprite = Sprite.Create(TextureAtlas, new Rect(0, 2048 - 156, 139, 36), new Vector2(0.5f, 0.5f), 50f, 0,
+                SpriteMeshType.FullRect, new Vector4(5, 5, 5, 5));
+            go.transform.Find("Placeholder").GetComponent<Text>().font = AveriaSerifBold;
+            go.transform.Find("Text").GetComponent<Text>().font = AveriaSerifBold;
+            go.transform.Find("Text").GetComponent<Text>().color = new Color(1, 1, 1, 1);
         }
     }
 }
