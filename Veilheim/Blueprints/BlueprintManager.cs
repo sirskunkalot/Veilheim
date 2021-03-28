@@ -165,24 +165,27 @@ namespace Veilheim.Blueprints
         ///     Flatten terrain if left ctrl is pressed.
         /// </summary>
         /// <param name="instance"></param>
-        /// <param name="piece"></param>
+        /// <param name="piece_bp"></param>
         /// <param name="cancel"></param>
         [PatchEvent(typeof(Player), nameof(Player.PlacePiece), PatchEventType.BlockingPrefix)]
-        public static void BeforePlacingBlueprint(Player instance, Piece piece, ref bool cancel)
+        public static void BeforePlacingBlueprint(Player instance, Piece piece_bp, ref bool cancel)
         {
-            // Client only
+            // Client and Local only
             if (!ZNet.instance.IsServerInstance())
             {
-                if (Player.m_localPlayer.m_placementStatus == Player.PlacementStatus.Valid && piece.name.StartsWith("piece_blueprint"))
+                if (Player.m_localPlayer.m_placementStatus == Player.PlacementStatus.Valid && piece_bp.name.StartsWith("piece_blueprint"))
                 {
                     if (Input.GetKey(KeyCode.LeftControl))
                     {
-                        Vector2 extent = Instance.m_blueprints.First(x => $"piece_blueprint ({x.Key})" == piece.name).Value.GetExtent();
+                        Vector2 extent = Instance.m_blueprints.First(x => $"piece_blueprint ({x.Key})" == piece_bp.name).Value.GetExtent();
                         FlattenTerrain.FlattenForBlueprint(instance.m_placementGhost.transform, extent.x, extent.y,
-                            Instance.m_blueprints.First(x => $"piece_blueprint ({x.Key})" == piece.name).Value.m_pieceEntries);
+                            Instance.m_blueprints.First(x => $"piece_blueprint ({x.Key})" == piece_bp.name).Value.m_pieceEntries);
                     }
 
-                    Blueprint bp = Instance.m_blueprints[piece.m_name];
+                    uint cntEffects = 0u;
+                    uint maxEffects = 10u;
+
+                    Blueprint bp = Instance.m_blueprints[piece_bp.m_name];
                     var transform = instance.m_placementGhost.transform;
                     var position = instance.m_placementGhost.transform.position;
                     var rotation = instance.m_placementGhost.transform.rotation;
@@ -200,44 +203,50 @@ namespace Veilheim.Blueprints
                         var prefab = PrefabManager.Instance.GetPrefab(entry.name);
                         if (prefab == null)
                         {
-                            Logger.LogError(piece.name + " not found?");
+                            Logger.LogError(entry.name + " not found?");
                         }
 
                         // Instantiate a new object with the new prefab
-                        GameObject gameObject2 = Instantiate(prefab, entryPosition, entryQuat);
+                        GameObject gameObject = Instantiate(prefab, entryPosition, entryQuat);
 
-                        CraftingStation componentInChildren = gameObject2.GetComponentInChildren<CraftingStation>();
-                        if (componentInChildren)
+                        // Register special effects
+                        CraftingStation craftingStation = gameObject.GetComponentInChildren<CraftingStation>();
+                        if (craftingStation)
                         {
-                            instance.AddKnownStation(componentInChildren);
+                            instance.AddKnownStation(craftingStation);
                         }
-                        Piece component = gameObject2.GetComponent<Piece>();
-                        if (component)
+                        Piece piece = gameObject.GetComponent<Piece>();
+                        if (piece)
                         {
-                            component.SetCreator(instance.GetPlayerID());
+                            piece.SetCreator(instance.GetPlayerID());
                         }
-                        PrivateArea component2 = gameObject2.GetComponent<PrivateArea>();
-                        if (component2)
+                        PrivateArea privateArea = gameObject.GetComponent<PrivateArea>();
+                        if (privateArea)
                         {
-                            component2.Setup(Game.instance.GetPlayerProfile().GetName());
+                            privateArea.Setup(Game.instance.GetPlayerProfile().GetName());
                         }
-                        WearNTear component3 = gameObject2.GetComponent<WearNTear>();
-                        if (component3)
+                        WearNTear wearntear = gameObject.GetComponent<WearNTear>();
+                        if (wearntear)
                         {
-                            component3.OnPlaced();
+                            wearntear.OnPlaced();
+                        }
+                        TextReceiver textReceiver = gameObject.GetComponent<TextReceiver>();
+                        if (textReceiver != null)
+                        {
+                            textReceiver.SetText(entry.additionalInfo);
                         }
 
-                        TextReceiver component4 = gameObject2.GetComponent<TextReceiver>();
-                        if (component4 != null)
+                        // Limited build effects
+                        if (cntEffects < maxEffects)
                         {
-                            component4.SetText(entry.additionalInfo);
+                            piece.m_placeEffect.Create(gameObject.transform.position, rotation, gameObject.transform, 1f);
+                            instance.AddNoise(50f);
+                            cntEffects++;
                         }
 
-                        gameObject2.GetComponent<Piece>().m_placeEffect.Create(gameObject2.transform.position, rotation, gameObject2.transform, 1f);
+                        // Count up player builds
                         Game.instance.GetPlayerProfile().m_playerStats.m_builds++;
                     }
-
-                    instance.AddNoise(50f);
 
                     cancel = true;
                 }

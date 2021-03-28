@@ -339,7 +339,6 @@ namespace Veilheim.Blueprints
         private bool GhostInstantiate(GameObject baseObject)
         {
             var ret = true;
-            //ZNetView.m_ghostInit = true;
             ZNetView.m_forceDisableInit = true;
 
             try
@@ -380,14 +379,11 @@ namespace Veilheim.Blueprints
 
                     var child = Object.Instantiate(prefabs[piece.name], pos, q);
                     child.transform.SetParent(baseObject.transform);
-                    //child.GetComponent<TextReceiver>()?.SetText(piece.additionalInfo);
 
-                    Object.Destroy(child.GetComponent<WearNTear>());
-
-                    var projector = child.GetComponentInChildren<CircleProjector>();
-                    if (projector != null)
+                    // A Ghost doesn't need fancy scripts
+                    foreach (var component in child.GetComponentsInChildren<MonoBehaviour>())
                     {
-                        Object.Destroy(projector);
+                        Object.Destroy(component);
                     }
                 }
             }
@@ -398,7 +394,6 @@ namespace Veilheim.Blueprints
             }
             finally
             {
-                //ZNetView.m_ghostInit = false;
                 ZNetView.m_forceDisableInit = false;
             }
 
