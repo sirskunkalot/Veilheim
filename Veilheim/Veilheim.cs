@@ -116,7 +116,7 @@ namespace Veilheim
 
         internal void UpdateGUI()
         {
-            ConfigurationGUI.RecalculateHeights();
+            ConfigurationGUI.RebuildLayout();
         }
     }
 }

@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+using Veilheim.PatchEvents;
 
 namespace Veilheim.Map
 {
@@ -16,7 +17,7 @@ namespace Veilheim.Map
     ///     it.
     ///     Coded by https://github.com/Algorithman
     /// </summary>
-    internal class PortalSelectionGUI
+    internal class PortalSelectionGUI : IPatchEventConsumer
     {
         public static RectTransform portalRect;
 
@@ -26,6 +27,8 @@ namespace Veilheim.Map
         private static GameObject TeleporterListScrollbar;
 
         private static GameObject viewport;
+
+        private static bool visible = false;
 
         public static void OpenPortalSelection()
         {
@@ -115,6 +118,9 @@ namespace Veilheim.Map
 
                             // hide textinput
                             TextInput.instance.Hide();
+
+                            // Reset visibility state
+                            visible = false;
                         });
 
                         // Add to local list
@@ -127,6 +133,9 @@ namespace Veilheim.Map
                 {
                     // show buttonlist only if single teleports are available to choose from
                     portalRect.gameObject.SetActive(true);
+
+                    // Set visibility flag
+                    visible = true;
                 }
 
                 // Set anchor
@@ -269,6 +278,17 @@ namespace Veilheim.Map
             portalRect.GetComponent<ScrollRect>().content = rectButtonList;
 
             return portalRect;
+        }
+
+        public static bool IsVisible()
+        {
+            return visible;
+        }
+
+        [PatchEvent(typeof(Menu), nameof(Menu.IsVisible), PatchEventType.Postfix)]
+        public static void PortalGUI_Mouselook_Patch(ref bool result)
+        {
+            result |= IsVisible();
         }
     }
 }

@@ -375,7 +375,10 @@ namespace Veilheim.Configurations.GUI
             }
         }
 
-        public static void RecalculateHeights()
+        /// <summary>
+        /// Recalculate the layout
+        /// </summary>
+        public static void RebuildLayout()
         {
             float maxSectionHeight = 0f;
             foreach (var section in sections)
@@ -394,6 +397,20 @@ namespace Veilheim.Configurations.GUI
             }
             ContentGrid.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, maxSectionHeight);
             GUIRoot.transform.Find("Canvas/Scroll View").GetComponent<ScrollRect>().normalizedPosition = new Vector2(0, 1);
+        }
+
+        /// <summary>
+        /// Is GUI visible?
+        /// </summary>
+        /// <returns>true if visible</returns>
+        public static bool IsVisible()
+        {
+            if (GUIRoot != null)
+            {
+                return GUIRoot.activeSelf;
+            }
+
+            return false;
         }
     }
 }
