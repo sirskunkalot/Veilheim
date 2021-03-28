@@ -86,7 +86,7 @@ namespace Veilheim.UnityWrappers
 ```
 All wrapper classes are built with the project and added to Veilheim automatically.
 
-New assets should be bundled in groups according to the distinct function of that asset group. Don't add new resources to existing folders when they are not linked to the functionality of that folders contents. Instead create a new folder with all your assets needed for that distinct functionality. For example the Blueprint functionality is located under `Assets\Blueprints`, the trash fireplace is located under `Assets\Trashfire`.
+New assets should be bundled in groups according to the distinct function of that asset group. Don't add new resources to existing folders when they are not linked to the functionality of that folders contents. Instead create a new folder with all your assets needed for that distinct functionality. For example the Blueprint functionality is located under `Assets\Blueprints`, the config GUI is located under `Assets\ConfigurationGUI`.
 
 The same goes for asset bundles. Create a distinct asset bundle for every distinct functionality created. To do this, open the `AssetBundle Browser` and create a new asset bundle for the distinct functionality. Add all needed assets to it and close the browser again. Unity will save the definition of all asset bundles internally.
 
@@ -94,7 +94,11 @@ All asset bundles are built with the project and added to the mod folder `<Veilh
 
 ## Building
 
-To include the assets intoi the mod, a special build is necessary. There is an Unity Editor extension coded for that, found under `Assets\_Editor`. The extensions adds a new `Veilheim` menu to the Editor. From there you can build everything at once or only create the assemblies or asset bundles alone.
+To include the assets into the mod, a special build is necessary. There is an Unity Editor extension coded for that, found under `Assets\_Editor`. The extensions adds a new `Veilheim` menu to the Editor. From there you can build everything at once or only create the assemblies or asset bundles alone. Normally you would only "Build Asset Bundles". The assembly should only be built when a new wrapper class is introduced. git will always declare the assembly as modified and add a new revision of it to the repo, although nothing actually changed in it, because of the file timestamp. So "Build All" or "Build Runtime Assemblies" only if really necessary.
+
+## Unity and git
+
+If you are working an separate branches or just merge some remote into your local repo while Unity is running, don't forget to reload the project after a checkout, switch or merge (Ctrl+R in the Editor). Unity does not track its project files for external changes, so you could involuntery commit old files or asset bundles with old files in it to the repo.
 
 # Debugging with dnSpy
 
