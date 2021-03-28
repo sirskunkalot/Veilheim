@@ -4,6 +4,7 @@
 // File:    ConfigurationHooks.cs
 // Project: Veilheim
 
+using Veilheim.Configurations.GUI;
 using Veilheim.PatchEvents;
 
 namespace Veilheim.Configurations
@@ -52,6 +53,12 @@ namespace Veilheim.Configurations
         {
             Logger.LogInfo("Saving configuration");
             Configuration.Current?.SaveConfiguration();
+        }
+
+        [PatchEvent(typeof(Menu), nameof(Menu.IsVisible), PatchEventType.Postfix)]
+        public static void ConfigurationGUI_Mouselook_Patch(ref bool result)
+        {
+            result |= ConfigurationGUI.IsVisible();
         }
     }
 }
