@@ -118,13 +118,13 @@ namespace Veilheim.AssetManagers
                     }
 
                     // GUI components (ouch, my memory hurts... :))
-                    var objects = Resources.FindObjectsOfTypeAll<GameObject>();
+                    var objects = Resources.FindObjectsOfTypeAll(typeof(GameObject));
                     GameObject ingameGui = null;
                     foreach (var obj in objects)
                     {
                         if (obj.name.Equals("IngameGui"))
                         {
-                            ingameGui = obj;
+                            ingameGui = (GameObject)obj;
                             break;
                         }
                     }

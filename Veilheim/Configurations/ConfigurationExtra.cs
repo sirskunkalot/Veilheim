@@ -25,7 +25,7 @@ namespace Veilheim.Configurations
     {
         internal static readonly List<PropertyInfo> propertyCache;
 
-        internal static bool PlayerIsAdmin = false;
+        internal static bool PlayerIsAdmin = true;  // defaults to true for local instances
 
         static Configuration()
         {
