@@ -39,6 +39,7 @@ namespace Veilheim.AssetManagers
         private Sprite _checkbox;
 
         private Sprite _checkboxMarker;
+        private Sprite _woodpanelTrophies;
 
         internal Sprite Checkbox
         {
@@ -61,6 +62,18 @@ namespace Veilheim.AssetManagers
                     _checkboxMarker = Resources.FindObjectsOfTypeAll<Sprite>().FirstOrDefault(x => x.name == "checkbox_marker");
                 }
                 return _checkboxMarker;
+            }
+        }
+
+        internal Sprite WoodpanelTrophies
+        {
+            get
+            {
+                if (_woodpanelTrophies == null)
+                {
+                    _woodpanelTrophies = Resources.FindObjectsOfTypeAll<Sprite>().FirstOrDefault(x => x.name == "woodpanel_trophys");
+                }
+                return _woodpanelTrophies;
             }
         }
 
