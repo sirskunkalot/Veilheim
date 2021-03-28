@@ -267,7 +267,7 @@ namespace Veilheim.Blueprints
             }
 
             piece.m_name = m_name;
-            //piece.m_category = Piece.PieceCategory.Misc;
+            piece.m_enabled = true;
 
             // Instantiate child objects
             if (!GhostInstantiate(m_prefab))
@@ -339,7 +339,8 @@ namespace Veilheim.Blueprints
         private bool GhostInstantiate(GameObject baseObject)
         {
             var ret = true;
-            ZNetView.m_ghostInit = true;
+            //ZNetView.m_ghostInit = true;
+            ZNetView.m_forceDisableInit = true;
 
             try
             {
@@ -358,7 +359,7 @@ namespace Veilheim.Blueprints
                 var prefabs = new Dictionary<string, GameObject>();
                 foreach (var piece in pieces.GroupBy(x => x.name).Select(x => x.FirstOrDefault()))
                 {
-                    var go = ZNetScene.instance.GetPrefab(piece.name);
+                    var go = PrefabManager.Instance.GetPrefab(piece.name);
                     go.transform.SetPositionAndRotation(go.transform.position, quat);
                     prefabs.Add(piece.name, go);
                 }
@@ -378,9 +379,10 @@ namespace Veilheim.Blueprints
                     q.eulerAngles = new Vector3(0, tf.transform.rotation.eulerAngles.y + piece.GetRotation().eulerAngles.y);
 
                     var child = Object.Instantiate(prefabs[piece.name], pos, q);
-
                     child.transform.SetParent(baseObject.transform);
-                    child.GetComponent<TextReceiver>()?.SetText(piece.additionalInfo);
+                    //child.GetComponent<TextReceiver>()?.SetText(piece.additionalInfo);
+
+                    Object.Destroy(child.GetComponent<WearNTear>());
 
                     var projector = child.GetComponentInChildren<CircleProjector>();
                     if (projector != null)
@@ -396,7 +398,8 @@ namespace Veilheim.Blueprints
             }
             finally
             {
-                ZNetView.m_ghostInit = false;
+                //ZNetView.m_ghostInit = false;
+                ZNetView.m_forceDisableInit = false;
             }
 
             return ret;

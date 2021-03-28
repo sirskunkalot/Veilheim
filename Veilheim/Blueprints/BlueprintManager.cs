@@ -234,9 +234,10 @@ namespace Veilheim.Blueprints
                         }
 
                         gameObject2.GetComponent<Piece>().m_placeEffect.Create(gameObject2.transform.position, rotation, gameObject2.transform, 1f);
-                        instance.AddNoise(50f);
                         Game.instance.GetPlayerProfile().m_playerStats.m_builds++;
                     }
+
+                    instance.AddNoise(50f);
 
                     cancel = true;
                 }
