@@ -321,4 +321,56 @@ namespace Veilheim.PatchEvents.PatchStubs
             }
         }
     }
+
+    /// <summary>
+    ///     Patch Minimap.SetMapMode
+    /// </summary>
+    [HarmonyPatch(typeof(Minimap), nameof(Minimap.SetMapMode), typeof(Minimap.MapMode))]
+    public class Minimap_SetMapMode_Patch
+    {
+        public delegate void BlockingPrefixHandler(Minimap instance, ref Minimap.MapMode mode, ref bool cancel);
+
+        public delegate void PostfixHandler(Minimap instance, ref Minimap.MapMode mode);
+
+        public delegate void PrefixHandler(Minimap instance, ref Minimap.MapMode mode);
+
+        public static event PrefixHandler PrefixEvent;
+
+        public static event BlockingPrefixHandler BlockingPrefixEvent;
+
+        public static event PostfixHandler PostfixEvent;
+
+
+        private static bool Prefix(Minimap __instance, ref Minimap.MapMode mode)
+        {
+            var cancel = false;
+            BlockingPrefixEvent?.Invoke(__instance, ref mode, ref cancel);
+
+            if (!cancel)
+            {
+                try
+                {
+                    PrefixEvent?.Invoke(__instance, ref mode);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex.Message + Environment.NewLine + ex.StackTrace);
+                }
+            }
+
+            return !cancel;
+        }
+
+        private static void Postfix(Minimap __instance, ref Minimap.MapMode mode)
+        {
+            try
+            {
+                PostfixEvent?.Invoke(__instance, ref mode);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.Message + Environment.NewLine + ex.StackTrace);
+            }
+        }
+    }
 }
