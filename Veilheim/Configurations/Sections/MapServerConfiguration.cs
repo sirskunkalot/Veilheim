@@ -15,6 +15,9 @@ namespace Veilheim.Configurations.Sections
         [Configuration("The radius of the map that you explore when moving", ActivationTime.Immediately)]
         public float exploreRadius { get; set; } = 100;
 
+        [Configuration("The radius of the map that you explore while sailing",ActivationTime.Immediately)]
+        public float exploreRadiusSailing { get; set; } = 100;
+
         [Configuration("Automatically turn on the Map option to share your position when joining or starting a game", ActivationTime.AfterRelog)]
         public bool playerPositionPublicOnJoin { get; set; } = false;
 

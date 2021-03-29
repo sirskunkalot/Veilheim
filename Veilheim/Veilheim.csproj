@@ -403,6 +403,7 @@
     <Compile Include="PatchEvents\PatchStubs\Minimap_Patches.cs" />
     <Compile Include="PatchEvents\PatchStubs\ObjectDB_Patches.cs" />
     <Compile Include="PatchEvents\PatchStubs\Player_Patches.cs" />
+    <Compile Include="PatchEvents\PatchStubs\Ship_Patches.cs" />
     <Compile Include="PatchEvents\PatchStubs\Smelter_Patches.cs" />
     <Compile Include="PatchEvents\PatchStubs\TeleportWorld_Patches.cs" />
     <Compile Include="PatchEvents\PatchStubs\TextInput_Patches.cs" />

@@ -22,6 +22,9 @@ namespace Veilheim.Map
         private static bool isInSetMapData;
         private static readonly List<int> explorationQueue = new List<int>();
 
+        private static bool playerIsOnShip = false;
+        private static Ship shipWithPlayer = null;
+
         /// <summary>
         ///     Apply other player's locations as own exploration
         /// </summary>
@@ -48,7 +51,14 @@ namespace Veilheim.Map
                 }
             }
 
-            instance.Explore(Player.m_localPlayer.transform.position, Configuration.Current.MapServer.exploreRadius);
+            if (playerIsOnShip && Configuration.Current.MapServer.exploreRadiusSailing > Configuration.Current.MapServer.exploreRadius)
+            {
+                instance.Explore(Player.m_localPlayer.transform.position, Configuration.Current.MapServer.exploreRadiusSailing);
+            }
+            else
+            {
+                instance.Explore(Player.m_localPlayer.transform.position, Configuration.Current.MapServer.exploreRadius);
+            }
         }
 
         /// <summary>
@@ -387,5 +397,28 @@ namespace Veilheim.Map
                 return result.ToArray();
             }
         }
+
+        [PatchEvent(typeof(Ship), nameof(Ship.OnTriggerEnter), PatchEventType.Postfix)]
+        public static void AddPlayerToBoatingList(Ship instance)
+        {
+            if (instance.m_players.Contains(Player.m_localPlayer))
+            {
+                Logger.LogDebug("Player entered ship");
+                playerIsOnShip |= instance.m_players.Contains(Player.m_localPlayer);
+                shipWithPlayer = instance;
+            }
+        }
+
+        [PatchEvent(typeof(Ship), nameof(Ship.OnTriggerExit), PatchEventType.Postfix)]
+        public static void RemovePlayerFromBoatingList(Ship instance)
+        {
+            if (instance == shipWithPlayer)
+            {
+                Logger.LogDebug("Player exited ship");
+                playerIsOnShip = false;
+                shipWithPlayer = null;
+            }
+        }
+
     }
 }
