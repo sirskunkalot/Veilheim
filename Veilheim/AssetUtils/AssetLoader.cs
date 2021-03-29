@@ -44,6 +44,10 @@ namespace Veilheim.AssetUtils
             LoadGUIPrefab(assetBundle, "ConfigurationSection");
             LoadGUIPrefab(assetBundle, "ConfigurationGUIRoot");
             assetBundle.Unload(false);
+
+            assetBundle = LoadAssetBundleFromResources("portalselectiongui");
+            LoadGUIPrefab(assetBundle, "PortalButtonBox");
+            assetBundle.Unload(false);
         }
 
         /// <summary>

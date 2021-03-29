@@ -38,6 +38,8 @@ namespace Veilheim.AssetManagers
 
         internal Sprite CheckboxMarker { get; private set; }
 
+        internal Sprite WoodpanelTrophies { get; private set; }
+
         private bool needsLoad = true;
 
         private void Awake()
@@ -111,6 +113,7 @@ namespace Veilheim.AssetManagers
                     var sprites = Resources.FindObjectsOfTypeAll<Sprite>();
                     Checkbox = sprites.FirstOrDefault(x => x.name == "checkbox");
                     CheckboxMarker = sprites.FirstOrDefault(x => x.name == "checkbox_marker");
+                    WoodpanelTrophies = sprites.FirstOrDefault(x => x.name == "woodpanel_trophys");
                     if (Checkbox == null || CheckboxMarker == null)
                     {
                         throw new Exception("Sprites not found");

@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+using Veilheim.AssetManagers;
 using Veilheim.PatchEvents;
 
 namespace Veilheim.Map
@@ -17,7 +18,7 @@ namespace Veilheim.Map
     ///     it.
     ///     Coded by https://github.com/Algorithman
     /// </summary>
-    internal class PortalSelectionGUI : IPatchEventConsumer
+    internal class PortalSelectionGUI
     {
         public static RectTransform portalRect;
 
@@ -30,6 +31,79 @@ namespace Veilheim.Map
 
         private static bool visible = false;
 
+        private static GameObject GUIRoot;
+
+        private static void CreatePortalGUI(string currentTag)
+        {
+            if (GUIRoot == null)
+            {
+                GUIRoot = Object.Instantiate(GUIManager.Instance.GetGUIPrefab("PortalButtonBox"));
+                GUIRoot.transform.SetParent(GUIManager.PixelFix.transform, false);
+                GUIRoot.GetComponentInChildren<Image>().sprite = GUIManager.Instance.WoodpanelTrophies;
+
+            }
+
+            foreach (var button in teleporterButtons)
+            {
+                Object.Destroy(button);
+            }
+
+            teleporterButtons.Clear();
+
+            IEnumerable<Portal> singlePortals;
+            // Generate list of unconnected portals from ZDOMan
+            if (ZNet.instance.IsLocalInstance())
+            {
+                singlePortals = PortalList.GetPortals().Where(x => !x.m_con);
+            }
+            // or from PortalsOnMap.portalsFromServer, if it is a real client
+            else
+            {
+                singlePortals = PortalsOnMap.portalsFromServer.Where(x => !x.m_con);
+            }
+
+            int idx = 0;
+
+            int lines = singlePortals.Count() / 3;
+
+            foreach (var portal in singlePortals)
+            {
+                // Skip if it is the selected teleporter
+                if (portal.m_tag == currentTag || currentTag == "<unnamed>" && string.IsNullOrEmpty(portal.m_tag))
+                {
+                    continue;
+                }
+
+                var newButton = GUIManager.Instance.CreateButton(portal.m_tag, GUIRoot.transform.Find("Image/Scroll View/Viewport/Content"), new Vector2(0, 1),
+                    new Vector2(0, 1), new Vector2(0, 0));
+
+                newButton.GetComponent<Button>().onClick.AddListener(() =>
+                {
+                    // Set input field text to new name
+                    TextInput.instance.m_textField.text = portal.m_tag;
+
+                    // simulate enter key
+                    TextInput.instance.OnEnter(portal.m_tag);
+
+                    // hide textinput
+                    TextInput.instance.Hide();
+
+                    // Reset visibility state
+                    GUIRoot.SetActive(false);
+                });
+
+                newButton.name = "TP" + (teleporterButtons.Count);
+                newButton.SetActive(true);
+
+                newButton.GetComponent<RectTransform>().anchoredPosition = new Vector2(95f+ (idx % 3) * (180f + 20f), -(idx / 3) * 50f - 25f);
+                teleporterButtons.Add(newButton);
+                idx++;
+            }
+
+            GUIRoot.transform.Find("Image/Scroll View/Viewport/Content").GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, lines * 50f + 50f);
+            GUIRoot.SetActive(teleporterButtons.Count > 0);
+        }
+
         public static void OpenPortalSelection()
         {
             if (TextInput.instance.m_panel.activeSelf)
@@ -39,41 +113,6 @@ namespace Veilheim.Map
                 // set position of textinput (a bit higher)
                 TextInput.instance.m_panel.transform.localPosition = new Vector3(0, 270.0f, 0);
 
-                // Create gameobject(s) if not exist
-                if (portalRect == null)
-                {
-                    portalRect = GenerateGUI();
-                }
-
-                IEnumerable<Portal> singlePortals;
-                // Generate list of unconnected portals from ZDOMan
-                if (ZNet.instance.IsLocalInstance())
-                {
-                    singlePortals = PortalList.GetPortals().Where(x => !x.m_con);
-                }
-                // or from PortalsOnMap.portalsFromServer, if it is a real client
-                else
-                {
-                    singlePortals = PortalsOnMap.portalsFromServer.Where(x => !x.m_con);
-                }
-
-                // remove all buttons from earlier calls
-                foreach (var oldbt in teleporterButtons)
-                {
-                    if (oldbt != null)
-                    {
-                        Object.Destroy(oldbt);
-                    }
-                }
-
-                // empty the local list
-                teleporterButtons.Clear();
-
-                var idx = 0;
-
-                // calculate number of lines
-                var lines = singlePortals.Count() / 3;
-
                 // Get name of portal
                 var currentTag = TextInput.instance.m_textField.text;
                 if (string.IsNullOrEmpty(currentTag))
@@ -82,67 +121,7 @@ namespace Veilheim.Map
                     TextInput.instance.m_textField.text = currentTag;
                 }
 
-                if (TextInput.instance.m_panel.transform.Find("OK") != null)
-                {
-                    var originalButton = TextInput.instance.m_panel.transform.Find("OK").gameObject;
-
-                    foreach (var portal in singlePortals)
-                    {
-                        // Skip if it is the selected teleporter
-                        if (portal.m_tag == currentTag || currentTag == "<unnamed>" && string.IsNullOrEmpty(portal.m_tag))
-                        {
-                            continue;
-                        }
-
-                        // clone button
-                        var newButton = Object.Instantiate(originalButton, buttonList.GetComponent<RectTransform>());
-                        newButton.name = "TP" + idx;
-
-                        // set position
-                        newButton.transform.localPosition = new Vector3(-600.0f / 3f + idx % 3 * 600.0f / 3f, lines * 25f - idx / 3 * 50f, 0f);
-
-                        // enable
-                        newButton.SetActive(true);
-
-                        // set button text
-                        newButton.GetComponentInChildren<Text>().text = portal.m_tag;
-
-                        // add event payload
-                        newButton.GetComponentInChildren<Button>().onClick.AddListener(() =>
-                        {
-                            // Set input field text to new name
-                            TextInput.instance.m_textField.text = portal.m_tag;
-
-                            // simulate enter key
-                            TextInput.instance.OnEnter(portal.m_tag);
-
-                            // hide textinput
-                            TextInput.instance.Hide();
-
-                            // Reset visibility state
-                            visible = false;
-                        });
-
-                        // Add to local list
-                        teleporterButtons.Add(newButton);
-                        idx++;
-                    }
-                }
-
-                if (singlePortals.Count() > 0)
-                {
-                    // show buttonlist only if single teleports are available to choose from
-                    portalRect.gameObject.SetActive(true);
-
-                    // Set visibility flag
-                    visible = true;
-                }
-
-                // Set anchor
-                buttonList.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -(singlePortals.Count() / 3) * 25.0f);
-
-                // Set size
-                buttonList.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, singlePortals.Count() / 3 * 50.0f + 50f);
+                CreatePortalGUI(currentTag);
 
                 // release mouselock
                 GameCamera.instance.m_mouseCapture = false;
@@ -171,124 +150,22 @@ namespace Veilheim.Map
             return transform as RectTransform;
         }
 
-        /// <summary>
-        ///     Creates the base canvas for the portal buttons
-        /// </summary>
-        /// <returns></returns>
-        private static RectTransform GenerateGUI()
-        {
-            // Create root gameobject with background image
-            var portalRect = GetOrCreateBackground();
-
-            // Clone scrollbar from existing in containergrid
-            if (TeleporterListScrollbar == null)
-            {
-                // instantiate clone of scrollbar
-                TeleporterListScrollbar = Object.Instantiate(InventoryGui.instance.m_containerGrid.m_scrollbar.gameObject, portalRect);
-                TeleporterListScrollbar.name = nameof(TeleporterListScrollbar);
-                var scrollBarRect = TeleporterListScrollbar.GetComponent<RectTransform>();
-
-                // set size
-                scrollBarRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 200.0f);
-
-                // set position
-                scrollBarRect.localPosition = new Vector3(280f, 0, 0);
-
-                // set scale
-                scrollBarRect.localScale = new Vector3(1f, 0.9f, 1f);
-            }
-
-            // Set local position
-            portalRect.localPosition = new Vector3(0, -100, 0);
-
-            // Anchor to 0,0
-            portalRect.anchoredPosition = new Vector2(0, 0);
-
-            // Set size
-            portalRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 640);
-            portalRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 220);
-
-            // and scale
-            portalRect.localScale = new Vector3(1f, 1f, 1f);
-
-            // Add scrollrect component
-            portalRect.gameObject.AddComponent<ScrollRect>();
-
-            // Movement elastic
-            portalRect.gameObject.GetComponent<ScrollRect>().movementType = ScrollRect.MovementType.Elastic;
-
-            // Vertical
-            portalRect.gameObject.GetComponent<ScrollRect>().vertical = true;
-
-            // link to scrollbar gameobject
-            portalRect.gameObject.GetComponent<ScrollRect>().verticalScrollbar = TeleporterListScrollbar.GetComponent<Scrollbar>();
-
-            // Set sensitivity
-            portalRect.gameObject.GetComponent<ScrollRect>().scrollSensitivity = 10f;
-
-            // Generate viewport gameobject
-            viewport = new GameObject("ScrollViewportTeleporter", typeof(RectTransform), typeof(CanvasRenderer), typeof(RectMask2D));
-
-            // Link to root object
-            viewport.transform.SetParent(portalRect);
-
-            // link viewport to scrollrect
-            portalRect.gameObject.GetComponent<ScrollRect>().viewport = viewport.GetComponent<RectTransform>();
-
-            var viewportRect = viewport.GetComponent<RectTransform>();
-
-            // enable Mask2D
-            viewportRect.GetComponent<RectMask2D>().enabled = true;
-
-            // Set anchor
-            viewportRect.anchoredPosition = new Vector2(0, 0);
-
-            // Set size
-            viewportRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 600);
-            viewportRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 200);
-
-            // Set scale
-            viewportRect.localScale = new Vector3(0.9f, 0.9f, 0.9f);
-
-            // Set position
-            viewportRect.localPosition = new Vector3(0, 0, 0);
-
-            // Finally create the real content object
-            buttonList = new GameObject("BtnList", typeof(RectTransform), typeof(CanvasRenderer));
-
-            // link to viewport
-            buttonList.transform.SetParent(viewport.transform);
-
-            var rectButtonList = buttonList.GetComponent<RectTransform>();
-
-            // Set anchor
-            rectButtonList.anchoredPosition = new Vector2(0, 0);
-
-            // Set size
-            rectButtonList.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 600f);
-            rectButtonList.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 600f);
-
-            // Set position
-            rectButtonList.localPosition = new Vector3(0, 100f, 0);
-
-            // Set scale
-            rectButtonList.localScale = new Vector3(1f, 1f, 1f);
-
-            // Link content to scrollrect component
-            portalRect.GetComponent<ScrollRect>().content = rectButtonList;
-
-            return portalRect;
-        }
-
         public static bool IsVisible()
         {
-            return visible;
+            if (GUIRoot == null)
+            {
+                return false;
+            }
+
+            return GUIRoot.activeSelf;
         }
 
-        [PatchEvent(typeof(Menu), nameof(Menu.IsVisible), PatchEventType.Postfix)]
-        public static void PortalGUI_Mouselook_Patch(ref bool result)
+        public static void Hide()
         {
-            result |= IsVisible() && TextInput.instance.m_panel.activeSelf;
+            if (GUIRoot != null)
+            {
+                GUIRoot.SetActive(false);
+            }
         }
     }
 }

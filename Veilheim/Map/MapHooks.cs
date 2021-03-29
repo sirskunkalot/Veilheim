@@ -24,14 +24,7 @@ namespace Veilheim.Map
                 return;
             }
 
-            if (PortalSelectionGUI.portalRect != null)
-            {
-                if (PortalSelectionGUI.portalRect.gameObject.activeSelf)
-                {
-                    // hide teleporter button box
-                    PortalSelectionGUI.portalRect.gameObject.SetActive(false);
-                }
-            }
+            PortalSelectionGUI.Hide();
 
             // reset position of textinput panel
             instance.m_panel.transform.localPosition = new Vector3(0, 0f, 0);
@@ -69,6 +62,12 @@ namespace Veilheim.Map
             }
 
             PortalSelectionGUI.OpenPortalSelection();
+        }
+
+        [PatchEvent(typeof(Menu), nameof(Menu.IsVisible), PatchEventType.Postfix)]
+        public static void PortalGUI_Mouselook_Patch(ref bool result)
+        {
+            result |= PortalSelectionGUI.IsVisible() && TextInput.instance.m_panel.activeSelf;
         }
     }
 }
