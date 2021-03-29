@@ -4,6 +4,7 @@
 // File:    NoMinimap.cs
 // Project: Veilheim
 
+using Veilheim.Configurations;
 using Veilheim.PatchEvents;
 
 namespace Veilheim.Map
@@ -14,9 +15,12 @@ namespace Veilheim.Map
         [PatchEvent(typeof(Minimap), nameof(Minimap.SetMapMode), PatchEventType.Prefix)]
         public static void DontShowMinimap_Patch(Minimap instance, ref Minimap.MapMode mode)
         {
-            if (mode == Minimap.MapMode.Small)
+            if (Configuration.Current.Map.showNoMinimap)
             {
-                mode = Minimap.MapMode.None;
+                if (mode == Minimap.MapMode.Small)
+                {
+                    mode = Minimap.MapMode.None;
+                }
             }
         }
 
