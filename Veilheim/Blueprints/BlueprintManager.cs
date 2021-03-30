@@ -9,9 +9,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 using Veilheim.AssetManagers;
 using Veilheim.Configurations;
 using Veilheim.PatchEvents;
+using Object = UnityEngine.Object;
 
 namespace Veilheim.Blueprints
 {
@@ -26,6 +28,7 @@ namespace Veilheim.Blueprints
         internal readonly Dictionary<string, Blueprint> m_blueprints = new Dictionary<string, Blueprint>();
 
         private GameObject kbHints;
+        private GameObject kbHintsOrig;
 
         private void Awake()
         {
@@ -361,16 +364,35 @@ namespace Veilheim.Blueprints
                 return;
             }
 
-            if (localPlayer.InPlaceMode() && localPlayer.GetCurrentWeapon().m_shared.m_name == "BlueprintRune")
+            if (localPlayer.InPlaceMode())
             {
+                if (Instance.kbHintsOrig == null)
+                {
+                    Instance.kbHintsOrig = __instance.m_buildHints;
+                }
                 if (Instance.kbHints == null)
                 {
-                    Instance.kbHints = new GameObject("BlueprintHints");
-                    //Instance.kbHints.
+                    Instance.kbHints = Object.Instantiate(Instance.kbHintsOrig);
+                    Instance.kbHints.transform.SetParent(Instance.kbHintsOrig.transform.parent.parent, false);
+                    Instance.kbHints.name = "BlueprintHints";
+                    var obj = Instance.kbHints.transform.Find("Keyboard/Place/Text").gameObject;
+                    var text = obj.GetComponent<Text>();
+                    text.text = "Capture";
+                    Instance.kbHints.transform.Find("Keyboard/Rotate/Text").gameObject.SetActive(false);
                 }
 
-
-                __instance.m_buildHints = Instance.kbHints;
+                if (localPlayer.m_buildPieces.name.Equals("_BlueprintPieceTable"))
+                {
+                    Instance.kbHints.SetActive(true);
+                    Instance.kbHintsOrig.SetActive(false);
+                    __instance.m_buildHints = Instance.kbHints;
+                }
+                else
+                {
+                    Instance.kbHints.SetActive(false);
+                    Instance.kbHintsOrig.SetActive(true);
+                    __instance.m_buildHints = Instance.kbHintsOrig;
+                }
             }
         }
     }
