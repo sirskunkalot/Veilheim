@@ -22,7 +22,7 @@ namespace Veilheim.AssetManagers
 
         internal static GameObject GUIContainer;
 
-        internal Dictionary<string, GameObject> GUIPrefabs = new Dictionary<string, GameObject>();
+        internal Dictionary<string, GameObject> Prefabs = new Dictionary<string, GameObject>();
 
         internal Dictionary<string, Sprite> Sprites = new Dictionary<string, Sprite>();
 
@@ -60,9 +60,9 @@ namespace Veilheim.AssetManagers
             Logger.LogInfo("Initialized GUIManager");
         }
 
-        internal void AddGUIPrefab(string name, GameObject prefab)
+        internal void AddPrefab(string name, GameObject prefab)
         {
-            if (GUIPrefabs.ContainsKey(name))
+            if (Prefabs.ContainsKey(name))
             {
                 Logger.LogWarning($"GUIPrefab {name} already exists");
                 return;
@@ -71,7 +71,7 @@ namespace Veilheim.AssetManagers
             prefab.name = name;
             prefab.transform.SetParent(GUIContainer.transform, false);
             prefab.SetActive(false);
-            GUIPrefabs.Add(name, prefab);
+            Prefabs.Add(name, prefab);
         }
 
         /// <summary>
@@ -79,11 +79,11 @@ namespace Veilheim.AssetManagers
         /// </summary>
         /// <param name="name">Name of the prefab to search for</param>
         /// <returns></returns>
-        internal GameObject GetGUIPrefab(string name)
+        internal GameObject GetPrefab(string name)
         {
-            if (GUIPrefabs.ContainsKey(name))
+            if (Prefabs.ContainsKey(name))
             {
-                return GUIPrefabs[name];
+                return Prefabs[name];
             }
 
             return null;
@@ -147,7 +147,7 @@ namespace Veilheim.AssetManagers
 
                     // Base prefab for a valheim style button
                     var button = Instantiate(ingameGui.transform.Find("TextInput/panel/OK").gameObject);
-                    AddGUIPrefab("BaseButton", button);
+                    AddPrefab("BaseButton", button);
                 }
                 catch (Exception ex)
                 {
@@ -179,7 +179,7 @@ namespace Veilheim.AssetManagers
 
         internal GameObject CreateButton(string text, Transform parent, Vector2 anchorMin, Vector2 anchorMax, Vector2 position)
         {
-            var baseButton = GetGUIPrefab("BaseButton");
+            var baseButton = GetPrefab("BaseButton");
             GameObject newButton = Instantiate(baseButton, parent);
             newButton.GetComponentInChildren<Text>().text = text;
             ((RectTransform)newButton.transform).anchorMin = anchorMin;

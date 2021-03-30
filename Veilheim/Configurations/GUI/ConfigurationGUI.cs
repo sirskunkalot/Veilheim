@@ -96,7 +96,7 @@ namespace Veilheim.Configurations.GUI
         /// </summary>
         public static void CreateConfigurationGUIRoot()
         {
-            GUIRoot = Object.Instantiate(GUIManager.Instance.GetGUIPrefab("ConfigurationGUIRoot"));
+            GUIRoot = Object.Instantiate(GUIManager.Instance.GetPrefab("ConfigurationGUIRoot"));
             GUIRoot.transform.SetParent(GUIManager.PixelFix.transform, false);
             GUIRoot.GetComponent<Image>().sprite = GUIManager.Instance.CreateSpriteFromAtlas(new Rect(0, 2048 - 1018, 443, 1018 - 686), new Vector2(0f, 0f));
 
@@ -244,7 +244,7 @@ namespace Veilheim.Configurations.GUI
         /// <returns></returns>
         private static GameObject CreateSection(PropertyInfo property, bool isEnabled, Transform parentTransform)
         {
-            var newSection = Object.Instantiate(GUIManager.Instance.GetGUIPrefab("ConfigurationSection"), parentTransform);
+            var newSection = Object.Instantiate(GUIManager.Instance.GetPrefab("ConfigurationSection"), parentTransform);
             GUIManager.Instance.ApplyToogleStyle(newSection.transform.Find("Toggle").GetComponent<Toggle>());
             sections.Add(newSection);
             var text = newSection.GetComponent<Text>();
@@ -322,7 +322,7 @@ namespace Veilheim.Configurations.GUI
         /// <returns>new entry</returns>
         private static GameObject AddEntry(PropertyInfo entryProperty, Transform parentTransform, object defaultValue)
         {
-            var newEntry = Object.Instantiate(GUIManager.Instance.GetGUIPrefab("ConfigurationEntry"), parentTransform);
+            var newEntry = Object.Instantiate(GUIManager.Instance.GetPrefab("ConfigurationEntry"), parentTransform);
             newEntry.name = "configentry." + entryProperty.Name;
             GUIManager.Instance.ApplyToogleStyle(newEntry.transform.Find("InputToggle").GetComponent<Toggle>());
 

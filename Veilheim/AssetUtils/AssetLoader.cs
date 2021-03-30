@@ -69,7 +69,7 @@ namespace Veilheim.AssetUtils
         public static void LoadGUIPrefab(AssetBundle assetBundle, string assetName)
         {
             var prefab = assetBundle.LoadAsset<GameObject>(assetName);
-            GUIManager.Instance.AddGUIPrefab(assetName, prefab);
+            GUIManager.Instance.AddPrefab(assetName, prefab);
         }
 
         /// <summary>
