@@ -356,6 +356,11 @@ namespace Veilheim.Blueprints
         public static void ShowBlueprintHints(KeyHints __instance)
         {
             Player localPlayer = Player.m_localPlayer;
+            if (localPlayer == null)
+            {
+                return;
+            }
+
             if (localPlayer.InPlaceMode() && localPlayer.GetCurrentWeapon().m_shared.m_name == "BlueprintRune")
             {
                 if (Instance.kbHints == null)
