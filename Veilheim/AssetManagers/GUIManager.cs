@@ -24,6 +24,8 @@ namespace Veilheim.AssetManagers
 
         internal Dictionary<string, GameObject> GUIPrefabs = new Dictionary<string, GameObject>();
 
+        internal Dictionary<string, Sprite> Sprites = new Dictionary<string, Sprite>();
+
         internal static GameObject PixelFix { get; private set; }
 
         internal Texture2D TextureAtlas { get; private set; }
@@ -33,12 +35,6 @@ namespace Veilheim.AssetManagers
         internal Font AveriaSerif { get; private set; }
 
         internal Font AveriaSerifBold { get; private set; }
-
-        internal Sprite Checkbox { get; private set; }
-
-        internal Sprite CheckboxMarker { get; private set; }
-
-        internal Sprite WoodpanelTrophies { get; private set; }
 
         private bool needsLoad = true;
 
@@ -110,11 +106,16 @@ namespace Veilheim.AssetManagers
                     }
 
                     // Sprites
+                    string[] spriteNames = new string[]
+                    {
+                        "checkbox", "checkbox_marker", "woodpanel_trophys"
+                    };
                     var sprites = Resources.FindObjectsOfTypeAll<Sprite>();
-                    Checkbox = sprites.FirstOrDefault(x => x.name == "checkbox");
-                    CheckboxMarker = sprites.FirstOrDefault(x => x.name == "checkbox_marker");
-                    WoodpanelTrophies = sprites.FirstOrDefault(x => x.name == "woodpanel_trophys");
-                    if (Checkbox == null || CheckboxMarker == null)
+                    foreach (var spriteName in spriteNames)
+                    {
+                        Sprites.Add(spriteName, sprites.FirstOrDefault(x => x.name == spriteName));
+                    }
+                    if (Sprites.Count(x => x.Value == null) > 0)
                     {
                         throw new Exception("Sprites not found");
                     }
@@ -160,8 +161,6 @@ namespace Veilheim.AssetManagers
 
             if (PixelFix == null && SceneManager.GetActiveScene().name == "main" && SceneManager.GetActiveScene().isLoaded)
             {
-                /*var gamemain = GameObject.Find("_GameMain");
-                PixelFix = gamemain.transform.Find("GUI/PixelFix").gameObject;*/
                 PixelFix = GameObject.Find("_GameMain/GUI/PixelFix");
 
                 if (PixelFix == null)
@@ -199,6 +198,16 @@ namespace Veilheim.AssetManagers
             return Sprite.Create(TextureAtlas2, rect, pivot, pixelsPerUnit, extrude, meshType, border);
         }
 
+        internal Sprite GetSprite(string spriteName)
+        {
+            if (Sprites.ContainsKey(spriteName))
+            {
+                return Sprites[spriteName];
+            }
+
+            return null;
+        }
+
         public void ApplyInputFieldStyle(InputField field)
         {
             GameObject go = field.gameObject;
@@ -225,11 +234,11 @@ namespace Veilheim.AssetManagers
             toggle.toggleTransition = Toggle.ToggleTransition.Fade;
             toggle.colors = tinter;
 
-            toggle.gameObject.transform.Find("Background").GetComponent<Image>().sprite = Checkbox;
+            toggle.gameObject.transform.Find("Background").GetComponent<Image>().sprite = GetSprite("checkbox");
 
             toggle.gameObject.transform.Find("Background/Checkmark").GetComponent<Image>().color = new Color(1f, 0.678f, 0.103f, 1f);
 
-            toggle.gameObject.transform.Find("Background/Checkmark").GetComponent<Image>().sprite = CheckboxMarker;
+            toggle.gameObject.transform.Find("Background/Checkmark").GetComponent<Image>().sprite = GetSprite("checkbox_marker");
             toggle.gameObject.transform.Find("Background/Checkmark").GetComponent<Image>().maskable = true;
         }
     }

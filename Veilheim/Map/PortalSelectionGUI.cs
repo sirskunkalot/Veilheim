@@ -39,7 +39,7 @@ namespace Veilheim.Map
             {
                 GUIRoot = Object.Instantiate(GUIManager.Instance.GetGUIPrefab("PortalButtonBox"));
                 GUIRoot.transform.SetParent(GUIManager.PixelFix.transform, false);
-                GUIRoot.GetComponentInChildren<Image>().sprite = GUIManager.Instance.WoodpanelTrophies;
+                GUIRoot.GetComponentInChildren<Image>().sprite = GUIManager.Instance.GetSprite("woodpanel_trophys");
 
             }
 

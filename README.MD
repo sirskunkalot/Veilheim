@@ -31,6 +31,25 @@ How to setup the development enviroment for this project.
 ```
 8. Open the Solution file `<Veilheim>\Veilheim.sln`. It should prompt you a message at the top that some NuGet-Packages are missing. Click "Restore" and restart Visual Studio when finished.
 
+# Build automations
+
+Included in this repo are a PowerShell script `publish.ps1` and a folder `resources`. The script is referenced in the project file as a build event. Depending on the chosen configuration in Visual Studio the script executes the following actions.
+
+## Building Debug
+
+* The contents of `<ValheimModStub>\resources\Local` are copied to `<ValheimDir>`. You can put there whatever you want to copy to the game directoy alongside the plugin dll.
+* The BepInEx core libraries are copied from `<ValheimModStub>\packages` and `<ValheimModStub>\libraries\BepInEx` to `<ValheimDir>\BepInEx\core`.
+* The compiled dll file for this project is copied to `<ValheimDir>\BepInEx\plugins`.
+* A .mdb file is generated for the compiled project dll and copied to `<ValheimDir>\BepInEx\plugins`.
+* `<ValheimModStub>\libraries\Debug\mono-2.0-bdwgc.dll` is copied to `<ValheimDir>\MonoBleedingEdge\EmbedRuntime` replacing the original file (a backup is created before).
+
+## Building Release
+
+* The contents of `<ValheimModStub>\resources\Windows` and `<ValheimModStub>\resources\Unix` are copied to respective folders in `<ValheimModStub>\release`.
+* BepInEx core is created in both folders
+* The project dll is copied.
+* Both folders are compressed into a zip file and then deleted.
+
 # Developing Assets with Unity
 
 New Assets can be created with Unity and imported into Valheim using the mod. A Unity project is included in this repository under `<Veilheim>\VeilheimUnity`.
@@ -90,7 +109,7 @@ New assets should be bundled in groups according to the distinct function of tha
 
 The same goes for asset bundles. Create a distinct asset bundle for every distinct functionality created. To do this, open the `AssetBundle Browser` and create a new asset bundle for the distinct functionality. Add all needed assets to it and close the browser again. Unity will save the definition of all asset bundles internally.
 
-All asset bundles are built with the project and added to the mod folder `<Veilheim>\Veilheim\Assets` automatically. New bundles must be loaded to the mod manually by writing code (in the AssetLoader class for example).
+All asset bundles are built with the project and added to the mod folder `<Veilheim>\Veilheim\AssetBundles` automatically. New bundles must be loaded to the mod manually by writing code (in the AssetLoader class for example).
 
 ## Building
 
