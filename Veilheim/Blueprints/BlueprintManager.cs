@@ -25,6 +25,8 @@ namespace Veilheim.Blueprints
         
         internal float selectionRadius = 10.0f;
 
+        internal float cameraOffset = 5.0f;
+
         internal readonly Dictionary<string, Blueprint> m_blueprints = new Dictionary<string, Blueprint>();
 
         private GameObject kbHintsMake;
@@ -72,33 +74,6 @@ namespace Veilheim.Blueprints
 
             Logger.LogInfo("BlueprintManager Initialized");
         }
-
-        /*[PatchEvent(typeof(ZNet), nameof(ZNet.Awake), PatchEventType.Postfix)]
-        public static void LoadKnownBlueprints(ZNet instance)
-        {
-            // Client only
-            if (!instance.IsServerInstance())
-            {
-                Logger.LogMessage("Loading known blueprints");
-
-                // Try to load all saved blueprints
-                foreach (var name in Directory.EnumerateFiles(Blueprint.GetBlueprintPath(), "*.blueprint").Select(Path.GetFileNameWithoutExtension))
-                {
-                    if (!Blueprint.m_blueprints.ContainsKey(name))
-                    {
-                        var bp = new Blueprint(name);
-                        if (bp.Load())
-                        {
-                            Blueprint.m_blueprints.Add(name, bp);
-                        }
-                        else
-                        {
-                            Logger.LogWarning($"Could not load blueprint {name}");
-                        }
-                    }
-                }
-            }
-        }*/
 
         [PatchEvent(typeof(ZNetScene), nameof(ZNetScene.Awake), PatchEventType.Postfix)]
         public static void RegisterKnownBlueprints(ZNetScene instance)
@@ -274,7 +249,23 @@ namespace Veilheim.Blueprints
                     {
                         if (Player.m_localPlayer.m_placementGhost.name.StartsWith("piece_blueprint"))
                         {
-                            instance.transform.position += new Vector3(0, 5.0f, 0);
+                            if (Input.GetKey(KeyCode.LeftShift))
+                            {
+                                // TODO: base min/max off of selected piece dimensions
+                                float minOffset = 2f;
+                                float maxOffset = 20f;
+                                if (Input.GetAxis("Mouse ScrollWheel") < 0f)
+                                {
+                                    Instance.cameraOffset = Mathf.Clamp(Instance.cameraOffset += 1f, minOffset, maxOffset);
+                                }
+
+                                if (Input.GetAxis("Mouse ScrollWheel") > 0f)
+                                {
+                                    Instance.cameraOffset = Mathf.Clamp(Instance.cameraOffset -= 1f, minOffset, maxOffset);
+                                }
+                            }
+                            
+                            instance.transform.position += new Vector3(0, Instance.cameraOffset, 0);
                         }
                     }
                 }
@@ -295,7 +286,7 @@ namespace Veilheim.Blueprints
                 {
                     if (piece.name == "make_blueprint" && !piece.IsCreator())
                     {
-                        instance.m_maxPlaceDistance = 30;
+                        instance.m_maxPlaceDistance = 50f;
 
                         if (Input.GetAxis("Mouse ScrollWheel") < 0f)
                         {
@@ -343,10 +334,27 @@ namespace Veilheim.Blueprints
                             DestroyImmediate(instance.m_placementMarkerInstance);
                         }
 
+                        // Restore placementDistance
                         if (!piece.name.StartsWith("piece_blueprint"))
                         {
                             // default value, if we introduce config stuff for this, then change it here!
                             instance.m_maxPlaceDistance = 8;
+                        }
+
+                        // Reset rotation when changing camera
+                        if (piece.name.StartsWith("piece_blueprint") && Input.GetAxis("Mouse ScrollWheel") != 0f && Input.GetKey(KeyCode.LeftShift))
+                        {
+
+                            if (Input.GetAxis("Mouse ScrollWheel") < 0f)
+                            {
+                                instance.m_placeRotation++;
+                            }
+
+                            if (Input.GetAxis("Mouse ScrollWheel") > 0f)
+                            {
+                               instance.m_placeRotation--;
+                            }
+
                         }
                     }
                 }
@@ -381,7 +389,7 @@ namespace Veilheim.Blueprints
                 return;
             }
 
-            if (localPlayer.InPlaceMode())
+            if (localPlayer.InPlaceMode() && localPlayer.m_buildPieces.GetSelectedPiece() != null)
             {
                 if (Instance.kbHintsOrig == null)
                 {
@@ -408,8 +416,8 @@ namespace Veilheim.Blueprints
                     InitHint(Instance.kbHintsPlace, "Keyboard/Place", true, "hud_bpplace");
                     InitHint(Instance.kbHintsPlace, "Keyboard/Remove", false);
                     InitHint(Instance.kbHintsPlace, "Keyboard/BuildMenu", false);
-                    InitHint(Instance.kbHintsPlace, "Keyboard/AltPlace", true, "hud_flatten");
-                    InitHint(Instance.kbHintsPlace, "Keyboard/rotate", true, "hud_rotate");
+                    InitHint(Instance.kbHintsPlace, "Keyboard/AltPlace", true, "hud_bpflatten");
+                    InitHint(Instance.kbHintsPlace, "Keyboard/rotate", true, "hud_bprotate");
                 }
 
                 if (localPlayer.m_buildPieces.name.Equals("_BlueprintPieceTable"))

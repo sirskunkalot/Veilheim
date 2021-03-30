@@ -8,5 +8,5 @@ piece_blueprint_desc,Creates the structure attached to this blueprint.,Erschafft
 hud_bpcapture,Capture,Kopieren
 hud_bpradius,Change capture radius,Erfassungsradius ändern
 hud_bpplace,Place,Erstellen
-hud_flatten,Flatten ground,Begradigen
-hud_rotate,Rotate,Drehen
+hud_bpflatten,Flatten ground,Begradigen
+hud_bprotate,Rotate (Hold Shift for camera distance),Drehen (Shift halten ändert Kameraabstand)
