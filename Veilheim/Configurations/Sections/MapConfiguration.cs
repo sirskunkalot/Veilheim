@@ -14,5 +14,8 @@ namespace Veilheim.Configurations.Sections
 
         [Configuration("Show a list of available portal tags when renaming a portal.", ActivationTime.Immediately)]
         public bool showPortalSelection { get; set; } = false;
+
+        [Configuration("Play without minimap", ActivationTime.AfterRelog)]
+        public bool showNoMinimap { get; set; } = false;
     }
 }
