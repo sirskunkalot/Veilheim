@@ -27,7 +27,8 @@ namespace Veilheim.Blueprints
 
         internal readonly Dictionary<string, Blueprint> m_blueprints = new Dictionary<string, Blueprint>();
 
-        private GameObject kbHints;
+        private GameObject kbHintsMake;
+        private GameObject kbHintsPlace;
         private GameObject kbHintsOrig;
 
         private void Awake()
@@ -180,7 +181,7 @@ namespace Veilheim.Blueprints
             {
                 if (Player.m_localPlayer.m_placementStatus == Player.PlacementStatus.Valid && piece_bp.name.StartsWith("piece_blueprint"))
                 {
-                    if (Input.GetKey(KeyCode.LeftControl))
+                    if (ZInput.GetButton("AltPlace"))
                     {
                         Vector2 extent = Instance.m_blueprints.First(x => $"piece_blueprint ({x.Key})" == piece_bp.name).Value.GetExtent();
                         FlattenTerrain.FlattenForBlueprint(instance.m_placementGhost.transform, extent.x, extent.y,
@@ -352,6 +353,22 @@ namespace Veilheim.Blueprints
             }
         }
 
+        private static void InitHint(GameObject hint, string component, bool active, string text = null)
+        {
+            GameObject obj;
+            Text txt;
+            obj = hint.transform.Find(component).gameObject;
+            obj.SetActive(active);
+
+            if (text != null)
+            {
+                string translated;
+                LocalizationManager.TryTranslate(text, out translated);
+                txt = obj.transform.Find("Text").GetComponent<Text>();
+                txt.text = translated;
+            }
+        }
+
         /// <summary>
         ///     Changes the hint GUI for the BlueprintRune
         /// </summary>
@@ -370,26 +387,53 @@ namespace Veilheim.Blueprints
                 {
                     Instance.kbHintsOrig = __instance.m_buildHints;
                 }
-                if (Instance.kbHints == null)
+                if (Instance.kbHintsMake == null)
                 {
-                    Instance.kbHints = Object.Instantiate(Instance.kbHintsOrig);
-                    Instance.kbHints.transform.SetParent(Instance.kbHintsOrig.transform.parent.parent, false);
-                    Instance.kbHints.name = "BlueprintHints";
-                    var obj = Instance.kbHints.transform.Find("Keyboard/Place/Text").gameObject;
-                    var text = obj.GetComponent<Text>();
-                    text.text = "Capture";
-                    Instance.kbHints.transform.Find("Keyboard/Rotate/Text").gameObject.SetActive(false);
+                    Instance.kbHintsMake = Object.Instantiate(Instance.kbHintsOrig);
+                    Instance.kbHintsMake.transform.SetParent(Instance.kbHintsOrig.transform.parent.parent, false);
+                    Instance.kbHintsMake.name = "BlueprintHintsMake";
+
+                    InitHint(Instance.kbHintsMake, "Keyboard/Place", true, "hud_bpcapture");
+                    InitHint(Instance.kbHintsMake, "Keyboard/Remove", false);
+                    InitHint(Instance.kbHintsMake, "Keyboard/BuildMenu", false);
+                    InitHint(Instance.kbHintsMake, "Keyboard/AltPlace", false);
+                    InitHint(Instance.kbHintsMake, "Keyboard/rotate", true, "hud_bpradius");
+                }
+                if (Instance.kbHintsPlace == null)
+                {
+                    Instance.kbHintsPlace = Object.Instantiate(Instance.kbHintsOrig);
+                    Instance.kbHintsPlace.transform.SetParent(Instance.kbHintsOrig.transform.parent.parent, false);
+                    Instance.kbHintsPlace.name = "BlueprintHintsPlace";
+
+                    InitHint(Instance.kbHintsPlace, "Keyboard/Place", true, "hud_bpplace");
+                    InitHint(Instance.kbHintsPlace, "Keyboard/Remove", false);
+                    InitHint(Instance.kbHintsPlace, "Keyboard/BuildMenu", false);
+                    InitHint(Instance.kbHintsPlace, "Keyboard/AltPlace", true, "hud_flatten");
+                    InitHint(Instance.kbHintsPlace, "Keyboard/rotate", true, "hud_rotate");
                 }
 
                 if (localPlayer.m_buildPieces.name.Equals("_BlueprintPieceTable"))
                 {
-                    Instance.kbHints.SetActive(true);
-                    Instance.kbHintsOrig.SetActive(false);
-                    __instance.m_buildHints = Instance.kbHints;
+                    if (localPlayer.m_buildPieces.GetSelectedPiece().name == "make_blueprint")
+                    {
+                        Instance.kbHintsMake.SetActive(true);
+                        Instance.kbHintsPlace.SetActive(false);
+                        Instance.kbHintsOrig.SetActive(false);
+                        __instance.m_buildHints = Instance.kbHintsMake;
+                    }
+                    else
+                    {
+                        Instance.kbHintsMake.SetActive(false);
+                        Instance.kbHintsPlace.SetActive(true);
+                        Instance.kbHintsOrig.SetActive(false);
+                        __instance.m_buildHints = Instance.kbHintsPlace;
+                    }
+                    
                 }
                 else
                 {
-                    Instance.kbHints.SetActive(false);
+                    Instance.kbHintsMake.SetActive(false);
+                    Instance.kbHintsPlace.SetActive(false);
                     Instance.kbHintsOrig.SetActive(true);
                     __instance.m_buildHints = Instance.kbHintsOrig;
                 }
