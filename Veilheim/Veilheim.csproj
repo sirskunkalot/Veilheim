@@ -396,6 +396,7 @@
     <Compile Include="PatchEvents\PatchEventType.cs" />
     <Compile Include="PatchEvents\PatchStubs\Console_Patches.cs" />
     <Compile Include="PatchEvents\PatchStubs\GameCamera_Patches.cs" />
+    <Compile Include="PatchEvents\PatchStubs\KeyHints_Patches.cs" />
     <Compile Include="PatchEvents\PatchStubs\Game_Patches.cs" />
     <Compile Include="PatchEvents\PatchStubs\Localization_Patches.cs" />
     <Compile Include="PatchEvents\PatchStubs\Menu_Patches.cs" />

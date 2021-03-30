@@ -25,6 +25,8 @@ namespace Veilheim.Blueprints
 
         internal readonly Dictionary<string, Blueprint> m_blueprints = new Dictionary<string, Blueprint>();
 
+        private GameObject kbHints;
+
         private void Awake()
         {
             if (Instance != null)
@@ -344,6 +346,26 @@ namespace Veilheim.Blueprints
                         }
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        ///     Changes the hint GUI for the BlueprintRune
+        /// </summary>
+        [PatchEvent(typeof(KeyHints), nameof(KeyHints.UpdateHints), PatchEventType.Prefix)]
+        public static void ShowBlueprintHints(KeyHints __instance)
+        {
+            Player localPlayer = Player.m_localPlayer;
+            if (localPlayer.InPlaceMode() && localPlayer.GetCurrentWeapon().m_shared.m_name == "BlueprintRune")
+            {
+                if (Instance.kbHints == null)
+                {
+                    Instance.kbHints = new GameObject("BlueprintHints");
+                    //Instance.kbHints.
+                }
+
+
+                __instance.m_buildHints = Instance.kbHints;
             }
         }
     }
