@@ -35,8 +35,8 @@ There are small changes which can be made through the config system:
 
 * Configure production input amounts for the Kiln, Smelter, Furnace, Windmill and Spinning Wheel
 * Force users to be "visible to public" on the server an spawn or disable the setting completely so users are always visible.
-* Disable the use of the minimap for users on the server.
+* Disable the minimap.
 
-# Licence
+# License
 
 [WTFPL](http://www.wtfpl.net/)
