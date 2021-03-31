@@ -9,12 +9,10 @@ using System.Collections.Generic;
 using System.Reflection;
 using BepInEx;
 using HarmonyLib;
-using Steamworks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Veilheim.AssetManagers;
 using Veilheim.Blueprints;
-using Veilheim.Configurations;
 using Veilheim.Configurations.GUI;
 using Veilheim.PatchEvents;
 using Veilheim.UnityWrappers;
@@ -26,7 +24,7 @@ namespace Veilheim
     {
         public const string PluginGUID = "de.sirskunkalot.valheim.veilheim";
         public const string PluginName = "Veilheim";
-        public const string PluginVersion = "0.1.0";
+        public const string PluginVersion = "0.2.0";
 
         // Static instance needed for Coroutines
         public static VeilheimPlugin Instance = null;
