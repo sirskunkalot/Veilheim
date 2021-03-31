@@ -1,6 +1,6 @@
 # Veilheim
 
-Veilheim is a small mod for the game Valheim built by [sirskunkalot](https://github.com/sirskunkalot) and [Algorithman](https://github.com/Algorithman) to use on their own servers. Now also open to the public. Provided *as is*.
+Veilheim is a small mod for the game Valheim built by [Algorithman](https://github.com/Algorithman) and [sirskunkalot](https://github.com/sirskunkalot) to use on their own servers. Now also open to the public. Provided *as is*.
 
 ## Blueprints
 
