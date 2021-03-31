@@ -25,7 +25,8 @@ namespace Veilheim.Blueprints
         
         internal float selectionRadius = 10.0f;
 
-        internal float cameraOffset = 5.0f;
+        internal float cameraOffsetMake = 0.0f;
+        internal float cameraOffsetPlace = 5.0f;
 
         internal readonly Dictionary<string, Blueprint> m_blueprints = new Dictionary<string, Blueprint>();
 
@@ -46,13 +47,14 @@ namespace Veilheim.Blueprints
 
         internal override void Init()
         {
+            //TODO: Client only - how to do? or just ignore - there are no bps and maybe someday there will be a server-wide directory of blueprints for sharing :)
+
             //TODO: save per profile or world or global?
             if (!Directory.Exists(BlueprintPath))
             {
                 Directory.CreateDirectory(BlueprintPath);
             }
 
-            // Client only - how to do? or just ignore - there are no bps and maybe someday there will be a server-wide directory of blueprints for sharing :)
             Logger.LogMessage("Loading known blueprints");
 
             // Try to load all saved blueprints
@@ -133,6 +135,9 @@ namespace Veilheim.Blueprints
                     {
                         Logger.LogInfo("Not hovering any piece");
                     }
+
+                    // Reset Camera offset
+                    Instance.cameraOffsetMake = 0f;
 
                     // Don't place the piece and clutter the world with it
                     cancel = true;
@@ -229,6 +234,10 @@ namespace Veilheim.Blueprints
                         Game.instance.GetPlayerProfile().m_playerStats.m_builds++;
                     }
 
+                    // Reset Camera offset
+                    Instance.cameraOffsetPlace = 5f;
+
+                    // Dont set the blueprint piece and clutter the world with it
                     cancel = true;
                 }
             }
@@ -247,7 +256,27 @@ namespace Veilheim.Blueprints
                 {
                     if (Player.m_localPlayer.m_placementGhost)
                     {
-                        if (Player.m_localPlayer.m_placementGhost.name.StartsWith("piece_blueprint"))
+                        var pieceName = Player.m_localPlayer.m_placementGhost.name;
+                        if (pieceName.StartsWith("make_blueprint"))
+                        {
+                            if (Input.GetKey(KeyCode.LeftShift))
+                            {
+                                float minOffset = 0f;
+                                float maxOffset = 20f;
+                                if (Input.GetAxis("Mouse ScrollWheel") < 0f)
+                                {
+                                    Instance.cameraOffsetMake = Mathf.Clamp(Instance.cameraOffsetMake += 1f, minOffset, maxOffset);
+                                }
+
+                                if (Input.GetAxis("Mouse ScrollWheel") > 0f)
+                                {
+                                    Instance.cameraOffsetMake = Mathf.Clamp(Instance.cameraOffsetMake -= 1f, minOffset, maxOffset);
+                                }
+                            }
+                            
+                            instance.transform.position += new Vector3(0, Instance.cameraOffsetMake, 0);
+                        }
+                        if (pieceName.StartsWith("piece_blueprint"))
                         {
                             if (Input.GetKey(KeyCode.LeftShift))
                             {
@@ -256,16 +285,16 @@ namespace Veilheim.Blueprints
                                 float maxOffset = 20f;
                                 if (Input.GetAxis("Mouse ScrollWheel") < 0f)
                                 {
-                                    Instance.cameraOffset = Mathf.Clamp(Instance.cameraOffset += 1f, minOffset, maxOffset);
+                                    Instance.cameraOffsetPlace = Mathf.Clamp(Instance.cameraOffsetPlace += 1f, minOffset, maxOffset);
                                 }
 
                                 if (Input.GetAxis("Mouse ScrollWheel") > 0f)
                                 {
-                                    Instance.cameraOffset = Mathf.Clamp(Instance.cameraOffset -= 1f, minOffset, maxOffset);
+                                    Instance.cameraOffsetPlace = Mathf.Clamp(Instance.cameraOffsetPlace -= 1f, minOffset, maxOffset);
                                 }
                             }
-                            
-                            instance.transform.position += new Vector3(0, Instance.cameraOffset, 0);
+
+                            instance.transform.position += new Vector3(0, Instance.cameraOffsetPlace, 0);
                         }
                     }
                 }
@@ -286,25 +315,28 @@ namespace Veilheim.Blueprints
                 {
                     if (piece.name == "make_blueprint" && !piece.IsCreator())
                     {
-                        instance.m_maxPlaceDistance = 50f;
-
-                        if (Input.GetAxis("Mouse ScrollWheel") < 0f)
-                        {
-                            Instance.selectionRadius -= 2f;
-                            if (Instance.selectionRadius < 2f)
-                            {
-                                Instance.selectionRadius = 2f;
-                            }
-                        }
-
-                        if (Input.GetAxis("Mouse ScrollWheel") > 0f)
-                        {
-                            Instance.selectionRadius += 2f;
-                        }
-
                         if (!instance.m_placementMarkerInstance)
                         {
                             return;
+                        }
+
+                        instance.m_maxPlaceDistance = 50f;
+
+                        if (!Input.GetKey(KeyCode.LeftShift))
+                        {
+                            if (Input.GetAxis("Mouse ScrollWheel") < 0f)
+                            {
+                                Instance.selectionRadius -= 2f;
+                                if (Instance.selectionRadius < 2f)
+                                {
+                                    Instance.selectionRadius = 2f;
+                                }
+                            }
+
+                            if (Input.GetAxis("Mouse ScrollWheel") > 0f)
+                            {
+                                Instance.selectionRadius += 2f;
+                            }
                         }
 
                         var circleProjector = instance.m_placementMarkerInstance.GetComponent<CircleProjector>();
