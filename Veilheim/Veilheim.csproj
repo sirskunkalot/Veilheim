@@ -442,7 +442,6 @@
   <ItemGroup>
     <EmbeddedResource Include="AssetBundles\configurationgui" />
     <EmbeddedResource Include="AssetBundles\portalselectiongui" />
-    <None Include="AssetBundles\trashfire" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
