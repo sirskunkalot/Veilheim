@@ -17,7 +17,7 @@ namespace Veilheim.Map
         {
             if (Configuration.Current.Map.IsEnabled && Configuration.Current.Map.showNoMinimap)
             {
-                if ((Chat.instance == null || !Chat.instance.HasFocus()) && !global::Console.IsVisible() && !TextInput.IsVisible() && !Menu.IsVisible() && !InventoryGui.IsVisible() && !Minimap.InTextInput())
+                if ((Chat.instance == null || !Chat.instance.HasFocus()) && !global::Console.IsVisible() && !InventoryGui.IsVisible() && !Minimap.InTextInput())
                 {
                     if (ZInput.GetButtonDown("Map") || ZInput.GetButtonDown("JoyMap") || (instance.m_mode == Minimap.MapMode.Large &&
                                                                                           (Input.GetKeyDown(KeyCode.Escape) || ZInput.GetButtonDown("JoyButtonB"))))
