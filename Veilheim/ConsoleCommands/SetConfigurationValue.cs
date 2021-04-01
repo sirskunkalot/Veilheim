@@ -256,14 +256,14 @@ namespace Veilheim.ConsoleCommands
         {
             var zPgk = new ZPackage();
             zPgk.Write(inputCopy);
-            ZRoutedRpc.instance.InvokeRoutedRPC(nameof(RPC_SetConfigurationValue), zPgk);
+            ZRoutedRpc.instance.InvokeRoutedRPC(nameof(RPC_Veilheim_SetConfigurationValue), zPgk);
         }
 
-        public static void RPC_SetConfigurationValue(long sender, ZPackage inputPkg)
+        public static void RPC_Veilheim_SetConfigurationValue(long sender, ZPackage inputPkg)
         {
             if (ZNet.instance.IsLocalInstance()) // Local game
             {
-                Logger.LogInfo("RPC_SetConfigurationValue LOCAL");
+                Logger.LogInfo("RPC_Veilheim_SetConfigurationValue LOCAL");
                 var input = inputPkg.ReadString();
                 var inputCopy = (input + " ").Trim();
                 TryExecuteCommand(ref input, true);
@@ -276,7 +276,7 @@ namespace Veilheim.ConsoleCommands
                     return;
                 }
 
-                Logger.LogInfo("RPC_SetConfigurationValue SERVER");
+                Logger.LogInfo("RPC_Veilheim_SetConfigurationValue SERVER");
 
                 // Check if peer is in admin list
                 var steamId = peer.m_socket.GetHostName();
@@ -290,13 +290,13 @@ namespace Veilheim.ConsoleCommands
                         Logger.LogDebug($"SENDING {inputCopy}");
 
                         // Send same back to all clients to actually also set the value on the client
-                        ZRoutedRpc.instance.InvokeRoutedRPC(peerEntry.m_uid, nameof(RPC_SetConfigurationValue), inputPkg);
+                        ZRoutedRpc.instance.InvokeRoutedRPC(peerEntry.m_uid, nameof(RPC_Veilheim_SetConfigurationValue), inputPkg);
                     }
                 }
             }
             if (ZNet.instance.IsClientInstance()) // Client
             {
-                Logger.LogInfo("RPC_SetConfigurationValue CLIENT");
+                Logger.LogInfo("RPC_Veilheim_SetConfigurationValue CLIENT");
                 var input = inputPkg.ReadString();
                 var inputCopy = (input + " ").Trim();
                 TryExecuteCommand(ref input, true);

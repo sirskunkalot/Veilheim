@@ -47,8 +47,8 @@ namespace Veilheim.ConsoleCommands
         public static void InitializeConsoleCommands(Game instance)
         {
             // Register RPC calls
-            ZRoutedRpc.instance.Register(nameof(SetConfigurationValue.RPC_SetConfigurationValue),
-                new Action<long, ZPackage>(SetConfigurationValue.RPC_SetConfigurationValue));
+            ZRoutedRpc.instance.Register(nameof(SetConfigurationValue.RPC_Veilheim_SetConfigurationValue),
+                new Action<long, ZPackage>(SetConfigurationValue.RPC_Veilheim_SetConfigurationValue));
 
             // Register console commands
 

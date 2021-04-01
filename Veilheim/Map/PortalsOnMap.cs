@@ -153,7 +153,7 @@ namespace Veilheim.Map
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="teleporterZPackage"></param>
-        public static void RPC_TeleporterSyncInit(long sender, ZPackage teleporterZPackage)
+        public static void RPC_Veilheim_TeleporterSyncInit(long sender, ZPackage teleporterZPackage)
         {
             // SERVER SIDE
             if (ZNet.instance.IsServerInstance() || ZNet.instance.IsLocalInstance())
@@ -168,7 +168,7 @@ namespace Veilheim.Map
                 }
 
                 var package = portals.ToZPackage();
-                ZRoutedRpc.instance.InvokeRoutedRPC(sender, nameof(RPC_TeleporterSyncInit), package);
+                ZRoutedRpc.instance.InvokeRoutedRPC(sender, nameof(RPC_Veilheim_TeleporterSyncInit), package);
             }
 
             // CLIENT SIDE
@@ -191,7 +191,7 @@ namespace Veilheim.Map
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="teleporterZPackage"></param>
-        public static void RPC_TeleporterSync(long sender, ZPackage teleporterZPackage)
+        public static void RPC_Veilheim_TeleporterSync(long sender, ZPackage teleporterZPackage)
         {
             // SERVER SIDE
             if (ZNet.instance.IsServerInstance() || ZNet.instance.IsLocalInstance())
@@ -213,7 +213,7 @@ namespace Veilheim.Map
                     {
                         Logger.LogInfo($"Sending portal data to peer #{peer.m_uid}");
 
-                        ZRoutedRpc.instance.InvokeRoutedRPC(peer.m_uid, nameof(RPC_TeleporterSync), package);
+                        ZRoutedRpc.instance.InvokeRoutedRPC(peer.m_uid, nameof(RPC_Veilheim_TeleporterSync), package);
                     }
                 }
             }
@@ -253,7 +253,7 @@ namespace Veilheim.Map
                 {
                     Logger.LogInfo("Sending portal sync request to server");
 
-                    ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(RPC_TeleporterSync), new ZPackage());
+                    ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(RPC_Veilheim_TeleporterSync), new ZPackage());
                 }
 
                 if (ZNet.instance.IsClientInstance())
@@ -266,7 +266,7 @@ namespace Veilheim.Map
                         Thread.Sleep(5000);
 
                         // Send trigger to server
-                        ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(RPC_TeleporterSync), new ZPackage());
+                        ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(RPC_Veilheim_TeleporterSync), new ZPackage());
                     });
                 }
             }
@@ -279,8 +279,8 @@ namespace Veilheim.Map
         [PatchEvent(typeof(Game), nameof(Game.Start), PatchEventType.Prefix)]
         public static void RegisterRPC(Game instance)
         {
-            ZRoutedRpc.instance.Register(nameof(RPC_TeleporterSyncInit), new Action<long, ZPackage>(RPC_TeleporterSyncInit));
-            ZRoutedRpc.instance.Register(nameof(RPC_TeleporterSync), new Action<long, ZPackage>(RPC_TeleporterSync));
+            ZRoutedRpc.instance.Register(nameof(RPC_Veilheim_TeleporterSyncInit), new Action<long, ZPackage>(RPC_Veilheim_TeleporterSyncInit));
+            ZRoutedRpc.instance.Register(nameof(RPC_Veilheim_TeleporterSync), new Action<long, ZPackage>(RPC_Veilheim_TeleporterSync));
         }
 
         /// <summary>
@@ -309,7 +309,7 @@ namespace Veilheim.Map
             if (ZNet.instance.IsClientInstance())
             {
                 Logger.LogMessage("Sending portal sync request to server");
-                ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(RPC_TeleporterSyncInit), new ZPackage());
+                ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(RPC_Veilheim_TeleporterSyncInit), new ZPackage());
             }
         }
 
@@ -334,7 +334,7 @@ namespace Veilheim.Map
                 Logger.LogInfo("Sending portal sync request to server");
 
                 // Send trigger to server
-                ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(RPC_TeleporterSync), new ZPackage());
+                ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(RPC_Veilheim_TeleporterSync), new ZPackage());
             }
 
             if (ZNet.instance.IsClientInstance())
@@ -356,7 +356,7 @@ namespace Veilheim.Map
                     Thread.Sleep(5000);
 
                     // Send trigger to server
-                    ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(RPC_TeleporterSync), new ZPackage());
+                    ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(RPC_Veilheim_TeleporterSync), new ZPackage());
                 });
             }
         }
@@ -401,7 +401,7 @@ namespace Veilheim.Map
                 {
                     Logger.LogInfo("Sending portal sync request to server");
 
-                    ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(RPC_TeleporterSync), new ZPackage());
+                    ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(RPC_Veilheim_TeleporterSync), new ZPackage());
                 }
 
                 if (ZNet.instance.IsClientInstance())
@@ -414,7 +414,7 @@ namespace Veilheim.Map
                         Thread.Sleep(5000);
 
                         // Send trigger to server
-                        ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(RPC_TeleporterSync), new ZPackage());
+                        ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(RPC_Veilheim_TeleporterSync), new ZPackage());
                     });
                 }
             }

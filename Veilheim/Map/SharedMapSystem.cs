@@ -95,7 +95,7 @@ namespace Veilheim.Map
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="mapData"></param>
-        public static void RPC_ReceiveExploration(long sender, ZPackage mapData)
+        public static void RPC_Veilheim_ReceiveExploration(long sender, ZPackage mapData)
         {
             if (mapData == null)
             {
@@ -115,7 +115,7 @@ namespace Veilheim.Map
                 foreach (var player in tempPlayerInfos)
                 {
                     Logger.LogInfo($"Sending map data to player {player.m_name} #{ZNet.instance.GetPeerByPlayerName(player.m_name)}");
-                    ZRoutedRpc.instance.InvokeRoutedRPC(ZNet.instance.GetPeerByPlayerName(player.m_name).m_uid, nameof(RPC_ReceiveExploration),
+                    ZRoutedRpc.instance.InvokeRoutedRPC(ZNet.instance.GetPeerByPlayerName(player.m_name).m_uid, nameof(RPC_Veilheim_ReceiveExploration),
                         newMapData);
                 }
             }
@@ -201,8 +201,8 @@ namespace Veilheim.Map
         public static void Register_RPC_MapSharing(Game instance)
         {
             // Map data Receive
-            ZRoutedRpc.instance.Register(nameof(RPC_ReceiveExploration), new Action<long, ZPackage>(RPC_ReceiveExploration));
-            ZRoutedRpc.instance.Register(nameof(RPC_ReceiveExploration_OnExplore), new Action<long, ZPackage>(RPC_ReceiveExploration_OnExplore));
+            ZRoutedRpc.instance.Register(nameof(RPC_Veilheim_ReceiveExploration), new Action<long, ZPackage>(RPC_Veilheim_ReceiveExploration));
+            ZRoutedRpc.instance.Register(nameof(RPC_Veilheim_ReceiveExploration_OnExplore), new Action<long, ZPackage>(RPC_Veilheim_ReceiveExploration_OnExplore));
         }
 
         /// <summary>
@@ -229,7 +229,7 @@ namespace Veilheim.Map
                 Logger.LogInfo("Sending Map data initially to server");
                 // After login, send map data to server (and get new map data back)
                 var pkg = new ZPackage(CreateExplorationData().ToArray());
-                ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(RPC_ReceiveExploration), pkg);
+                ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(RPC_Veilheim_ReceiveExploration), pkg);
             } 
 
             isInSetMapData = false;
@@ -289,7 +289,7 @@ namespace Veilheim.Map
             }
 
             // Invoke RPC on server and send data
-            ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(RPC_ReceiveExploration_OnExplore), queueData);
+            ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(RPC_Veilheim_ReceiveExploration_OnExplore), queueData);
         }
 
         /// <summary>
@@ -297,7 +297,7 @@ namespace Veilheim.Map
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="mapData"></param>
-        public static void RPC_ReceiveExploration_OnExplore(long sender, ZPackage mapData)
+        public static void RPC_Veilheim_ReceiveExploration_OnExplore(long sender, ZPackage mapData)
         {
             if (mapData == null)
             {

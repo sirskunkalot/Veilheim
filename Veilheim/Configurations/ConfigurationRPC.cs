@@ -20,10 +20,10 @@ namespace Veilheim.Configurations
         public static void RegisterRPC(Game instance)
         {
             // Admin status
-            ZRoutedRpc.instance.Register(nameof(RPC_IsAdmin), new Action<long, bool>(RPC_IsAdmin));
+            ZRoutedRpc.instance.Register(nameof(RPC_Veilheim_IsAdmin), new Action<long, bool>(RPC_Veilheim_IsAdmin));
 
             // Config Sync
-            ZRoutedRpc.instance.Register(nameof(RPC_ConfigSync), new Action<long, ZPackage>(RPC_ConfigSync));
+            ZRoutedRpc.instance.Register(nameof(RPC_Veilheim_ConfigSync), new Action<long, ZPackage>(RPC_Veilheim_ConfigSync));
         }
 
         /// <summary>
@@ -36,14 +36,14 @@ namespace Veilheim.Configurations
             if (ZNet.instance.IsClientInstance())
             {
                 Logger.LogInfo("Querying admin status from server");
-                ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(RPC_IsAdmin), false);
+                ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(RPC_Veilheim_IsAdmin), false);
 
                 Logger.LogInfo("Sending config sync request to server");
-                ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(RPC_ConfigSync), new ZPackage());
+                ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(RPC_Veilheim_ConfigSync), new ZPackage());
             }
         }
 
-        public static void RPC_IsAdmin(long sender, bool isAdmin)
+        public static void RPC_Veilheim_IsAdmin(long sender, bool isAdmin)
         {
             if (ZNet.instance.IsClientInstance())
             {
@@ -57,12 +57,12 @@ namespace Veilheim.Configurations
                 {
                     Logger.LogDebug("Sending admin status to peer #" + sender);
                     bool result = ZNet.instance.m_adminList.Contains(peer.m_socket.GetHostName());
-                    ZRoutedRpc.instance.InvokeRoutedRPC(sender, nameof(RPC_IsAdmin), result);
+                    ZRoutedRpc.instance.InvokeRoutedRPC(sender, nameof(RPC_Veilheim_IsAdmin), result);
                 }
             }
         }
 
-        public static void RPC_ConfigSync(long sender, ZPackage configPkg)
+        public static void RPC_Veilheim_ConfigSync(long sender, ZPackage configPkg)
         {
             if (ZNet.instance.IsClientInstance())
             {
@@ -94,7 +94,7 @@ namespace Veilheim.Configurations
                     //Add number of clean lines to package
                     pkg.Write(data);
 
-                    ZRoutedRpc.instance.InvokeRoutedRPC(sender, nameof(RPC_ConfigSync), pkg);
+                    ZRoutedRpc.instance.InvokeRoutedRPC(sender, nameof(RPC_Veilheim_ConfigSync), pkg);
                 }
             }
         }
