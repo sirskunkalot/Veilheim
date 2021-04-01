@@ -138,7 +138,6 @@ namespace Veilheim.Configurations.GUI
 
                 ((RectTransform)section.transform.Find("Panel")).gameObject.GetComponent<Image>().color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
 
-                float maxHeight = 0f;
                 foreach (var entryProperty in BaseConfig.GetProps(sectionProperty.PropertyType).Where(x => x.Name != nameof(BaseConfig.IsEnabled)))
                 {
                     GameObject entry = null;
@@ -175,7 +174,6 @@ namespace Veilheim.Configurations.GUI
 
                     section.GetComponent<Text>().fontSize += 3;
 
-                    float maxHeight = 0f;
                     foreach (var entryProperty in BaseConfig.GetProps(sectionProperty.PropertyType).Where(x => x.Name != nameof(BaseConfig.IsEnabled)))
                     {
                         GameObject entry = null;

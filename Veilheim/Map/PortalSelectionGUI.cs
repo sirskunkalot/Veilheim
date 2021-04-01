@@ -9,7 +9,6 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using Veilheim.AssetManagers;
-using Veilheim.PatchEvents;
 
 namespace Veilheim.Map
 {
@@ -24,13 +23,6 @@ namespace Veilheim.Map
 
         private static readonly List<GameObject> teleporterButtons = new List<GameObject>();
 
-        private static GameObject buttonList;
-        private static GameObject TeleporterListScrollbar;
-
-        private static GameObject viewport;
-
-        private static bool visible = false;
-
         private static GameObject GUIRoot;
 
         private static void CreatePortalGUI(string currentTag)
@@ -40,7 +32,6 @@ namespace Veilheim.Map
                 GUIRoot = Object.Instantiate(GUIManager.Instance.GetPrefab("PortalButtonBox"));
                 GUIRoot.transform.SetParent(GUIManager.PixelFix.transform, false);
                 GUIRoot.GetComponentInChildren<Image>().sprite = GUIManager.Instance.GetSprite("woodpanel_trophys");
-
             }
 
             foreach (var button in teleporterButtons)
@@ -51,20 +42,22 @@ namespace Veilheim.Map
             teleporterButtons.Clear();
 
             IEnumerable<Portal> singlePortals;
+
             // Generate list of unconnected portals from ZDOMan
             if (ZNet.instance.IsLocalInstance())
             {
                 singlePortals = PortalList.GetPortals().Where(x => !x.m_con);
             }
+
             // or from PortalsOnMap.portalsFromServer, if it is a real client
             else
             {
                 singlePortals = PortalsOnMap.portalsFromServer.Where(x => !x.m_con);
             }
 
-            int idx = 0;
+            var idx = 0;
 
-            int lines = singlePortals.Count() / 3;
+            var lines = singlePortals.Count() / 3;
 
             foreach (var portal in singlePortals)
             {
@@ -92,15 +85,16 @@ namespace Veilheim.Map
                     GUIRoot.SetActive(false);
                 });
 
-                newButton.name = "TP" + (teleporterButtons.Count);
+                newButton.name = "TP" + teleporterButtons.Count;
                 newButton.SetActive(true);
 
-                newButton.GetComponent<RectTransform>().anchoredPosition = new Vector2(95f+ (idx % 3) * (180f + 20f), -(idx / 3) * 50f - 25f);
+                newButton.GetComponent<RectTransform>().anchoredPosition = new Vector2(95f + idx % 3 * (180f + 20f), -(idx / 3) * 50f - 25f);
                 teleporterButtons.Add(newButton);
                 idx++;
             }
 
-            GUIRoot.transform.Find("Image/Scroll View/Viewport/Content").GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, lines * 50f + 50f);
+            GUIRoot.transform.Find("Image/Scroll View/Viewport/Content").GetComponent<RectTransform>()
+                .SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, lines * 50f + 50f);
             GUIRoot.SetActive(teleporterButtons.Count > 0);
         }
 
