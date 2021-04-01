@@ -12,12 +12,10 @@ namespace Veilheim.Map
 {
     public class NoMinimap : IPatchEventConsumer
     {
-        private static bool hideMinimap = false;
-
         [PatchEvent(typeof(Minimap), nameof(Minimap.SetMapMode), PatchEventType.BlockingPrefix)]
         public static void DontShowMinimap_Patch(Minimap instance, ref Minimap.MapMode mode, ref bool cancel)
         {
-            if (Configuration.Current.Map.showNoMinimap)
+            if (Configuration.Current.Map.IsEnabled && Configuration.Current.Map.showNoMinimap)
             {
                 if ((Chat.instance == null || !Chat.instance.HasFocus()) && !global::Console.IsVisible() && !TextInput.IsVisible() && !Menu.IsVisible() && !InventoryGui.IsVisible() && !Minimap.InTextInput())
                 {
@@ -42,6 +40,15 @@ namespace Veilheim.Map
                         }
                     }
                 }
+            }
+        }
+
+        [PatchEvent(typeof(Minimap), nameof(Minimap.Awake), PatchEventType.Postfix)]
+        public static void Minimap_Awake_NoMinimap_Patch(Minimap instance)
+        {
+            if (Configuration.Current.Map.IsEnabled && Configuration.Current.Map.showNoMinimap)
+            {
+                instance.SetMapMode(Minimap.MapMode.None);
             }
         }
     }
