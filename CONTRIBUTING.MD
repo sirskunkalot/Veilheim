@@ -5,7 +5,7 @@ How to setup the development enviroment for this project.
 1. Install [Visual Studio 2019](https://visualstudio.microsoft.com) and add the C# workload.
 2. Download this package: https://mega.nz/file/hBM0BDBS#eAY26LfmSSVlIz2MZn0ox8WKspfKmeIssz7durp5SfM
 3. Unpack into your Valheim root folder. You should now see a new folder called `<ValheimDir>\unstripped_corlib`.
-4. [Compile](https://github.com/CabbageCrow/AssemblyPublicizer) or [Download](https://mega.nz/file/oQxEjCJI#_XPXEjwLfv9zpcF2HRakYzepMwaUXflA9txxhx4tACA) Publicizers executable version.
+4. [Compile](https://github.com/CabbageCrow/AssemblyPublicizer) or [Download](https://github.com/CabbageCrow/AssemblyPublicizer/releases) AssemblyPublicizers executable version. This will result in a new executable `AssemblyPublicizer.exe`.
 5. Drag and drop all `assembly_*.dll` files from `<ValheimDir>\valheim_Data\Managed` onto `AssemblyPublicizer.exe`. You should get a new folder `<ValheimDir>\valheim_Data\Managed\publicized_assemblies` with all dragged dll files in it.
 6. Clone this repository using git. That should create a new folder `Veilheim`.
 7. Create a new user project file `Veilheim.csproj.user` alongside the project file within `<Veilheim>\Veilheim` to define some properties local to you. Paste this snippet and configure the paths as they are present on your computer.
