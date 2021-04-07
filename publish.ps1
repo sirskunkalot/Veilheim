@@ -37,26 +37,29 @@ function Create-BepInEx{
     Copy-Item -Path "$TargetPath\*" -Filter 'Mono.Cecil*.dll' -Destination "$core" -Force
     Copy-Item -Path "$TargetPath\*" -Filter 'MonoMod*.dll' -Destination "$core" -Force
 
-    # create \BepInEx\plugins and copy plugin dlls from build
+    # create \BepInEx\plugins
     $plug = $bepinex.CreateSubdirectory('plugins');
-    Write-Host "Plugins: $TargetAssembly"
-    Copy-Item -Path "$TargetPath\*" -Include $TargetAssembly.Split(',') -Destination "$plug" -Force
+
+    # create \BepInEx\plugins\$plugin and copy plugin dll from build
+    Write-Host "Plugin: $TargetAssembly"
+    $modname = $TargetAssembly -Replace('.dll')
+    $mod = $plug.CreateSubdirectory("$modname");
+    Copy-Item -Path "$TargetPath\*" -Include $TargetAssembly -Destination "$mod" -Force
 
     # copy debug files when dist system = Local
     if ($DistSystem.Equals("Local")) {
-        Write-Host "Copy mono-2.0-bdwgc.dll to $ValheimPath\MonoBleedingEdge\EmbedRuntime"
-        if (!(Test-Path -Path "$ValheimPath\MonoBleedingEdge\EmbedRuntime\mono-2.0-bdwgc.dll.orig")) {
-            Copy-Item -Path "$ValheimPath\MonoBleedingEdge\EmbedRuntime\mono-2.0-bdwgc.dll" -Destination "$ValheimPath\MonoBleedingEdge\EmbedRuntime\mono-2.0-bdwgc.dll.orig" -Force
+        $mono = "$ValheimPath\MonoBleedingEdge\EmbedRuntime";
+        Write-Host "Copy mono-2.0-bdwgc.dll to $mono"
+        if (!(Test-Path -Path "$mono\mono-2.0-bdwgc.dll.orig")) {
+            Copy-Item -Path "$mono\mono-2.0-bdwgc.dll" -Destination "$mono\mono-2.0-bdwgc.dll.orig" -Force
         }
-        Copy-Item -Path "$(Get-Location)\libraries\Debug\mono-2.0-bdwgc.dll" -Destination "$ValheimPath\MonoBleedingEdge\EmbedRuntime" -Force
+        Copy-Item -Path "$(Get-Location)\libraries\Debug\mono-2.0-bdwgc.dll" -Destination "$mono" -Force
 
-        foreach($asm in $TargetAssembly.Split(',')){
-            $pdb = "$TargetPath\" + ($asm -Replace('.dll','.pdb'))
-            if (Test-Path -Path "$pdb") {
-                Write-Host "Copy Debug files for plugin $asm"
-                Copy-Item -Path "$pdb" -Destination "$plug" -Force
-                start "$(Get-Location)\libraries\Debug\pdb2mdb.exe" "$plug\$asm"
-            }
+        $pdb = "$TargetPath\$modname.pdb"
+        if (Test-Path -Path "$pdb") {
+            Write-Host "Copy Debug files for $TargetAssembly"
+            Copy-Item -Path "$pdb" -Destination "$mod" -Force
+            start "$(Get-Location)\libraries\Debug\pdb2mdb.exe" "$mod\$TargetAssembly"
         }
         
         # set dnspy debugger env
