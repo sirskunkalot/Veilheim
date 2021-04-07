@@ -20,6 +20,7 @@ using Veilheim.UnityWrappers;
 namespace Veilheim
 {
     [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
+    [BepInDependency(JotunnLib.Main.ModGuid)]
     internal class VeilheimPlugin : BaseUnityPlugin
     {
         public const string PluginGUID = "de.sirskunkalot.valheim.veilheim";
