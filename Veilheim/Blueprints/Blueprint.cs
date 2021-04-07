@@ -10,8 +10,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEngine;
-using Veilheim.AssetEntities;
-using Veilheim.AssetManagers;
+using JotunnLib.Configs;
+using JotunnLib.Entities;
+using JotunnLib.Managers;
 using Object = UnityEngine.Object;
 
 namespace Veilheim.Blueprints
@@ -276,11 +277,12 @@ namespace Veilheim.Blueprints
             }
 
             // Add to known prefabs
-            PrefabManager.Instance.AddPrefab(m_prefabname, m_prefab);
-            PieceManager.Instance.AddPiece(m_prefabname, new PieceDef
+            
+            CustomPiece CP = new CustomPiece(m_prefab, new PieceConfig
             {
                 PieceTable = "_BlueprintPieceTable"
             });
+            PieceManager.Instance.AddPiece(CP);
 
             return m_prefab;
         }

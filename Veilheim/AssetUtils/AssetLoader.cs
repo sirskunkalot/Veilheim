@@ -9,9 +9,9 @@ using System.Linq;
 using System.Reflection;
 using BepInEx;
 using UnityEngine;
-using Veilheim.AssetEntities;
-using Veilheim.AssetManagers;
-using Veilheim.Blueprints;
+using JotunnLib.Configs;
+using JotunnLib.Entities;
+using JotunnLib.Managers;
 
 namespace Veilheim.AssetUtils
 {
@@ -25,18 +25,34 @@ namespace Veilheim.AssetUtils
 
             // AssetBundle for the blueprint rune
             assetBundle = LoadAssetBundleFromResources("blueprints");
-            LoadPieceTablePrefab(assetBundle, "_BlueprintPieceTable");
-            LoadItemPrefab(assetBundle, "BlueprintRune",
-                new RecipeDef
+
+            PieceManager.Instance.AddPieceTable(assetBundle.LoadAsset<GameObject>("_BlueprintPieceTable"));
+
+            CustomItem rune = new CustomItem(assetBundle, "BlueprintRune", false);
+            ItemManager.Instance.AddItem(rune);
+
+            CustomRecipe runeRecipe = new CustomRecipe(new RecipeConfig()
+            {
+                Item = "BlueprintRune",
+                Amount = 1,
+                Requirements = new PieceRequirementConfig[]
                 {
-                    Amount = 1, 
-                    Requirements = new RequirementDef[] {
-                        new RequirementDef {Item = "Stone", Amount = 1}
-                    }
-                });
-            LoadPrefab(assetBundle, "make_blueprint");
-            LoadPrefab(assetBundle, "piece_blueprint");
-            LoadLocalization(assetBundle);
+                    new PieceRequirementConfig {Item = "Stone", Amount = 1}
+                }
+            });
+            ItemManager.Instance.AddRecipe(runeRecipe);
+
+            GameObject makebp_prefab = assetBundle.LoadAsset<GameObject>("make_blueprint");
+            PrefabManager.Instance.AddPrefab(makebp_prefab);
+            GameObject placebp_prefab = assetBundle.LoadAsset<GameObject>("piece_blueprint");
+            PrefabManager.Instance.AddPrefab(placebp_prefab);
+
+            TextAsset[] textAssets = assetBundle.LoadAllAssets<TextAsset>();
+            foreach (var textAsset in textAssets)
+            {
+                var lang = textAsset.name.Replace(".json", null);
+                LocalizationManager.Instance.AddJson(lang, textAsset.ToString());
+            }
             assetBundle.Unload(false);
 
             assetBundle = LoadAssetBundleFromResources("configurationgui");
@@ -50,7 +66,7 @@ namespace Veilheim.AssetUtils
             assetBundle.Unload(false);
         }
 
-        /// <summary>
+        /*/// <summary>
         ///     Load an "untyped" prefab from a bundle and register it in the <see cref="PrefabManager" />.
         /// </summary>
         /// <param name="assetBundle"></param>
@@ -59,7 +75,7 @@ namespace Veilheim.AssetUtils
         {
             var prefab = assetBundle.LoadAsset<GameObject>(assetName);
             PrefabManager.Instance.AddPrefab(assetName, prefab);
-        }
+        }*/
 
         /// <summary>
         ///     Load a GUI prefab from a bundle and register it in the <see cref="GUIManager" />.
@@ -69,10 +85,10 @@ namespace Veilheim.AssetUtils
         public static void LoadGUIPrefab(AssetBundle assetBundle, string assetName)
         {
             var prefab = assetBundle.LoadAsset<GameObject>(assetName);
-            GUIManager.Instance.AddPrefab(assetName, prefab);
+            Veilheim.AssetManagers.GUIManager.Instance.AddPrefab(assetName, prefab);
         }
 
-        /// <summary>
+        /*/// <summary>
         ///     Load an <see cref="ItemDrop" /> prefab and register it in the <see cref="ItemManager"/>.<br />
         ///     The item prefabs are added to the current <see cref="ObjectDB" /> on initialization.<br />
         ///     A <see cref="Recipe"/> is generated automatically, when a recipeDef is given.
@@ -125,7 +141,7 @@ namespace Veilheim.AssetUtils
                 var LocalizationDef = new LocalizationDef(assetBundle.name, localization);
                 LocalizationManager.Instance.AddLocalization(LocalizationDef);
             }
-        }
+        }*/
 
         /// <summary>
         ///     Try to get a path to <paramref name="fileName" /> from either &lt;assembly_path&gt;/&lt;plugin_name&gt;/

@@ -4,13 +4,12 @@
 // File:    BlueprintManager.cs
 // Project: Veilheim
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
-using Veilheim.AssetManagers;
+using JotunnLib.Managers;
 using Veilheim.Configurations;
 using Veilheim.PatchEvents;
 using Object = UnityEngine.Object;
@@ -403,8 +402,7 @@ namespace Veilheim.Blueprints
 
             if (text != null)
             {
-                string translated;
-                LocalizationManager.TryTranslate(text, out translated);
+                string translated = Localization.instance.Translate(text);
                 txt = obj.transform.Find("Text").GetComponent<Text>();
                 txt.text = translated;
             }

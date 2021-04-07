@@ -32,10 +32,6 @@ namespace Veilheim
         // Load order for managers
         private readonly List<Type> managerTypes = new List<Type>()
         {
-            typeof(LocalizationManager),
-            typeof(PrefabManager),
-            typeof(PieceManager),
-            typeof(ItemManager),
             typeof(GUIManager),
             typeof(PatchManager),
             typeof(BlueprintManager)

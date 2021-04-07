@@ -85,6 +85,9 @@
     <Reference Include="INIFileParser, Version=2.5.2.0, Culture=neutral, PublicKeyToken=79af7b307b65cf3c, processorArchitecture=MSIL">
       <HintPath>..\packages\ini-parser-netstandard.2.5.2\lib\net20\INIFileParser.dll</HintPath>
     </Reference>
+    <Reference Include="JotunnLib">
+      <HintPath>$(ValheimDir)\BepInEx\plugins\JotunnLib\JotunnLib.dll</HintPath>
+    </Reference>
     <Reference Include="Mono.Cecil, Version=0.11.3.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
       <HintPath>..\packages\Mono.Cecil.0.11.3\lib\net40\Mono.Cecil.dll</HintPath>
     </Reference>
@@ -358,21 +361,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AssetEntities\LocalizationDef.cs" />
     <Compile Include="Blueprints\BlueprintManager.cs" />
     <Compile Include="Blueprints\PieceEntry.cs" />
     <Compile Include="Extensions\ObjectExtensions.cs" />
     <Compile Include="Manager.cs" />
     <Compile Include="AssetManagers\GUIManager.cs" />
-    <Compile Include="AssetManagers\ItemManager.cs" />
-    <Compile Include="AssetManagers\LocalizationManager.cs" />
-    <Compile Include="AssetManagers\PieceManager.cs" />
-    <Compile Include="AssetManagers\PrefabManager.cs" />
     <Compile Include="AssetUtils\AssetCreator.cs" />
     <Compile Include="AssetUtils\AssetLoader.cs" />
-    <Compile Include="AssetEntities\RecipeDef.cs" />
-    <Compile Include="AssetEntities\PieceDef.cs" />
-    <Compile Include="AssetEntities\RequirementDef.cs" />
     <Compile Include="Blueprints\Blueprint.cs" />
     <Compile Include="Blueprints\FlattenTerrain.cs" />
     <Compile Include="Configurations\GUI\ConfigurationGUI.cs" />
@@ -399,7 +394,6 @@
     <Compile Include="PatchEvents\PatchStubs\GameCamera_Patches.cs" />
     <Compile Include="PatchEvents\PatchStubs\KeyHints_Patches.cs" />
     <Compile Include="PatchEvents\PatchStubs\Game_Patches.cs" />
-    <Compile Include="PatchEvents\PatchStubs\Localization_Patches.cs" />
     <Compile Include="PatchEvents\PatchStubs\Menu_Patches.cs" />
     <Compile Include="PatchEvents\PatchStubs\Minimap_Patches.cs" />
     <Compile Include="PatchEvents\PatchStubs\ObjectDB_Patches.cs" />
