@@ -190,6 +190,7 @@ namespace Veilheim.Blueprints
                         if (prefab == null)
                         {
                             Logger.LogError(entry.name + " not found?");
+                            continue;
                         }
 
                         // Instantiate a new object with the new prefab
