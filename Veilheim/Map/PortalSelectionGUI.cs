@@ -19,8 +19,6 @@ namespace Veilheim.Map
     /// </summary>
     internal class PortalSelectionGUI
     {
-        public static RectTransform portalRect;
-
         private static readonly List<GameObject> teleporterButtons = new List<GameObject>();
 
         private static GameObject GUIRoot;
@@ -121,27 +119,6 @@ namespace Veilheim.Map
                 GameCamera.instance.m_mouseCapture = false;
                 GameCamera.instance.UpdateMouseCapture();
             }
-        }
-
-        /// <summary>
-        ///     Clones the original valheim <see cref="InventoryGui" /> background <see cref="GameObject" />
-        /// </summary>
-        /// <returns></returns>
-        private static RectTransform GetOrCreateBackground()
-        {
-            var transform = InventoryGui.instance.m_playerGrid.transform.parent.parent.parent.parent.Find(nameof(portalRect));
-            var flag = transform == null;
-            if (flag)
-            {
-                var background = InventoryGui.instance.m_playerGrid.transform.parent.Find("Bkg").gameObject;
-                var newBackground = Object.Instantiate(background, background.transform.parent.parent.parent.parent);
-                newBackground.name = nameof(portalRect);
-                newBackground.transform.SetSiblingIndex(background.transform.GetSiblingIndex() + 1);
-                transform = newBackground.transform;
-                newBackground.SetActive(true);
-            }
-
-            return transform as RectTransform;
         }
 
         public static bool IsVisible()
