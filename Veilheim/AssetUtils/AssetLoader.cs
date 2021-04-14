@@ -28,16 +28,17 @@ namespace Veilheim.AssetUtils
 
             PieceManager.Instance.AddPieceTable(assetBundle.LoadAsset<GameObject>("_BlueprintPieceTable"));
 
-            CustomItem rune = new CustomItem(assetBundle, "BlueprintRune", false);
+            GameObject runeprefab = assetBundle.LoadAsset<GameObject>("BlueprintRune");
+            CustomItem rune = new CustomItem(runeprefab, fixReference: false);
             ItemManager.Instance.AddItem(rune);
 
             CustomRecipe runeRecipe = new CustomRecipe(new RecipeConfig()
             {
                 Item = "BlueprintRune",
                 Amount = 1,
-                Requirements = new PieceRequirementConfig[]
+                Requirements = new RequirementConfig[]
                 {
-                    new PieceRequirementConfig {Item = "Stone", Amount = 1}
+                    new RequirementConfig {Item = "Stone", Amount = 1}
                 }
             });
             ItemManager.Instance.AddRecipe(runeRecipe);
