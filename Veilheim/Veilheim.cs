@@ -100,15 +100,6 @@ namespace Veilheim
             m_harmony.UnpatchAll(PluginGUID);
         }
 
-        private void OnGUI()
-        {
-            // Display version in main menu
-            if (SceneManager.GetActiveScene().name == "start")
-            {
-                GUI.Label(new Rect(Screen.width - PluginName.Length * 12, 5, PluginName.Length * 12, 25), $"{PluginName} v{PluginVersion}");
-            }
-        }
-
         internal void UpdateGUI()
         {
             ConfigurationGUI.RebuildLayout();
