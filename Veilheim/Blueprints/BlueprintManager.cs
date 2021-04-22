@@ -9,7 +9,7 @@ using System.IO;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
-using JotunnLib.Managers;
+using Jotunn.Managers;
 using Veilheim.Configurations;
 using Veilheim.PatchEvents;
 using Object = UnityEngine.Object;

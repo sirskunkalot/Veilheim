@@ -10,9 +10,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEngine;
-using JotunnLib.Configs;
-using JotunnLib.Entities;
-using JotunnLib.Managers;
+using Jotunn.Configs;
+using Jotunn.Entities;
+using Jotunn.Managers;
 using Object = UnityEngine.Object;
 
 namespace Veilheim.Blueprints

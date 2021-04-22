@@ -9,9 +9,9 @@ using System.Linq;
 using System.Reflection;
 using BepInEx;
 using UnityEngine;
-using JotunnLib.Configs;
-using JotunnLib.Entities;
-using JotunnLib.Managers;
+using Jotunn.Configs;
+using Jotunn.Entities;
+using Jotunn.Managers;
 
 namespace Veilheim.AssetUtils
 {
