@@ -71,19 +71,19 @@
     <Reference Include="assembly_valheim_publicized">
       <HintPath>$(ValheimDir)\valheim_Data\Managed\publicized_assemblies\assembly_valheim_publicized.dll</HintPath>
     </Reference>
-    <Reference Include="BepInEx, Version=5.4.8.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="BepInEx">
       <HintPath>..\libraries\BepInEx\BepInEx.dll</HintPath>
     </Reference>
-    <Reference Include="BepInEx.Harmony, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="BepInEx.Harmony">
       <HintPath>..\libraries\BepInEx\BepInEx.Harmony.dll</HintPath>
     </Reference>
-    <Reference Include="BepInEx.Preloader, Version=5.4.8.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="BepInEx.Preloader">
       <HintPath>..\libraries\BepInEx\BepInEx.Preloader.dll</HintPath>
     </Reference>
     <Reference Include="DotNetZip, Version=1.15.0.0, Culture=neutral, PublicKeyToken=6583c7c814667745, processorArchitecture=MSIL">
       <HintPath>..\packages\DotNetZip.1.15.0\lib\net40\DotNetZip.dll</HintPath>
     </Reference>
-    <Reference Include="HarmonyXInterop, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="HarmonyXInterop">
       <HintPath>..\libraries\BepInEx\HarmonyXInterop.dll</HintPath>
     </Reference>
     <Reference Include="INIFileParser, Version=2.5.2.0, Culture=neutral, PublicKeyToken=79af7b307b65cf3c, processorArchitecture=MSIL">
