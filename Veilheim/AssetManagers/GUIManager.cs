@@ -10,13 +10,11 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
-using Veilheim.PatchEvents;
 using System;
-using Steamworks;
 
 namespace Veilheim.AssetManagers
 {
-    internal class GUIManager : Manager, IPatchEventConsumer, IPointerClickHandler
+    internal class GUIManager : Manager, IPointerClickHandler
     {
         internal static GUIManager Instance { get; private set; }
 

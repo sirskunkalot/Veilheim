@@ -10,7 +10,6 @@ using System.Reflection;
 using BepInEx;
 using HarmonyLib;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using Veilheim.AssetManagers;
 using Veilheim.Blueprints;
 using Veilheim.Configurations.GUI;

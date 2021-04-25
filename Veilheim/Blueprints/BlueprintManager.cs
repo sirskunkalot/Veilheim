@@ -11,12 +11,11 @@ using UnityEngine;
 using UnityEngine.UI;
 using Jotunn.Managers;
 using Veilheim.Configurations;
-using Veilheim.PatchEvents;
 using Object = UnityEngine.Object;
 
 namespace Veilheim.Blueprints
 {
-    internal class BlueprintManager : Manager, IPatchEventConsumer
+    internal class BlueprintManager : Manager
     {
         internal static BlueprintManager Instance { get; private set; }
 
@@ -73,12 +72,19 @@ namespace Veilheim.Blueprints
                 }
             }
 
+            // Hooks
+            On.ZNetScene.Awake += RegisterKnownBlueprints;
+            On.Player.PlacePiece += BeforePlaceBlueprintPiece;
+            On.GameCamera.UpdateCamera += AdjustCameraHeight;
+            On.KeyHints.UpdateHints += ShowBlueprintHints;
+
             Logger.LogInfo("BlueprintManager Initialized");
         }
 
-        [PatchEvent(typeof(ZNetScene), nameof(ZNetScene.Awake), PatchEventType.Postfix)]
-        public static void RegisterKnownBlueprints(ZNetScene instance)
+        private void RegisterKnownBlueprints(On.ZNetScene.orig_Awake orig, ZNetScene self)
         {
+            orig(self);
+
             // Client only
             if (!ZNet.instance.IsServerInstance())
             {
@@ -93,14 +99,10 @@ namespace Veilheim.Blueprints
         }
 
         /// <summary>
-        ///     React to the "placement" of make_blueprint. Captures a new blueprint and cancels
-        ///     the original placement.
+        ///     Incept placing of the meta pieces.
+        ///     Cancels the real placement of the placeholder pieces.
         /// </summary>
-        /// <param name="instance"></param>
-        /// <param name="piece"></param>
-        /// <param name="cancel"></param>
-        [PatchEvent(typeof(Player), nameof(Player.PlacePiece), PatchEventType.BlockingPrefix)]
-        public static void BeforeCapturingBlueprint(Player instance, Piece piece, ref bool cancel)
+        private bool BeforePlaceBlueprintPiece(On.Player.orig_PlacePiece orig, Player self, Piece piece)
         {
             // Client only
             if (!ZNet.instance.IsServerInstance())
@@ -108,7 +110,7 @@ namespace Veilheim.Blueprints
                 // Capture a new blueprint
                 if (piece.name == "make_blueprint")
                 {
-                    var circleProjector = instance.m_placementGhost.GetComponent<CircleProjector>();
+                    var circleProjector = self.m_placementGhost.GetComponent<CircleProjector>();
                     if (circleProjector != null)
                     {
                         Destroy(circleProjector);
@@ -139,41 +141,26 @@ namespace Veilheim.Blueprints
                     Instance.cameraOffsetMake = 0f;
 
                     // Don't place the piece and clutter the world with it
-                    cancel = true;
+                    return false;
                 }
-            }
-        }
 
-        /// <summary>
-        ///     Incept placing of the blueprint and instantiate all pieces individually.
-        ///     Cancels the real placement of the placeholder piece_blueprint.<br />
-        ///     Flatten terrain if left ctrl is pressed.
-        /// </summary>
-        /// <param name="instance"></param>
-        /// <param name="piece_bp"></param>
-        /// <param name="cancel"></param>
-        [PatchEvent(typeof(Player), nameof(Player.PlacePiece), PatchEventType.BlockingPrefix)]
-        public static void BeforePlacingBlueprint(Player instance, Piece piece_bp, ref bool cancel)
-        {
-            // Client and Local only
-            if (!ZNet.instance.IsServerInstance())
-            {
-                if (Player.m_localPlayer.m_placementStatus == Player.PlacementStatus.Valid && piece_bp.name.StartsWith("piece_blueprint"))
+                // Place a known blueprint
+                if (Player.m_localPlayer.m_placementStatus == Player.PlacementStatus.Valid && piece.name.StartsWith("piece_blueprint"))
                 {
                     if (ZInput.GetButton("AltPlace"))
                     {
-                        Vector2 extent = Instance.m_blueprints.First(x => $"piece_blueprint ({x.Key})" == piece_bp.name).Value.GetExtent();
-                        FlattenTerrain.FlattenForBlueprint(instance.m_placementGhost.transform, extent.x, extent.y,
-                            Instance.m_blueprints.First(x => $"piece_blueprint ({x.Key})" == piece_bp.name).Value.m_pieceEntries);
+                        Vector2 extent = Instance.m_blueprints.First(x => $"piece_blueprint ({x.Key})" == piece.name).Value.GetExtent();
+                        FlattenTerrain.FlattenForBlueprint(self.m_placementGhost.transform, extent.x, extent.y,
+                            Instance.m_blueprints.First(x => $"piece_blueprint ({x.Key})" == piece.name).Value.m_pieceEntries);
                     }
 
                     uint cntEffects = 0u;
                     uint maxEffects = 10u;
 
-                    Blueprint bp = Instance.m_blueprints[piece_bp.m_name];
-                    var transform = instance.m_placementGhost.transform;
-                    var position = instance.m_placementGhost.transform.position;
-                    var rotation = instance.m_placementGhost.transform.rotation;
+                    Blueprint bp = Instance.m_blueprints[piece.m_name];
+                    var transform = self.m_placementGhost.transform;
+                    var position = self.m_placementGhost.transform.position;
+                    var rotation = self.m_placementGhost.transform.rotation;
 
                     foreach (var entry in bp.m_pieceEntries)
                     {
@@ -199,12 +186,12 @@ namespace Veilheim.Blueprints
                         CraftingStation craftingStation = gameObject.GetComponentInChildren<CraftingStation>();
                         if (craftingStation)
                         {
-                            instance.AddKnownStation(craftingStation);
+                            self.AddKnownStation(craftingStation);
                         }
-                        Piece piece = gameObject.GetComponent<Piece>();
-                        if (piece)
+                        Piece newpiece = gameObject.GetComponent<Piece>();
+                        if (newpiece)
                         {
-                            piece.SetCreator(instance.GetPlayerID());
+                            newpiece.SetCreator(self.GetPlayerID());
                         }
                         PrivateArea privateArea = gameObject.GetComponent<PrivateArea>();
                         if (privateArea)
@@ -225,8 +212,8 @@ namespace Veilheim.Blueprints
                         // Limited build effects
                         if (cntEffects < maxEffects)
                         {
-                            piece.m_placeEffect.Create(gameObject.transform.position, rotation, gameObject.transform, 1f);
-                            instance.AddNoise(50f);
+                            newpiece.m_placeEffect.Create(gameObject.transform.position, rotation, gameObject.transform, 1f);
+                            self.AddNoise(50f);
                             cntEffects++;
                         }
 
@@ -238,18 +225,20 @@ namespace Veilheim.Blueprints
                     Instance.cameraOffsetPlace = 5f;
 
                     // Dont set the blueprint piece and clutter the world with it
-                    cancel = true;
+                    return false;
                 }
             }
+            
+            return orig(self, piece);
         }
 
         /// <summary>
         ///     Add some camera height while planting a blueprint
         /// </summary>
-        /// <param name="instance"></param>
-        [PatchEvent(typeof(GameCamera), nameof(GameCamera.UpdateCamera), PatchEventType.Postfix)]
-        public static void AdjustCameraHeight(GameCamera instance)
+        private void AdjustCameraHeight(On.GameCamera.orig_UpdateCamera orig, GameCamera self, float dt)
         {
+            orig(self, dt);
+            
             if (Player.m_localPlayer)
             {
                 if (Player.m_localPlayer.InPlaceMode())
@@ -273,8 +262,8 @@ namespace Veilheim.Blueprints
                                     Instance.cameraOffsetMake = Mathf.Clamp(Instance.cameraOffsetMake -= 1f, minOffset, maxOffset);
                                 }
                             }
-                            
-                            instance.transform.position += new Vector3(0, Instance.cameraOffsetMake, 0);
+
+                            self.transform.position += new Vector3(0, Instance.cameraOffsetMake, 0);
                         }
                         if (pieceName.StartsWith("piece_blueprint"))
                         {
@@ -294,33 +283,35 @@ namespace Veilheim.Blueprints
                                 }
                             }
 
-                            instance.transform.position += new Vector3(0, Instance.cameraOffsetPlace, 0);
+                            self.transform.position += new Vector3(0, Instance.cameraOffsetPlace, 0);
                         }
                     }
                 }
             }
+
+            On.Player.UpdatePlacement += ShowBlueprintRadius;
         }
 
         /// <summary>
         ///     Show and change blueprint selection radius
         /// </summary>
-        /// <param name="instance"></param>
-        [PatchEvent(typeof(Player), nameof(Player.UpdatePlacement), PatchEventType.Postfix)]
-        public static void ShowBlueprintRadius(Player instance)
+        private void ShowBlueprintRadius(On.Player.orig_UpdatePlacement orig, Player self, bool takeInput, float dt)
         {
-            if (instance.m_placementGhost)
+            orig(self, takeInput, dt);
+            
+            if (self.m_placementGhost)
             {
-                var piece = instance.m_placementGhost.GetComponent<Piece>();
+                var piece = self.m_placementGhost.GetComponent<Piece>();
                 if (piece != null)
                 {
                     if (piece.name == "make_blueprint" && !piece.IsCreator())
                     {
-                        if (!instance.m_placementMarkerInstance)
+                        if (!self.m_placementMarkerInstance)
                         {
                             return;
                         }
 
-                        instance.m_maxPlaceDistance = 50f;
+                        self.m_maxPlaceDistance = 50f;
 
                         if (!Input.GetKey(KeyCode.LeftShift))
                         {
@@ -339,10 +330,10 @@ namespace Veilheim.Blueprints
                             }
                         }
 
-                        var circleProjector = instance.m_placementMarkerInstance.GetComponent<CircleProjector>();
+                        var circleProjector = self.m_placementMarkerInstance.GetComponent<CircleProjector>();
                         if (circleProjector == null)
                         {
-                            circleProjector = instance.m_placementMarkerInstance.AddComponent<CircleProjector>();
+                            circleProjector = self.m_placementMarkerInstance.AddComponent<CircleProjector>();
                             circleProjector.m_prefab = PrefabManager.Instance.GetPrefab("piece_workbench").GetComponentInChildren<CircleProjector>().m_prefab;
 
                             // Force calculation of segment count
@@ -361,16 +352,16 @@ namespace Veilheim.Blueprints
                     else
                     {
                         // Destroy placement marker instance to get rid of the circleprojector
-                        if (instance.m_placementMarkerInstance)
+                        if (self.m_placementMarkerInstance)
                         {
-                            DestroyImmediate(instance.m_placementMarkerInstance);
+                            DestroyImmediate(self.m_placementMarkerInstance);
                         }
 
                         // Restore placementDistance
                         if (!piece.name.StartsWith("piece_blueprint"))
                         {
                             // default value, if we introduce config stuff for this, then change it here!
-                            instance.m_maxPlaceDistance = 8;
+                            self.m_maxPlaceDistance = 8;
                         }
 
                         // Reset rotation when changing camera
@@ -379,12 +370,12 @@ namespace Veilheim.Blueprints
 
                             if (Input.GetAxis("Mouse ScrollWheel") < 0f)
                             {
-                                instance.m_placeRotation++;
+                                self.m_placeRotation++;
                             }
 
                             if (Input.GetAxis("Mouse ScrollWheel") > 0f)
                             {
-                               instance.m_placeRotation--;
+                                self.m_placeRotation--;
                             }
 
                         }
@@ -411,8 +402,7 @@ namespace Veilheim.Blueprints
         /// <summary>
         ///     Changes the hint GUI for the BlueprintRune
         /// </summary>
-        [PatchEvent(typeof(KeyHints), nameof(KeyHints.UpdateHints), PatchEventType.Prefix)]
-        public static void ShowBlueprintHints(KeyHints __instance)
+        private static void ShowBlueprintHints(On.KeyHints.orig_UpdateHints orig, KeyHints self)
         {
             Player localPlayer = Player.m_localPlayer;
             if (localPlayer == null)
@@ -424,7 +414,7 @@ namespace Veilheim.Blueprints
             {
                 if (Instance.kbHintsOrig == null)
                 {
-                    Instance.kbHintsOrig = __instance.m_buildHints;
+                    Instance.kbHintsOrig = self.m_buildHints;
                 }
                 if (Instance.kbHintsMake == null)
                 {
@@ -458,23 +448,23 @@ namespace Veilheim.Blueprints
                         Instance.kbHintsMake.SetActive(true);
                         Instance.kbHintsPlace.SetActive(false);
                         Instance.kbHintsOrig.SetActive(false);
-                        __instance.m_buildHints = Instance.kbHintsMake;
+                        self.m_buildHints = Instance.kbHintsMake;
                     }
                     else
                     {
                         Instance.kbHintsMake.SetActive(false);
                         Instance.kbHintsPlace.SetActive(true);
                         Instance.kbHintsOrig.SetActive(false);
-                        __instance.m_buildHints = Instance.kbHintsPlace;
+                        self.m_buildHints = Instance.kbHintsPlace;
                     }
-                    
+
                 }
                 else
                 {
                     Instance.kbHintsMake.SetActive(false);
                     Instance.kbHintsPlace.SetActive(false);
                     Instance.kbHintsOrig.SetActive(true);
-                    __instance.m_buildHints = Instance.kbHintsOrig;
+                    self.m_buildHints = Instance.kbHintsOrig;
                 }
             }
         }
