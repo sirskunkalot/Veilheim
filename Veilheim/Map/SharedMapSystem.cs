@@ -9,6 +9,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Ionic.Zlib;
+using Jotunn.Utils;
+using On.Steamworks;
 using UnityEngine;
 using Veilheim.Configurations;
 using Veilheim.Extensions;
@@ -25,12 +27,24 @@ namespace Veilheim.Map
         private static bool playerIsOnShip = false;
         private static Ship shipWithPlayer = null;
 
+        [PatchInit(0)]
+        public static void InitializePatches()
+        {
+            On.Ship.OnTriggerExit += RemovePlayerFromBoatingList;
+            On.Ship.OnTriggerEnter += AddPlayerToBoatingList;
+            On.Minimap.UpdateExplore += SendQueuedExploreData;
+            On.Minimap.Explore_int_int += EnqueueExploreData;
+            On.Minimap.SetMapData += InitialSendRequest;
+            On.Game.Start += Register_RPC_MapSharing;
+            On.ZNet.Shutdown += SaveExplorationData;
+            On.Minimap.Awake += LoadExplorationData;
+            On.Minimap.UpdateExplore += GetSharedExploration;
+        }
+
         /// <summary>
         ///     Apply other player's locations as own exploration
         /// </summary>
-        /// <param name="instance"></param>
-        [PatchEvent(typeof(Minimap), nameof(Minimap.UpdateExplore), PatchEventType.Prefix)]
-        public static void GetSharedExploration(Minimap instance)
+        private static void GetSharedExploration(On.Minimap.orig_UpdateExplore orig, Minimap self, float dt, Player player)
         {
             if (!Configuration.Current.MapServer.IsEnabled)
             {
@@ -39,35 +53,37 @@ namespace Veilheim.Map
 
             if (Configuration.Current.MapServer.shareMapProgression)
             {
-                if (instance.m_exploreTimer + Time.deltaTime > instance.m_exploreInterval)
+                if (self.m_exploreTimer + Time.deltaTime > self.m_exploreInterval)
                 {
                     var tempPlayerInfos = new List<ZNet.PlayerInfo>();
                     ZNet.instance.GetOtherPublicPlayers(tempPlayerInfos);
 
-                    foreach (var player in tempPlayerInfos)
+                    foreach (var tempPlayer in tempPlayerInfos)
                     {
-                        ExploreLocal(player.m_position);
+                        ExploreLocal(tempPlayer.m_position);
                     }
                 }
             }
 
             if (playerIsOnShip && Configuration.Current.MapServer.exploreRadiusSailing > Configuration.Current.MapServer.exploreRadius)
             {
-                instance.Explore(Player.m_localPlayer.transform.position, Configuration.Current.MapServer.exploreRadiusSailing);
+                self.Explore(Player.m_localPlayer.transform.position, Configuration.Current.MapServer.exploreRadiusSailing);
             }
             else
             {
-                instance.Explore(Player.m_localPlayer.transform.position, Configuration.Current.MapServer.exploreRadius);
+                self.Explore(Player.m_localPlayer.transform.position, Configuration.Current.MapServer.exploreRadius);
             }
+
+            orig(self, dt, player);
         }
 
         /// <summary>
         ///     On server, load saved data on minimap awake
         /// </summary>
-        /// <param name="instance"></param>
-        [PatchEvent(typeof(Minimap), nameof(Minimap.Awake), PatchEventType.Postfix, 600)]
-        public static void LoadExplorationData(Minimap instance)
+        private static void LoadExplorationData(On.Minimap.orig_Awake orig, Minimap self)
         {
+            orig(self);
+
             if (Configuration.Current.MapServer.IsEnabled && Configuration.Current.MapServer.shareMapProgression)
             {
                 if (ZNet.instance.IsServerInstance())
@@ -87,6 +103,136 @@ namespace Veilheim.Map
                         }
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        ///     Before ZNet destroy, save data to file on server
+        /// </summary>
+        private static void SaveExplorationData(On.ZNet.orig_Shutdown orig, ZNet self)
+        {
+            // Save exploration data only on the server
+            if (ZNet.instance.IsServerInstance() && Configuration.Current.MapServer.IsEnabled && Configuration.Current.MapServer.shareMapProgression)
+            {
+                Logger.LogInfo($"Saving shared exploration data");
+                var mapData = new ZPackage(CreateExplorationData().ToArray());
+                mapData.WriteToFile(Path.Combine(Configuration.ConfigIniPath, ZNet.instance.GetWorldUID().ToString(), "Explorationdata.bin"));
+            }
+
+            orig(self);
+        }
+
+        /// <summary>
+        ///     Register needed RPC's
+        /// </summary>
+        private static void Register_RPC_MapSharing(On.Game.orig_Start orig, Game self)
+        {
+            // Map data Receive
+            ZRoutedRpc.instance.Register(nameof(RPC_Veilheim_ReceiveExploration), new Action<long, ZPackage>(RPC_Veilheim_ReceiveExploration));
+            ZRoutedRpc.instance.Register(nameof(RPC_Veilheim_ReceiveExploration_OnExplore), new Action<long, ZPackage>(RPC_Veilheim_ReceiveExploration_OnExplore));
+
+            orig(self);
+        }
+
+        /// <summary>
+        ///     After SetMapData is done, send it to the server
+        ///     TODO: Check if configuration is loaded already, data should not be sent if map sharing is disabled
+        /// </summary>
+        private static void InitialSendRequest(On.Minimap.orig_SetMapData orig, Minimap self, byte[] data)
+        {
+            // Prevent queueing up loaded data
+            isInSetMapData = true;
+            
+            orig(self, data);
+
+            if (Configuration.Current.MapServer.IsEnabled && Configuration.Current.MapServer.shareMapProgression)
+            {
+                Logger.LogInfo("Sending Map data initially to server");
+                // After login, send map data to server (and get new map data back)
+                var pkg = new ZPackage(CreateExplorationData().ToArray());
+                ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(RPC_Veilheim_ReceiveExploration), pkg);
+            } 
+
+            isInSetMapData = false;
+        }
+
+        /// <summary>
+        ///     Enqueue new exploration data if not added from SetMapData
+        /// </summary>
+        private static bool EnqueueExploreData(On.Minimap.orig_Explore_int_int orig, Minimap self, int x, int y)
+        {
+            bool result = orig(self, x, y);
+            
+            if (result && !isInSetMapData)
+            {
+                lock (explorationQueue)
+                {
+                    explorationQueue.Add(x + y * Minimap.instance.m_textureSize);
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        ///     Send queued exploration data to server
+        /// </summary>
+        private static void SendQueuedExploreData(On.Minimap.orig_UpdateExplore orig, Minimap self, float dt, Player player)
+        {
+            orig(self, dt, player);
+            
+            if (explorationQueue.Count == 0)
+            {
+                return;
+            }
+
+            // disregard mini changes for now, lets build up some first
+            if (explorationQueue.Count < 10)
+            {
+                return;
+            }
+
+            Logger.LogDebug($"UpdateExplore - sending newly explored locations to server ({explorationQueue.Count})");
+
+            var toSend = new List<int>();
+            lock (explorationQueue)
+            {
+                toSend.AddRange(explorationQueue.Distinct());
+                explorationQueue.Clear();
+            }
+
+            var queueData = new ZPackage();
+            queueData.Write(toSend.Count);
+            foreach (var data in toSend)
+            {
+                queueData.Write(data);
+            }
+
+            // Invoke RPC on server and send data
+            ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(RPC_Veilheim_ReceiveExploration_OnExplore), queueData);
+        }
+
+        private static void AddPlayerToBoatingList(On.Ship.orig_OnTriggerEnter orig, Ship self, Collider collider)
+        {
+            orig(self, collider);
+            
+            if (self.m_players.Contains(Player.m_localPlayer))
+            {
+                Logger.LogDebug("Player entered ship");
+                playerIsOnShip |= self.m_players.Contains(Player.m_localPlayer);
+                shipWithPlayer = self;
+            }
+        }
+
+        private static void RemovePlayerFromBoatingList(On.Ship.orig_OnTriggerExit orig, Ship self, Collider collider)
+        {
+            orig(self, collider);
+
+            if (self == shipWithPlayer)
+            {
+                Logger.LogDebug("Player exited ship");
+                playerIsOnShip = false;
+                shipWithPlayer = null;
             }
         }
 
@@ -175,121 +321,6 @@ namespace Veilheim.Map
                 Logger.LogError($"Application of mapdata gone wrong.{Environment.NewLine}{ex.Message}{Environment.NewLine}{ex.StackTrace}");
                 Logger.LogError("Texture size: " + Minimap.instance.m_textureSize);
             }
-        }
-
-        /// <summary>
-        ///     Before ZNet destroy, save data to file on server
-        /// </summary>
-        /// <param name="instance"></param>
-        [PatchEvent(typeof(ZNet), nameof(ZNet.Shutdown), PatchEventType.Prefix)]
-        public static void SaveExplorationData(ZNet instance)
-        {
-            // Save exploration data only on the server
-            if (ZNet.instance.IsServerInstance() && Configuration.Current.MapServer.IsEnabled && Configuration.Current.MapServer.shareMapProgression)
-            {
-                Logger.LogInfo($"Saving shared exploration data");
-                var mapData = new ZPackage(CreateExplorationData().ToArray());
-                mapData.WriteToFile(Path.Combine(Configuration.ConfigIniPath, ZNet.instance.GetWorldUID().ToString(), "Explorationdata.bin"));
-            }
-        }
-
-        /// <summary>
-        ///     Register needed RPC's
-        /// </summary>
-        /// <param name="instance"></param>
-        [PatchEvent(typeof(Game), nameof(Game.Start), PatchEventType.Prefix)]
-        public static void Register_RPC_MapSharing(Game instance)
-        {
-            // Map data Receive
-            ZRoutedRpc.instance.Register(nameof(RPC_Veilheim_ReceiveExploration), new Action<long, ZPackage>(RPC_Veilheim_ReceiveExploration));
-            ZRoutedRpc.instance.Register(nameof(RPC_Veilheim_ReceiveExploration_OnExplore), new Action<long, ZPackage>(RPC_Veilheim_ReceiveExploration_OnExplore));
-        }
-
-        /// <summary>
-        ///     Before SetMapData is applying loaded map, prevent enqueuing, since it is sent in gzip package
-        /// </summary>
-        /// <param name="instance"></param>
-        [PatchEvent(typeof(Minimap), nameof(Minimap.SetMapData), PatchEventType.Prefix)]
-        public static void PreventInitial(Minimap instance)
-        {
-            // Prevent queueing up loaded data
-            isInSetMapData = true;
-        }
-
-        /// <summary>
-        ///     After SetMapData is done, send it to the server
-        ///     TODO: Check if configuration is loaded already, data should not be sent if map sharing is disabled
-        /// </summary>
-        /// <param name="instance"></param>
-        [PatchEvent(typeof(Minimap), nameof(Minimap.SetMapData), PatchEventType.Postfix)]
-        public static void InitialSendRequest(Minimap instance)
-        {
-            if (Configuration.Current.MapServer.IsEnabled && Configuration.Current.MapServer.shareMapProgression)
-            {
-                Logger.LogInfo("Sending Map data initially to server");
-                // After login, send map data to server (and get new map data back)
-                var pkg = new ZPackage(CreateExplorationData().ToArray());
-                ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(RPC_Veilheim_ReceiveExploration), pkg);
-            } 
-
-            isInSetMapData = false;
-        }
-
-        /// <summary>
-        ///     Enqueue new exploration data if not added from SetMapData
-        /// </summary>
-        /// <param name="instance"></param>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <param name="result"></param>
-        [PatchEvent(typeof(Minimap), nameof(Minimap.Explore), PatchEventType.Postfix)]
-        public static void EnqueueExploreData(Minimap instance, int x, int y, bool result)
-        {
-            if (result && !isInSetMapData)
-            {
-                lock (explorationQueue)
-                {
-                    explorationQueue.Add(x + y * Minimap.instance.m_textureSize);
-                }
-            }
-        }
-
-        /// <summary>
-        ///     Send queued exploration data to server
-        /// </summary>
-        /// <param name="instance"></param>
-        [PatchEvent(typeof(Minimap), nameof(Minimap.UpdateExplore), PatchEventType.Postfix, 800)]
-        public static void SendQueuedExploreData(Minimap instance)
-        {
-            if (explorationQueue.Count == 0)
-            {
-                return;
-            }
-
-            // disregard mini changes for now, lets build up some first
-            if (explorationQueue.Count < 10)
-            {
-                return;
-            }
-
-            Logger.LogDebug($"UpdateExplore - sending newly explored locations to server ({explorationQueue.Count})");
-
-            var toSend = new List<int>();
-            lock (explorationQueue)
-            {
-                toSend.AddRange(explorationQueue.Distinct());
-                explorationQueue.Clear();
-            }
-
-            var queueData = new ZPackage();
-            queueData.Write(toSend.Count);
-            foreach (var data in toSend)
-            {
-                queueData.Write(data);
-            }
-
-            // Invoke RPC on server and send data
-            ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(RPC_Veilheim_ReceiveExploration_OnExplore), queueData);
         }
 
         /// <summary>
@@ -397,28 +428,5 @@ namespace Veilheim.Map
                 return result.ToArray();
             }
         }
-
-        [PatchEvent(typeof(Ship), nameof(Ship.OnTriggerEnter), PatchEventType.Postfix)]
-        public static void AddPlayerToBoatingList(Ship instance)
-        {
-            if (instance.m_players.Contains(Player.m_localPlayer))
-            {
-                Logger.LogDebug("Player entered ship");
-                playerIsOnShip |= instance.m_players.Contains(Player.m_localPlayer);
-                shipWithPlayer = instance;
-            }
-        }
-
-        [PatchEvent(typeof(Ship), nameof(Ship.OnTriggerExit), PatchEventType.Postfix)]
-        public static void RemovePlayerFromBoatingList(Ship instance)
-        {
-            if (instance == shipWithPlayer)
-            {
-                Logger.LogDebug("Player exited ship");
-                playerIsOnShip = false;
-                shipWithPlayer = null;
-            }
-        }
-
     }
 }
