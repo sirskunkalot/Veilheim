@@ -133,7 +133,6 @@
     <Compile Include="PatchEvents\PatchStubs\ZNet_Patches.cs" />
     <Compile Include="PatchEvents\IPatchEventConsumer.cs" />
     <Compile Include="Properties\IgnoreAccessModifiers.cs" />
-    <Compile Include="Util\CommandLinePasswordPatch.cs" />
     <Compile Include="Extensions\PlayerExtensions.cs" />
     <Compile Include="Extensions\ZPackageExtension.cs" />
     <Compile Include="Veilheim.cs" />
