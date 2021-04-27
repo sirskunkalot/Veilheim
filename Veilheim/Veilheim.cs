@@ -9,13 +9,10 @@ using System.Collections.Generic;
 using System.Reflection;
 using BepInEx;
 using BepInEx.Configuration;
-using HarmonyLib;
-using Jotunn.Utils;
 using UnityEngine;
 using Veilheim.AssetManagers;
 using Veilheim.Blueprints;
 using Veilheim.UnityWrappers;
-using Veilheim.Utils;
 
 namespace Veilheim
 {
@@ -40,8 +37,6 @@ namespace Veilheim
         private readonly List<Manager> managers = new List<Manager>();
 
         internal static GameObject RootObject;
-
-        private Harmony m_harmony;
 
         private void Awake()
         {
