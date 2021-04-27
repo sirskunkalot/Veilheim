@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using BepInEx;
 using BepInEx.Configuration;
@@ -27,16 +28,18 @@ namespace Veilheim
         // Static instance needed for Coroutines
         public static VeilheimPlugin Instance = null;
 
+        // Unity GameObject as a root to all managers
+        internal static GameObject RootObject;
+
         // Load order for managers
         private readonly List<Type> managerTypes = new List<Type>()
         {
             typeof(GUIManager),
             typeof(BlueprintManager)
         };
-
+        
+        // List of all managers
         private readonly List<Manager> managers = new List<Manager>();
-
-        internal static GameObject RootObject;
 
         private void Awake()
         {

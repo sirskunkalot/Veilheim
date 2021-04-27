@@ -19,7 +19,7 @@ namespace Veilheim.Blueprints
     {
         internal static BlueprintManager Instance { get; private set; }
 
-        internal static string BlueprintPath = Path.Combine(ConfigUtil.GetConfigIniPath(), VeilheimPlugin.PluginName, "blueprints");
+        internal static string BlueprintPath = Path.Combine(ConfigUtil.GetConfigPath(), "blueprints");
         
         internal float selectionRadius = 10.0f;
 
