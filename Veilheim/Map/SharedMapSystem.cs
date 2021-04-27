@@ -44,11 +44,6 @@ namespace Veilheim.Map
         /// </summary>
         private static void GetSharedExploration(On.Minimap.orig_UpdateExplore orig, Minimap self, float dt, Player player)
         {
-            if (!ConfigUtil.Get<bool>("MapServer", "IsEnabled"))
-            {
-                return;
-            }
-
             if (ConfigUtil.Get<bool>("MapServer", "shareMapProgression"))
             {
                 if (self.m_exploreTimer + Time.deltaTime > self.m_exploreInterval)
@@ -82,7 +77,7 @@ namespace Veilheim.Map
         {
             orig(self);
 
-            if (ConfigUtil.Get<bool>("MapServer", "IsEnabled") && ConfigUtil.Get<bool>("MapServer", "shareMapProgression"))
+            if (ConfigUtil.Get<bool>("MapServer", "shareMapProgression"))
             {
                 if (ZNet.instance.IsServerInstance())
                 {
@@ -110,7 +105,7 @@ namespace Veilheim.Map
         private static void SaveExplorationData(On.ZNet.orig_Shutdown orig, ZNet self)
         {
             // Save exploration data only on the server
-            if (ZNet.instance.IsServerInstance() && ConfigUtil.Get<bool>("MapServer", "IsEnabled") && ConfigUtil.Get<bool>("MapServer", "shareMapProgression"))
+            if (ZNet.instance.IsServerInstance() && ConfigUtil.Get<bool>("MapServer", "shareMapProgression"))
             {
                 Logger.LogInfo($"Saving shared exploration data");
                 var mapData = new ZPackage(CreateExplorationData().ToArray());
@@ -143,7 +138,7 @@ namespace Veilheim.Map
 
             orig(self, data);
 
-            if (ConfigUtil.Get<bool>("MapServer", "IsEnabled") && ConfigUtil.Get<bool>("MapServer", "shareMapProgression"))
+            if (ConfigUtil.Get<bool>("MapServer", "shareMapProgression"))
             {
                 Logger.LogInfo("Sending Map data initially to server");
                 // After login, send map data to server (and get new map data back)

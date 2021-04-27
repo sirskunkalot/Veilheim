@@ -22,7 +22,7 @@ namespace Veilheim.Map
 
         private static void DontShowMinimap_Patch(On.Minimap.orig_SetMapMode orig, Minimap self, int mode)
         {
-            if (ConfigUtil.Get<bool>("Map", "IsEnabled") && ConfigUtil.Get<bool>("Map", "showNoMinimap"))
+            if (ConfigUtil.Get<bool>("Map", "showNoMinimap"))
             {
                 if ((Chat.instance == null || !Chat.instance.HasFocus()) && !global::Console.IsVisible() && !InventoryGui.IsVisible() && !Minimap.InTextInput())
                 {
@@ -56,7 +56,7 @@ namespace Veilheim.Map
         {
             orig(self);
 
-            if (ConfigUtil.Get<bool>("Map", "IsEnabled") && ConfigUtil.Get<bool>("Map", "showNoMinimap"))
+            if (ConfigUtil.Get<bool>("Map", "showNoMinimap"))
             {
                 self.SetMapMode(Minimap.MapMode.None);
             }

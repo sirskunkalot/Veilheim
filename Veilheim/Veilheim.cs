@@ -79,14 +79,11 @@ namespace Veilheim
         private void CreateConfigBindings()
         {
             // Section Map
-            Config.Bind("Map", "IsEnabled", false, "Enable Map section");
             Config.Bind("Map", "showPortalsOnMap", false, "Show portals on map");
             Config.Bind("Map", "showPortalSelection", false, "Show portal selection window on portal rename");
             Config.Bind("Map", "showNoMinimap", false, "Play without minimap");
 
             // Section MapServer
-            Config.Bind("MapServer", "IsEnabled", false,
-                new ConfigDescription("Enable MapServer section", null, new object[] { new ConfigurationManagerAttributes() { IsAdminOnly = true } }));
             Config.Bind("MapServer", "shareMapProgression", false,
                 new ConfigDescription("With this enabled you will receive the same exploration progression as other players on the server", null, new object[] { new ConfigurationManagerAttributes() { IsAdminOnly = true } }));
             Config.Bind("MapServer", "exploreRadius", 100f,
@@ -100,8 +97,6 @@ namespace Veilheim
 
 
             // Section ProductionInputAmount
-            Config.Bind("ProductionInputAmounts", "IsEnabled", false,
-                new ConfigDescription("Enable Production input amount section", null, new object[] { new ConfigurationManagerAttributes() { IsAdminOnly = true } }));
             Config.Bind("ProductionInputAmounts", "windmillBarleyAmount", 50,
                 new ConfigDescription("Max windmill barley amount", null, new object[] { new ConfigurationManagerAttributes() { IsAdminOnly = true } }));
             Config.Bind("ProductionInputAmounts", "kilnWoodAmount", 25,

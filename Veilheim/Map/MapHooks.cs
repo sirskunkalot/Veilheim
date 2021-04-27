@@ -44,7 +44,7 @@ namespace Veilheim.Map
             }
 
             // must be enabled
-            if (!ConfigUtil.Get<bool>("Map","IsEnabled") || !ConfigUtil.Get<bool>("Map","showPortalSelection"))
+            if (!ConfigUtil.Get<bool>("Map","showPortalSelection"))
             {
                 return result;
             }

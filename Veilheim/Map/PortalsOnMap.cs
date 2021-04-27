@@ -92,7 +92,7 @@ namespace Veilheim.Map
                 return;
             }
 
-            if (!ConfigUtil.Get<bool>("Map", "IsEnabled") || !ConfigUtil.Get<bool>("Map", "showPortalsOnMap"))
+            if (!ConfigUtil.Get<bool>("Map", "showPortalsOnMap"))
             {
                 return;
             }
@@ -168,7 +168,7 @@ namespace Veilheim.Map
                 return;
             }
 
-            if (ConfigUtil.Get<bool>("Map", "IsEnabled") && ConfigUtil.Get<bool>("Map", "showPortalsOnMap"))
+            if (ConfigUtil.Get<bool>("Map", "showPortalsOnMap"))
             {
                 UpdateMinimap();
             }

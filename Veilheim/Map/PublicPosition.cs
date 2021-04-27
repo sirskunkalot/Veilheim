@@ -23,7 +23,7 @@ namespace Veilheim.Map
         {
             orig(self);
 
-            if (ConfigUtil.Get<bool>("MapServer","IsEnabled") && ConfigUtil.Get<bool>("MapServer","playerPositionPublicOnJoin"))
+            if (ConfigUtil.Get<bool>("MapServer","playerPositionPublicOnJoin"))
             {
                 // Set player position visibility to public by default on server join
                 self.m_publicReferencePosition = true;
@@ -35,7 +35,7 @@ namespace Veilheim.Map
             orig(self, pub);
 
             //isn't there a limit to identifiers in c#?
-            if (ConfigUtil.Get<bool>("MapServer","IsEnabled") && ConfigUtil.Get<bool>("MapServer","preventPlayerFromTurningOffPublicPosition")) 
+            if (ConfigUtil.Get<bool>("MapServer","preventPlayerFromTurningOffPublicPosition")) 
             {
                 self.m_publicReferencePosition = true;
             }
