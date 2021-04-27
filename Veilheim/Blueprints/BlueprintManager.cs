@@ -19,7 +19,7 @@ namespace Veilheim.Blueprints
     {
         internal static BlueprintManager Instance { get; private set; }
 
-        internal static string BlueprintPath = Path.Combine(ConfigUtil.GetConfigIniPath(), "blueprints");
+        internal static string BlueprintPath = Path.Combine(ConfigUtil.GetConfigIniPath(), VeilheimPlugin.PluginName, "blueprints");
         
         internal float selectionRadius = 10.0f;
 
@@ -403,6 +403,8 @@ namespace Veilheim.Blueprints
         /// </summary>
         private static void ShowBlueprintHints(On.KeyHints.orig_UpdateHints orig, KeyHints self)
         {
+            orig(self);
+            
             Player localPlayer = Player.m_localPlayer;
             if (localPlayer == null)
             {
