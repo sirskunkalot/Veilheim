@@ -77,6 +77,7 @@ namespace Veilheim.Blueprints
             On.Player.PlacePiece += BeforePlaceBlueprintPiece;
             On.GameCamera.UpdateCamera += AdjustCameraHeight;
             On.KeyHints.UpdateHints += ShowBlueprintHints;
+            On.Player.UpdatePlacement += ShowBlueprintRadius;
 
             Logger.LogInfo("BlueprintManager Initialized");
         }
@@ -288,8 +289,6 @@ namespace Veilheim.Blueprints
                     }
                 }
             }
-
-            On.Player.UpdatePlacement += ShowBlueprintRadius;
         }
 
         /// <summary>
