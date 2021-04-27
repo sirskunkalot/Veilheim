@@ -44,30 +44,33 @@ namespace Veilheim.Map
         /// </summary>
         private static void GetSharedExploration(On.Minimap.orig_UpdateExplore orig, Minimap self, float dt, Player player)
         {
-            if (ConfigUtil.Get<bool>("MapServer", "shareMapProgression"))
+            self.m_exploreTimer += Time.deltaTime;
+            if (self.m_exploreTimer > self.m_exploreInterval)
             {
-                if (self.m_exploreTimer + Time.deltaTime > self.m_exploreInterval)
+                if (ConfigUtil.Get<bool>("MapServer", "shareMapProgression"))
                 {
-                    var tempPlayerInfos = new List<ZNet.PlayerInfo>();
-                    ZNet.instance.GetOtherPublicPlayers(tempPlayerInfos);
-
-                    foreach (var tempPlayer in tempPlayerInfos)
+                    if (self.m_exploreTimer + Time.deltaTime > self.m_exploreInterval)
                     {
-                        ExploreLocal(tempPlayer.m_position);
+                        var tempPlayerInfos = new List<ZNet.PlayerInfo>();
+                        ZNet.instance.GetOtherPublicPlayers(tempPlayerInfos);
+
+                        foreach (var tempPlayer in tempPlayerInfos)
+                        {
+                            ExploreLocal(tempPlayer.m_position);
+                        }
                     }
                 }
-            }
 
-            if (playerIsOnShip && ConfigUtil.Get<float>("MapServer", "exploreRadiusSailing") > ConfigUtil.Get<float>("MapServer", "exploreRadius"))
-            {
-                self.Explore(Player.m_localPlayer.transform.position, ConfigUtil.Get<float>("MapServer", "exploreRadiusSailing"));
+                if (playerIsOnShip && ConfigUtil.Get<float>("MapServer", "exploreRadiusSailing") > ConfigUtil.Get<float>("MapServer", "exploreRadius"))
+                {
+                    self.Explore(Player.m_localPlayer.transform.position, ConfigUtil.Get<float>("MapServer", "exploreRadiusSailing"));
+                }
+                else
+                {
+                    self.Explore(Player.m_localPlayer.transform.position, ConfigUtil.Get<float>("MapServer", "exploreRadius"));
+                }
+                orig(self, dt, player);
             }
-            else
-            {
-                self.Explore(Player.m_localPlayer.transform.position, ConfigUtil.Get<float>("MapServer", "exploreRadius"));
-            }
-
-            orig(self, dt, player);
         }
 
         /// <summary>
@@ -172,37 +175,32 @@ namespace Veilheim.Map
         /// </summary>
         private static void SendQueuedExploreData(On.Minimap.orig_UpdateExplore orig, Minimap self, float dt, Player player)
         {
+            bool doPayload = self.m_exploreTimer + Time.deltaTime > self.m_exploreInterval;
+
             orig(self, dt, player);
 
-            if (explorationQueue.Count == 0)
-            {
-                return;
-            }
-
             // disregard mini changes for now, lets build up some first
-            if (explorationQueue.Count < 10)
+            if (explorationQueue.Count >= 10 && doPayload)
             {
-                return;
+                Logger.LogDebug($"UpdateExplore - sending newly explored locations to server ({explorationQueue.Count})");
+
+                var toSend = new List<int>();
+                lock (explorationQueue)
+                {
+                    toSend.AddRange(explorationQueue.Distinct());
+                    explorationQueue.Clear();
+                }
+
+                var queueData = new ZPackage();
+                queueData.Write(toSend.Count);
+                foreach (var data in toSend)
+                {
+                    queueData.Write(data);
+                }
+
+                // Invoke RPC on server and send data
+                ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(RPC_Veilheim_ReceiveExploration_OnExplore), queueData);
             }
-
-            Logger.LogDebug($"UpdateExplore - sending newly explored locations to server ({explorationQueue.Count})");
-
-            var toSend = new List<int>();
-            lock (explorationQueue)
-            {
-                toSend.AddRange(explorationQueue.Distinct());
-                explorationQueue.Clear();
-            }
-
-            var queueData = new ZPackage();
-            queueData.Write(toSend.Count);
-            foreach (var data in toSend)
-            {
-                queueData.Write(data);
-            }
-
-            // Invoke RPC on server and send data
-            ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(RPC_Veilheim_ReceiveExploration_OnExplore), queueData);
         }
 
         private static void AddPlayerToBoatingList(On.Ship.orig_OnTriggerEnter orig, Ship self, Collider collider)

@@ -15,7 +15,7 @@ using Veilheim.Utils;
 
 namespace Veilheim.Map
 {
-    public class PortalsOnMap 
+    public class PortalsOnMap
     {
 
         [PatchInit(0)]
@@ -161,16 +161,21 @@ namespace Veilheim.Map
         /// </summary>
         private static void UpdatePinsOnMinimap(On.Minimap.orig_UpdateLocationPins orig, Minimap self, float dt)
         {
+            bool doPayload = self.m_updateLocationsTimer <= dt;
+
             orig(self, dt);
 
-            if (ZNet.instance.IsServerInstance())
+            if (doPayload)
             {
-                return;
-            }
+                if (ZNet.instance.IsServerInstance())
+                {
+                    return;
+                }
 
-            if (ConfigUtil.Get<bool>("Map", "showPortalsOnMap"))
-            {
-                UpdateMinimap();
+                if (ConfigUtil.Get<bool>("Map", "showPortalsOnMap"))
+                {
+                    UpdateMinimap();
+                }
             }
         }
 
