@@ -5,8 +5,8 @@
 // Project: Veilheim
 
 using Jotunn.Utils;
-using Veilheim.Configurations;
 using Veilheim.PatchEvents;
+using Veilheim.Utils;
 
 namespace Veilheim.Map
 {
@@ -24,7 +24,7 @@ namespace Veilheim.Map
         {
             orig(self);
 
-            if (Configuration.Current.MapServer.IsEnabled && Configuration.Current.MapServer.playerPositionPublicOnJoin)
+            if (ConfigUtil.Get<bool>("MapServer","IsEnabled") && ConfigUtil.Get<bool>("MapServer","playerPositionPublicOnJoin"))
             {
                 // Set player position visibility to public by default on server join
                 self.m_publicReferencePosition = true;
@@ -36,7 +36,7 @@ namespace Veilheim.Map
             orig(self, pub);
 
             //isn't there a limit to identifiers in c#?
-            if (Configuration.Current.MapServer.IsEnabled && Configuration.Current.MapServer.preventPlayerFromTurningOffPublicPosition) 
+            if (ConfigUtil.Get<bool>("MapServer","IsEnabled") && ConfigUtil.Get<bool>("MapServer","preventPlayerFromTurningOffPublicPosition")) 
             {
                 self.m_publicReferencePosition = true;
             }

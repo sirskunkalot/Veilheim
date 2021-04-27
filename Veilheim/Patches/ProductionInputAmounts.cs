@@ -5,8 +5,8 @@
 // Project: Veilheim
 
 using Jotunn.Utils;
-using Veilheim.Configurations;
 using Veilheim.PatchEvents;
+using Veilheim.Utils;
 
 namespace Veilheim.Patches
 {
@@ -22,30 +22,30 @@ namespace Veilheim.Patches
         {
             orig(self);
 
-            if (Configuration.Current.ProductionInputAmounts.IsEnabled)
+            if (ConfigUtil.Get<bool>("ProductionInputAmounts", "IsEnabled"))
             {
                 var prefab = self.m_nview.GetPrefabName();
                 if (prefab == "piece_spinningwheel")
                 {
-                    self.m_maxOre = Configuration.Current.ProductionInputAmounts.spinningWheelFlachsAmount;
+                    self.m_maxOre = ConfigUtil.Get<int>("ProductionInputAmounts", "spinningWheelFlachsAmount");
                 }
                 else if (prefab == "charcoal_kiln")
                 {
-                    self.m_maxOre = Configuration.Current.ProductionInputAmounts.kilnWoodAmount;
+                    self.m_maxOre = ConfigUtil.Get<int>("ProductionInputAmounts", "kilnWoodAmount");
                 }
                 else if (prefab == "blastfurnace")
                 {
-                    self.m_maxOre = Configuration.Current.ProductionInputAmounts.blastfurnaceOreAmount;
-                    self.m_maxFuel = Configuration.Current.ProductionInputAmounts.blastfurnaceCoalAmount;
+                    self.m_maxOre = ConfigUtil.Get<int>("ProductionInputAmounts", "blastfurnaceOreAmount");
+                    self.m_maxFuel = ConfigUtil.Get<int>("ProductionInputAmounts", "blastfurnaceCoalAmount");
                 }
                 else if (prefab == "smelter")
                 {
-                    self.m_maxOre = Configuration.Current.ProductionInputAmounts.furnaceOreAmount;
-                    self.m_maxFuel = Configuration.Current.ProductionInputAmounts.furnaceCoalAmount;
+                    self.m_maxOre = ConfigUtil.Get<int>("ProductionInputAmounts", "furnaceOreAmount");
+                    self.m_maxFuel = ConfigUtil.Get<int>("ProductionInputAmounts", "furnaceCoalAmount");
                 }
                 else if (prefab == "windmill")
                 {
-                    self.m_maxOre = Configuration.Current.ProductionInputAmounts.windmillBarleyAmount;
+                    self.m_maxOre = ConfigUtil.Get<int>("ProductionInputAmounts", "windmillBarleyAmount");
                 }
             }
         }

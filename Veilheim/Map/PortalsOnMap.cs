@@ -11,8 +11,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jotunn.Utils;
 using UnityEngine;
-using Veilheim.Configurations;
 using Veilheim.PatchEvents;
+using Veilheim.Utils;
 
 namespace Veilheim.Map
 {
@@ -87,13 +87,13 @@ namespace Veilheim.Map
         private static void UpdatePortalPins(On.Minimap.orig_SetMapData orig, Minimap self, byte[] data)
         {
             orig(self, data);
-            
+
             if (ZNet.instance.IsServerInstance())
             {
                 return;
             }
 
-            if (!Configuration.Current.Map.IsEnabled || !Configuration.Current.Map.showPortalsOnMap)
+            if (!ConfigUtil.Get<bool>("Map", "IsEnabled") || !ConfigUtil.Get<bool>("Map", "showPortalsOnMap"))
             {
                 return;
             }
@@ -117,7 +117,7 @@ namespace Veilheim.Map
         private static void ResyncAfterTagChange(On.TeleportWorld.orig_RPC_SetTag orig, TeleportWorld self, long sender, string tag)
         {
             orig(self, sender, tag);
-            
+
             if (ZNet.instance.IsServerInstance())
             {
                 return;
@@ -169,7 +169,7 @@ namespace Veilheim.Map
                 return;
             }
 
-            if (Configuration.Current.Map.IsEnabled && Configuration.Current.Map.showPortalsOnMap)
+            if (ConfigUtil.Get<bool>("Map", "IsEnabled") && ConfigUtil.Get<bool>("Map", "showPortalsOnMap"))
             {
                 UpdateMinimap();
             }

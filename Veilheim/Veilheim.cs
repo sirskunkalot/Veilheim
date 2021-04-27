@@ -10,12 +10,13 @@ using System.Reflection;
 using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
+using Jotunn.Utils;
 using UnityEngine;
 using Veilheim.AssetManagers;
 using Veilheim.Blueprints;
-using Veilheim.Configurations.GUI;
 using Veilheim.PatchEvents;
 using Veilheim.UnityWrappers;
+using Veilheim.Utils;
 
 namespace Veilheim
 {
@@ -53,10 +54,11 @@ namespace Veilheim
             // Force load custom Unity assemblies
             Assembly.GetAssembly(typeof(ItemDropWrapper));  //TODO: force load assembly somewhat more elegant
 
+            /*
             // Create harmony patches
             m_harmony = new Harmony(PluginGUID);
             m_harmony.PatchAll();
-
+            */
             // Initialize Logger
             Veilheim.Logger.Init();
 
@@ -86,8 +88,10 @@ namespace Veilheim
             // Section Map
             Config.Bind("Map", "IsEnabled", false, "Enable Map section");
             Config.Bind("Map", "showPortalsOnMap", false, "Show portals on map");
-            Config.Bind("Map", "showPortalSelection", "Show portal selection window on portal rename");
+            Config.Bind("Map", "showPortalSelection", false, "Show portal selection window on portal rename");
             Config.Bind("Map", "showNoMinimap", false, "Play without minimap");
+
+            Config.Bind("Test1", "Blabla", 500, "Test value int 500");
 
             // Section MapServer
             Config.Bind("MapServer", "IsEnabled", false,
@@ -105,32 +109,22 @@ namespace Veilheim
 
 
             // Section ProductionInputAmount
-            Config.Bind("ProductionInputAmount", "IsEnabled", false,
+            Config.Bind("ProductionInputAmounts", "IsEnabled", false,
                 new ConfigDescription("Enable Production input amount section", null, new object[] { new ConfigurationManagerAttributes() { IsAdminOnly = true } }));
-            Config.Bind("ProductionInputAmount", "windmillBarleyAmount", 50,
+            Config.Bind("ProductionInputAmounts", "windmillBarleyAmount", 50,
                 new ConfigDescription("Max windmill barley amount", null, new object[] { new ConfigurationManagerAttributes() { IsAdminOnly = true } }));
-            Config.Bind("ProductionInputAmount", "kilnWoodAmount", 25,
+            Config.Bind("ProductionInputAmounts", "kilnWoodAmount", 25,
                 new ConfigDescription("Max wood amount for kiln", null, new object[] { new ConfigurationManagerAttributes() { IsAdminOnly = true } }));
-            Config.Bind("ProductionInputAmount", "furnaceCoalAmount", 20,
+            Config.Bind("ProductionInputAmounts", "furnaceCoalAmount", 20,
                 new ConfigDescription("Max coal amount for furnace", null, new object[] { new ConfigurationManagerAttributes() { IsAdminOnly = true } }));
-            Config.Bind("ProductionInputAmount", "furnaceOreAmount", 10,
+            Config.Bind("ProductionInputAmounts", "furnaceOreAmount", 10,
                 new ConfigDescription("Max ore amount for furnace", null, new object[] { new ConfigurationManagerAttributes() { IsAdminOnly = true } }));
-            Config.Bind("ProductionInputAmount", "blastfurnaceCoalAmount", 20,
+            Config.Bind("ProductionInputAmounts", "blastfurnaceCoalAmount", 20,
                 new ConfigDescription("Max coal amount for blast furnace", null, new object[] { new ConfigurationManagerAttributes() { IsAdminOnly = true } }));
-            Config.Bind("ProductionInputAmount", "blastfurnaceOreAmount", 10,
+            Config.Bind("ProductionInputAmounts", "blastfurnaceOreAmount", 10,
                 new ConfigDescription("Max ore amount for blast furnace", null, new object[] { new ConfigurationManagerAttributes() { IsAdminOnly = true } }));
-            Config.Bind("ProductionInputAmount", "spinningWheelFlachsAmount", 40,
+            Config.Bind("ProductionInputAmounts", "spinningWheelFlachsAmount", 40,
                 new ConfigDescription("Max flachs amount for spinning wheel", null, new object[] { new ConfigurationManagerAttributes() { IsAdminOnly = true } }));
-        }
-
-
-        private void Update()
-        {
-            if (Input.GetKeyDown(KeyCode.F6))
-            { // Set a breakpoint here to break on F6 key press
-                ConfigurationGUI.ToggleGUI();
-            }
-
         }
 
 
@@ -143,11 +137,6 @@ namespace Veilheim
             Veilheim.Logger.Destroy();
 
             m_harmony.UnpatchAll(PluginGUID);
-        }
-
-        internal void UpdateGUI()
-        {
-            ConfigurationGUI.RebuildLayout();
         }
     }
 }

@@ -6,8 +6,8 @@
 
 using Jotunn.Utils;
 using UnityEngine;
-using Veilheim.Configurations;
 using Veilheim.PatchEvents;
+using Veilheim.Utils;
 
 namespace Veilheim.Map
 {
@@ -45,7 +45,7 @@ namespace Veilheim.Map
             }
 
             // must be enabled
-            if (!Configuration.Current.Map.IsEnabled || !Configuration.Current.Map.showPortalSelection)
+            if (!ConfigUtil.Get<bool>("Map","IsEnabled") || !ConfigUtil.Get<bool>("Map","showPortalSelection"))
             {
                 return result;
             }

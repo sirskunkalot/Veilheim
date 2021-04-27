@@ -10,11 +10,10 @@ using System.IO;
 using System.Linq;
 using Ionic.Zlib;
 using Jotunn.Utils;
-using On.Steamworks;
 using UnityEngine;
-using Veilheim.Configurations;
 using Veilheim.Extensions;
 using Veilheim.PatchEvents;
+using Veilheim.Utils;
 using CompressionLevel = Ionic.Zlib.CompressionLevel;
 
 namespace Veilheim.Map
@@ -46,12 +45,12 @@ namespace Veilheim.Map
         /// </summary>
         private static void GetSharedExploration(On.Minimap.orig_UpdateExplore orig, Minimap self, float dt, Player player)
         {
-            if (!Configuration.Current.MapServer.IsEnabled)
+            if (!ConfigUtil.Get<bool>("MapServer", "IsEnabled"))
             {
                 return;
             }
 
-            if (Configuration.Current.MapServer.shareMapProgression)
+            if (ConfigUtil.Get<bool>("MapServer", "shareMapProgression"))
             {
                 if (self.m_exploreTimer + Time.deltaTime > self.m_exploreInterval)
                 {
@@ -65,13 +64,13 @@ namespace Veilheim.Map
                 }
             }
 
-            if (playerIsOnShip && Configuration.Current.MapServer.exploreRadiusSailing > Configuration.Current.MapServer.exploreRadius)
+            if (playerIsOnShip && ConfigUtil.Get<float>("MapServer", "exploreRadiusSailing") > ConfigUtil.Get<float>("MapServer", "exploreRadius"))
             {
-                self.Explore(Player.m_localPlayer.transform.position, Configuration.Current.MapServer.exploreRadiusSailing);
+                self.Explore(Player.m_localPlayer.transform.position, ConfigUtil.Get<float>("MapServer", "exploreRadiusSailing"));
             }
             else
             {
-                self.Explore(Player.m_localPlayer.transform.position, Configuration.Current.MapServer.exploreRadius);
+                self.Explore(Player.m_localPlayer.transform.position, ConfigUtil.Get<float>("MapServer", "exploreRadius"));
             }
 
             orig(self, dt, player);
@@ -84,14 +83,14 @@ namespace Veilheim.Map
         {
             orig(self);
 
-            if (Configuration.Current.MapServer.IsEnabled && Configuration.Current.MapServer.shareMapProgression)
+            if (ConfigUtil.Get<bool>("MapServer", "IsEnabled") && ConfigUtil.Get<bool>("MapServer", "shareMapProgression"))
             {
                 if (ZNet.instance.IsServerInstance())
                 {
                     Minimap.instance.m_explored = new bool[Minimap.instance.m_textureSize * Minimap.instance.m_textureSize];
-                    if (File.Exists(Path.Combine(Configuration.ConfigIniPath, ZNet.instance.GetWorldUID().ToString(), "Explorationdata.bin")))
+                    if (File.Exists(Path.Combine(ConfigUtil.GetConfigIniPath(), ZNet.instance.GetWorldUID().ToString(), "Explorationdata.bin")))
                     {
-                        var mapData = ZPackageExtension.ReadFromFile(Path.Combine(Configuration.ConfigIniPath, ZNet.instance.GetWorldUID().ToString(),
+                        var mapData = ZPackageExtension.ReadFromFile(Path.Combine(ConfigUtil.GetConfigIniPath(), ZNet.instance.GetWorldUID().ToString(),
                             "Explorationdata.bin"));
                         ApplyMapData(mapData);
                     }
@@ -112,11 +111,11 @@ namespace Veilheim.Map
         private static void SaveExplorationData(On.ZNet.orig_Shutdown orig, ZNet self)
         {
             // Save exploration data only on the server
-            if (ZNet.instance.IsServerInstance() && Configuration.Current.MapServer.IsEnabled && Configuration.Current.MapServer.shareMapProgression)
+            if (ZNet.instance.IsServerInstance() && ConfigUtil.Get<bool>("MapServer", "IsEnabled") && ConfigUtil.Get<bool>("MapServer", "shareMapProgression"))
             {
                 Logger.LogInfo($"Saving shared exploration data");
                 var mapData = new ZPackage(CreateExplorationData().ToArray());
-                mapData.WriteToFile(Path.Combine(Configuration.ConfigIniPath, ZNet.instance.GetWorldUID().ToString(), "Explorationdata.bin"));
+                mapData.WriteToFile(Path.Combine(ConfigUtil.GetConfigIniPath(), ZNet.instance.GetWorldUID().ToString(), "Explorationdata.bin"));
             }
 
             orig(self);
@@ -142,16 +141,16 @@ namespace Veilheim.Map
         {
             // Prevent queueing up loaded data
             isInSetMapData = true;
-            
+
             orig(self, data);
 
-            if (Configuration.Current.MapServer.IsEnabled && Configuration.Current.MapServer.shareMapProgression)
+            if (ConfigUtil.Get<bool>("MapServer", "IsEnabled") && ConfigUtil.Get<bool>("MapServer", "shareMapProgression"))
             {
                 Logger.LogInfo("Sending Map data initially to server");
                 // After login, send map data to server (and get new map data back)
                 var pkg = new ZPackage(CreateExplorationData().ToArray());
                 ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.instance.GetServerPeerID(), nameof(RPC_Veilheim_ReceiveExploration), pkg);
-            } 
+            }
 
             isInSetMapData = false;
         }
@@ -162,7 +161,7 @@ namespace Veilheim.Map
         private static bool EnqueueExploreData(On.Minimap.orig_Explore_int_int orig, Minimap self, int x, int y)
         {
             bool result = orig(self, x, y);
-            
+
             if (result && !isInSetMapData)
             {
                 lock (explorationQueue)
@@ -180,7 +179,7 @@ namespace Veilheim.Map
         private static void SendQueuedExploreData(On.Minimap.orig_UpdateExplore orig, Minimap self, float dt, Player player)
         {
             orig(self, dt, player);
-            
+
             if (explorationQueue.Count == 0)
             {
                 return;
@@ -215,7 +214,7 @@ namespace Veilheim.Map
         private static void AddPlayerToBoatingList(On.Ship.orig_OnTriggerEnter orig, Ship self, Collider collider)
         {
             orig(self, collider);
-            
+
             if (self.m_players.Contains(Player.m_localPlayer))
             {
                 Logger.LogDebug("Player entered ship");
@@ -352,7 +351,7 @@ namespace Veilheim.Map
         // Helpers (copied from original assembly) to prevent enqueuing unneeded exploration data
         public static void ExploreLocal(Vector3 position)
         {
-            var num = (int) Mathf.Ceil(Configuration.Current.MapServer.exploreRadius / Minimap.instance.m_pixelSize);
+            var num = (int)Mathf.Ceil(ConfigUtil.Get<float>("MapServer", "exploreRadius") / Minimap.instance.m_pixelSize);
             var flag = false;
             int num2;
             int num3;
@@ -422,7 +421,7 @@ namespace Veilheim.Map
                     }
 
                     binaryWriter.Flush();
-                  //  gz.Flush();
+                    //  gz.Flush();
                 }
 
                 return result.ToArray();

@@ -96,10 +96,7 @@
     <Compile Include="AssetUtils\AssetLoader.cs" />
     <Compile Include="Blueprints\Blueprint.cs" />
     <Compile Include="Blueprints\FlattenTerrain.cs" />
-    <Compile Include="Configurations\GUI\ConfigurationGUI.cs" />
-    <Compile Include="Configurations\Sections\ProductionInputAmountServerConfiguration.cs" />
     <Compile Include="Extensions\ObjectDBExtensions.cs" />
-    <Compile Include="Configurations\ConfigurationRPC.cs" />
     <Compile Include="IDestroyable.cs" />
     <Compile Include="Extensions\ZNetExtensions.cs" />
     <Compile Include="Logger.cs" />
@@ -135,18 +132,8 @@
     <Compile Include="Properties\IgnoreAccessModifiers.cs" />
     <Compile Include="Extensions\PlayerExtensions.cs" />
     <Compile Include="Extensions\ZPackageExtension.cs" />
+    <Compile Include="Utils\ConfigUtil.cs" />
     <Compile Include="Veilheim.cs" />
-    <Compile Include="Configurations\ActivationTime.cs" />
-    <Compile Include="Configurations\BaseConfig.cs" />
-    <Compile Include="Configurations\Configuration.cs" />
-    <Compile Include="Configurations\ConfigurationAttribute.cs" />
-    <Compile Include="Configurations\ConfigurationExtra.cs" />
-    <Compile Include="Configurations\ConfigurationHooks.cs" />
-    <Compile Include="Configurations\ConfigurationSectionAttribute.cs" />
-    <Compile Include="Configurations\ISyncableSection.cs" />
-    <Compile Include="Configurations\SectionStatusChangeEventArgs.cs" />
-    <Compile Include="Configurations\Sections\MapConfiguration.cs" />
-    <Compile Include="Configurations\Sections\MapServerConfiguration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -163,6 +150,7 @@
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>powershell.exe -ExecutionPolicy RemoteSigned -File "$(SolutionDir)publish.ps1" -Target "$(ConfigurationName)" -TargetPath "$(TargetDir.TrimEnd('\'))" -TargetAssembly "$(TargetFileName)" -ValheimPath "$(VALHEIM_INSTALL.TrimEnd('\'))"</PostBuildEvent>

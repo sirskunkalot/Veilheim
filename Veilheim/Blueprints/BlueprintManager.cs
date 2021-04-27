@@ -10,7 +10,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using Jotunn.Managers;
-using Veilheim.Configurations;
+using Veilheim.Utils;
 using Object = UnityEngine.Object;
 
 namespace Veilheim.Blueprints
@@ -19,7 +19,7 @@ namespace Veilheim.Blueprints
     {
         internal static BlueprintManager Instance { get; private set; }
 
-        internal static string BlueprintPath = Path.Combine(Configuration.ConfigIniPath, "blueprints");
+        internal static string BlueprintPath = Path.Combine(ConfigUtil.GetConfigIniPath(), "blueprints");
         
         internal float selectionRadius = 10.0f;
 
