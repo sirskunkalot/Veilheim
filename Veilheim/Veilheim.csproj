@@ -98,7 +98,6 @@
     <Compile Include="Blueprints\FlattenTerrain.cs" />
     <Compile Include="Extensions\ObjectDBExtensions.cs" />
     <Compile Include="Extensions\ZNetExtensions.cs" />
-    <Compile Include="Logger.cs" />
     <Compile Include="Map\MapHooks.cs" />
     <Compile Include="Map\NoMinimap.cs" />
     <Compile Include="Map\PortalList.cs" />

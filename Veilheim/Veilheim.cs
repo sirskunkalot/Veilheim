@@ -6,7 +6,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Reflection;
 using BepInEx;
 using BepInEx.Configuration;
@@ -50,9 +49,6 @@ namespace Veilheim
             // Force load custom Unity assemblies
             Assembly.GetAssembly(typeof(ItemDropWrapper));  //TODO: force load assembly somewhat more elegant
 
-            // Initialize Logger
-            Veilheim.Logger.Init();
-
             // Root GameObject for all plugin components
             RootObject = new GameObject("_VeilheimPlugin");
             DontDestroyOnLoad(RootObject);
@@ -71,7 +67,7 @@ namespace Veilheim
             //TODO: load assets with events from manager
             AssetUtils.AssetLoader.LoadAssets();
 
-            Veilheim.Logger.LogInfo($"{PluginName} v{PluginVersion} loaded");
+            Jotunn.Logger.LogInfo($"{PluginName} v{PluginVersion} loaded");
         }
 
         private void CreateConfigBindings()
@@ -109,16 +105,6 @@ namespace Veilheim
                 new ConfigDescription("Max ore amount for blast furnace", null, new object[] { new ConfigurationManagerAttributes() { IsAdminOnly = true } }));
             Config.Bind("ProductionInputAmounts", "spinningWheelFlachsAmount", 40,
                 new ConfigDescription("Max flachs amount for spinning wheel", null, new object[] { new ConfigurationManagerAttributes() { IsAdminOnly = true } }));
-        }
-
-
-        private void OnDestroy()
-        {
-            Veilheim.Logger.LogInfo($"Destroying {PluginName} v{PluginVersion}");
-
-            //TODO: destroy managers, no need for an interface anymore
-
-            Veilheim.Logger.Destroy();
         }
     }
 }

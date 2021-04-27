@@ -14,6 +14,7 @@ using UnityEngine;
 using Veilheim.Extensions;
 using Veilheim.Utils;
 using CompressionLevel = Ionic.Zlib.CompressionLevel;
+using Logger = Jotunn.Logger;
 
 namespace Veilheim.Map
 {

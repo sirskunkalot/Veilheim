@@ -12,6 +12,7 @@ using UnityEngine.UI;
 using Jotunn.Managers;
 using Veilheim.Utils;
 using Object = UnityEngine.Object;
+using Logger = Jotunn.Logger;
 
 namespace Veilheim.Blueprints
 {

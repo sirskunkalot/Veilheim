@@ -12,6 +12,7 @@ using UnityEngine;
 using Jotunn.Configs;
 using Jotunn.Entities;
 using Jotunn.Managers;
+using Logger = Jotunn.Logger;
 
 namespace Veilheim.AssetUtils
 {

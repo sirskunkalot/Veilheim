@@ -9,6 +9,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using Veilheim.AssetManagers;
+using Logger = Jotunn.Logger;
 
 namespace Veilheim.Map
 {
