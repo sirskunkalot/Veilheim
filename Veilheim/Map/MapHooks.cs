@@ -6,12 +6,11 @@
 
 using Jotunn.Utils;
 using UnityEngine;
-using Veilheim.PatchEvents;
 using Veilheim.Utils;
 
 namespace Veilheim.Map
 {
-    public class Map_Patches : IPatchEventConsumer
+    public class Map_Patches
     {
 
         [PatchInit(0)]

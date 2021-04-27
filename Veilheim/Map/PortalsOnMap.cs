@@ -11,12 +11,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jotunn.Utils;
 using UnityEngine;
-using Veilheim.PatchEvents;
 using Veilheim.Utils;
 
 namespace Veilheim.Map
 {
-    public class PortalsOnMap : IPatchEventConsumer
+    public class PortalsOnMap 
     {
 
         [PatchInit(0)]

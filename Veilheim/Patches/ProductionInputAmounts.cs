@@ -5,12 +5,11 @@
 // Project: Veilheim
 
 using Jotunn.Utils;
-using Veilheim.PatchEvents;
 using Veilheim.Utils;
 
 namespace Veilheim.Patches
 {
-    public class ProductionInputAmounts : IPatchEventConsumer
+    public class ProductionInputAmounts 
     {
         [PatchInit(0)]
         public static void InitializePatches()

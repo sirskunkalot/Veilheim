@@ -5,12 +5,11 @@
 // Project: Veilheim
 
 using Jotunn.Utils;
-using Veilheim.PatchEvents;
 using Veilheim.Utils;
 
 namespace Veilheim.Map
 {
-    public class PublicPostion_Patches : IPatchEventConsumer
+    public class PublicPostion_Patches 
     {
 
         [PatchInit(0)]

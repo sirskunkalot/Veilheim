@@ -12,13 +12,12 @@ using Ionic.Zlib;
 using Jotunn.Utils;
 using UnityEngine;
 using Veilheim.Extensions;
-using Veilheim.PatchEvents;
 using Veilheim.Utils;
 using CompressionLevel = Ionic.Zlib.CompressionLevel;
 
 namespace Veilheim.Map
 {
-    public class SharedMapPatches : IPatchEventConsumer
+    public class SharedMapPatches 
     {
         private static bool isInSetMapData;
         private static readonly List<int> explorationQueue = new List<int>();

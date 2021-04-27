@@ -14,7 +14,6 @@ using Jotunn.Utils;
 using UnityEngine;
 using Veilheim.AssetManagers;
 using Veilheim.Blueprints;
-using Veilheim.PatchEvents;
 using Veilheim.UnityWrappers;
 using Veilheim.Utils;
 
@@ -35,7 +34,6 @@ namespace Veilheim
         private readonly List<Type> managerTypes = new List<Type>()
         {
             typeof(GUIManager),
-            typeof(PatchManager),
             typeof(BlueprintManager)
         };
 
@@ -54,11 +52,6 @@ namespace Veilheim
             // Force load custom Unity assemblies
             Assembly.GetAssembly(typeof(ItemDropWrapper));  //TODO: force load assembly somewhat more elegant
 
-            /*
-            // Create harmony patches
-            m_harmony = new Harmony(PluginGUID);
-            m_harmony.PatchAll();
-            */
             // Initialize Logger
             Veilheim.Logger.Init();
 
@@ -90,8 +83,6 @@ namespace Veilheim
             Config.Bind("Map", "showPortalsOnMap", false, "Show portals on map");
             Config.Bind("Map", "showPortalSelection", false, "Show portal selection window on portal rename");
             Config.Bind("Map", "showNoMinimap", false, "Play without minimap");
-
-            Config.Bind("Test1", "Blabla", 500, "Test value int 500");
 
             // Section MapServer
             Config.Bind("MapServer", "IsEnabled", false,
@@ -135,8 +126,6 @@ namespace Veilheim
             //TODO: destroy managers, no need for an interface anymore
 
             Veilheim.Logger.Destroy();
-
-            m_harmony.UnpatchAll(PluginGUID);
         }
     }
 }
