@@ -98,7 +98,6 @@
     <Compile Include="Blueprints\FlattenTerrain.cs" />
     <Compile Include="Configurations\GUI\ConfigurationGUI.cs" />
     <Compile Include="Configurations\Sections\ProductionInputAmountServerConfiguration.cs" />
-    <Compile Include="ConsoleCommands\ConsoleHooks.cs" />
     <Compile Include="Extensions\ObjectDBExtensions.cs" />
     <Compile Include="Configurations\ConfigurationRPC.cs" />
     <Compile Include="IDestroyable.cs" />
@@ -149,8 +148,6 @@
     <Compile Include="Configurations\SectionStatusChangeEventArgs.cs" />
     <Compile Include="Configurations\Sections\MapConfiguration.cs" />
     <Compile Include="Configurations\Sections\MapServerConfiguration.cs" />
-    <Compile Include="ConsoleCommands\BaseConsoleCommand.cs" />
-    <Compile Include="ConsoleCommands\SetConfigurationValue.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

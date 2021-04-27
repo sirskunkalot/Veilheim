@@ -16,7 +16,6 @@ using IniParser;
 using IniParser.Model;
 using IniParser.Parser;
 using UnityEngine;
-using Veilheim.ConsoleCommands;
 
 namespace Veilheim.Configurations
 {
@@ -370,7 +369,7 @@ namespace Veilheim.Configurations
                 {
                     var zPgk = new ZPackage();
                     zPgk.Write($"setvalue {sectionProperty.Name}.{entryProperty.Name} {value}");
-                    ZRoutedRpc.instance.InvokeRoutedRPC(nameof(SetConfigurationValue.RPC_Veilheim_SetConfigurationValue), zPgk);
+                    // ZRoutedRpc.instance.InvokeRoutedRPC(nameof(SetConfigurationValue.RPC_Veilheim_SetConfigurationValue), zPgk);
                 }
             }
         }
