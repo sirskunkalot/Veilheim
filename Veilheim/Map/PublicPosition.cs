@@ -4,6 +4,7 @@
 // File:    PublicPosition.cs
 // Project: Veilheim
 
+using Jotunn.Utils;
 using Veilheim.Configurations;
 using Veilheim.PatchEvents;
 
@@ -11,23 +12,33 @@ namespace Veilheim.Map
 {
     public class PublicPostion_Patches : IPatchEventConsumer
     {
-        [PatchEvent(typeof(ZNet), nameof(ZNet.Awake), PatchEventType.Postfix, 600)]
-        public static void EnablePublicPosition(ZNet instance)
+
+        [PatchInit(0)]
+        public static void InitializePatches()
         {
+            On.ZNet.SetPublicReferencePosition += PreventDisablePublicPosition;
+            On.ZNet.Awake += EnablePublicPosition;
+        }
+
+        private static void EnablePublicPosition(On.ZNet.orig_Awake orig, ZNet self)
+        {
+            orig(self);
+
             if (Configuration.Current.MapServer.IsEnabled && Configuration.Current.MapServer.playerPositionPublicOnJoin)
             {
                 // Set player position visibility to public by default on server join
-                instance.m_publicReferencePosition = true;
+                self.m_publicReferencePosition = true;
             }
         }
 
-        [PatchEvent(typeof(ZNet), nameof(ZNet.SetPublicReferencePosition), PatchEventType.Postfix)]
-        public static void PreventDisablePublicPosition(ZNet instance)
+        private static void PreventDisablePublicPosition(On.ZNet.orig_SetPublicReferencePosition orig, ZNet self, bool pub)
         {
-            if (Configuration.Current.MapServer.IsEnabled && Configuration.Current.MapServer.preventPlayerFromTurningOffPublicPosition
-            ) //isn't there a limit to identifiers in c#?
+            orig(self, pub);
+
+            //isn't there a limit to identifiers in c#?
+            if (Configuration.Current.MapServer.IsEnabled && Configuration.Current.MapServer.preventPlayerFromTurningOffPublicPosition) 
             {
-                instance.m_publicReferencePosition = true;
+                self.m_publicReferencePosition = true;
             }
         }
     }
