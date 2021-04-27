@@ -4,6 +4,7 @@
 // File:    MapHooks.cs
 // Project: Veilheim
 
+using Jotunn.Utils;
 using UnityEngine;
 using Veilheim.Configurations;
 using Veilheim.PatchEvents;
@@ -12,13 +13,61 @@ namespace Veilheim.Map
 {
     public class Map_Patches : IPatchEventConsumer
     {
+
+        [PatchInit(0)]
+        public static void InitializePatches()
+        {
+            On.TextInput.Hide += ResetPortalSelector;
+            On.TeleportWorld.Interact += ShowPortalSelection;
+            On.Menu.IsVisible += PortalGUI_Mouselook_Patch;
+        }
+
+        /// <summary>
+        ///     CLIENT SIDE: Disable mouselook when portal selection gui is visible
+        /// </summary>
+        private static bool PortalGUI_Mouselook_Patch(On.Menu.orig_IsVisible orig)
+        {
+            bool result = orig();
+            result |= PortalSelectionGUI.IsVisible() && TextInput.instance.m_panel.activeSelf;
+            return result;
+        }
+
+        /// <summary>
+        ///     CLIENT SIDE: Creates a <see cref="PortalSelectionGUI" /> when interacting with a portal
+        /// </summary>
+        private static bool ShowPortalSelection(On.TeleportWorld.orig_Interact orig, TeleportWorld self, Humanoid human, bool hold)
+        {
+            bool result = orig(self, human, hold);
+            // only act on clients
+            if (ZNet.instance.IsServerInstance())
+            {
+                return result;
+            }
+
+            // must be enabled
+            if (!Configuration.Current.Map.IsEnabled || !Configuration.Current.Map.showPortalSelection)
+            {
+                return result;
+            }
+
+            // i like my personal space
+            if (!PrivateArea.CheckAccess(self.transform.position) || hold)
+            {
+                return result;
+            }
+
+            PortalSelectionGUI.OpenPortalSelection();
+
+            return result;
+        }
+
         /// <summary>
         ///     CLIENT SIDE: Destroy the <see cref="PortalSelectionGUI" /> when active
         /// </summary>
-        /// <param name="instance">TextInput instance</param>
-        [PatchEvent(typeof(TextInput), nameof(TextInput.Hide), PatchEventType.Postfix)]
-        public static void ResetPortalSelector(TextInput instance)
+        private static void ResetPortalSelector(On.TextInput.orig_Hide orig, TextInput self)
         {
+            orig(self);
+
             if (ZNet.instance.IsServerInstance())
             {
                 return;
@@ -27,47 +76,11 @@ namespace Veilheim.Map
             PortalSelectionGUI.Hide();
 
             // reset position of textinput panel
-            instance.m_panel.transform.localPosition = new Vector3(0, 0f, 0);
+            self.m_panel.transform.localPosition = new Vector3(0, 0f, 0);
 
             // restore mouse capture
             GameCamera.instance.m_mouseCapture = true;
             GameCamera.instance.UpdateMouseCapture();
-        }
-
-        /// <summary>
-        ///     CLIENT SIDE: Creates a <see cref="PortalSelectionGUI" /> when interacting with a portal
-        /// </summary>
-        /// <param name="instance">Teleporter instance</param>
-        /// <param name="human">unused</param>
-        /// <param name="hold"></param>
-        [PatchEvent(typeof(TeleportWorld), nameof(TeleportWorld.Interact), PatchEventType.Postfix)]
-        public static void ShowPortalSelection(TeleportWorld instance, Humanoid human, bool hold)
-        {
-            // only act on clients
-            if (ZNet.instance.IsServerInstance())
-            {
-                return;
-            }
-
-            // must be enabled
-            if (!Configuration.Current.Map.IsEnabled || !Configuration.Current.Map.showPortalSelection)
-            {
-                return;
-            }
-
-            // i like my personal space
-            if (!PrivateArea.CheckAccess(instance.transform.position) || hold)
-            {
-                return;
-            }
-
-            PortalSelectionGUI.OpenPortalSelection();
-        }
-
-        [PatchEvent(typeof(Menu), nameof(Menu.IsVisible), PatchEventType.Postfix)]
-        public static void PortalGUI_Mouselook_Patch(ref bool result)
-        {
-            result |= PortalSelectionGUI.IsVisible() && TextInput.instance.m_panel.activeSelf;
         }
     }
 }
