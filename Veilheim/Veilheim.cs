@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using BepInEx;
+using BepInEx.Configuration;
 using HarmonyLib;
 using UnityEngine;
 using Veilheim.AssetManagers;
@@ -45,6 +46,10 @@ namespace Veilheim
 
         private void Awake()
         {
+            Instance = this;
+
+            CreateConfigBindings();
+
             // Force load custom Unity assemblies
             Assembly.GetAssembly(typeof(ItemDropWrapper));  //TODO: force load assembly somewhat more elegant
 
@@ -74,7 +79,48 @@ namespace Veilheim
             AssetUtils.AssetLoader.LoadAssets();
 
             Veilheim.Logger.LogInfo($"{PluginName} v{PluginVersion} loaded");
-            Instance = this;
+        }
+
+        private void CreateConfigBindings()
+        {
+            // Section Map
+            Config.Bind("Map", "IsEnabled", false, "Enable Map section");
+            Config.Bind("Map", "showPortalsOnMap", false, "Show portals on map");
+            Config.Bind("Map", "showPortalSelection", "Show portal selection window on portal rename");
+            Config.Bind("Map", "showNoMinimap", false, "Play without minimap");
+
+            // Section MapServer
+            Config.Bind("MapServer", "IsEnabled", false,
+                new ConfigDescription("Enable MapServer section", null, new object[] { new ConfigurationManagerAttributes() { IsAdminOnly = true } }));
+            Config.Bind("MapServer", "shareMapProgression", false,
+                new ConfigDescription("With this enabled you will receive the same exploration progression as other players on the server", null, new object[] { new ConfigurationManagerAttributes() { IsAdminOnly = true } }));
+            Config.Bind("MapServer", "exploreRadius", 100f,
+                new ConfigDescription("The radius of the map that you explore when moving", null, new object[] { new ConfigurationManagerAttributes() { IsAdminOnly = true } }));
+            Config.Bind("MapServer", "exploreRadiusSailing", 100f,
+                new ConfigDescription("The radius of the map that you explore while sailing", null, new object[] { new ConfigurationManagerAttributes() { IsAdminOnly = true } }));
+            Config.Bind("MapServer", "playerPositionPublicOnJoin", false,
+                new ConfigDescription("Automatically turn on the Map option to share your position when joining or starting a game", null, new object[] { new ConfigurationManagerAttributes() { IsAdminOnly = true } }));
+            Config.Bind("MapServer", "preventPlayerFromTurningOffPublicPosition", false,
+                new ConfigDescription("Prevents you and other people on the server to turn off their map sharing option", null, new object[] { new ConfigurationManagerAttributes() { IsAdminOnly = true } }));
+
+
+            // Section ProductionInputAmount
+            Config.Bind("ProductionInputAmount", "IsEnabled", false,
+                new ConfigDescription("Enable Production input amount section", null, new object[] { new ConfigurationManagerAttributes() { IsAdminOnly = true } }));
+            Config.Bind("ProductionInputAmount", "windmillBarleyAmount", 50,
+                new ConfigDescription("Max windmill barley amount", null, new object[] { new ConfigurationManagerAttributes() { IsAdminOnly = true } }));
+            Config.Bind("ProductionInputAmount", "kilnWoodAmount", 25,
+                new ConfigDescription("Max wood amount for kiln", null, new object[] { new ConfigurationManagerAttributes() { IsAdminOnly = true } }));
+            Config.Bind("ProductionInputAmount", "furnaceCoalAmount", 20,
+                new ConfigDescription("Max coal amount for furnace", null, new object[] { new ConfigurationManagerAttributes() { IsAdminOnly = true } }));
+            Config.Bind("ProductionInputAmount", "furnaceOreAmount", 10,
+                new ConfigDescription("Max ore amount for furnace", null, new object[] { new ConfigurationManagerAttributes() { IsAdminOnly = true } }));
+            Config.Bind("ProductionInputAmount", "blastfurnaceCoalAmount", 20,
+                new ConfigDescription("Max coal amount for blast furnace", null, new object[] { new ConfigurationManagerAttributes() { IsAdminOnly = true } }));
+            Config.Bind("ProductionInputAmount", "blastfurnaceOreAmount", 10,
+                new ConfigDescription("Max ore amount for blast furnace", null, new object[] { new ConfigurationManagerAttributes() { IsAdminOnly = true } }));
+            Config.Bind("ProductionInputAmount", "spinningWheelFlachsAmount", 40,
+                new ConfigDescription("Max flachs amount for spinning wheel", null, new object[] { new ConfigurationManagerAttributes() { IsAdminOnly = true } }));
         }
 
 
