@@ -4,6 +4,7 @@
 // File:    NoMinimap.cs
 // Project: Veilheim
 
+using Jotunn.Utils;
 using UnityEngine;
 using Veilheim.Configurations;
 using Veilheim.PatchEvents;
@@ -12,43 +13,54 @@ namespace Veilheim.Map
 {
     public class NoMinimap : IPatchEventConsumer
     {
-        [PatchEvent(typeof(Minimap), nameof(Minimap.SetMapMode), PatchEventType.BlockingPrefix)]
-        public static void DontShowMinimap_Patch(Minimap instance, ref Minimap.MapMode mode, ref bool cancel)
+
+        [PatchInit(0)]
+        public static void InitializePatches()
         {
+            On.Minimap.Awake += Minimap_Awake_NoMinimap_Patch;
+            On.Minimap.SetMapMode += DontShowMinimap_Patch;
+        }
+
+        private static void DontShowMinimap_Patch(On.Minimap.orig_SetMapMode orig, Minimap self, int mode)
+        {
+
             if (Configuration.Current.Map.IsEnabled && Configuration.Current.Map.showNoMinimap)
             {
                 if ((Chat.instance == null || !Chat.instance.HasFocus()) && !global::Console.IsVisible() && !InventoryGui.IsVisible() && !Minimap.InTextInput())
                 {
-                    if (ZInput.GetButtonDown("Map") || ZInput.GetButtonDown("JoyMap") || (instance.m_mode == Minimap.MapMode.Large &&
+                    if (ZInput.GetButtonDown("Map") || ZInput.GetButtonDown("JoyMap") || (self.m_mode == Minimap.MapMode.Large &&
                                                                                           (Input.GetKeyDown(KeyCode.Escape) || ZInput.GetButtonDown("JoyButtonB"))))
                     {
-                        if (mode == Minimap.MapMode.Large)
+                        if (mode == (int)Minimap.MapMode.Large)
                         {
                             return;
                         }
-                        
-                        if ((mode == Minimap.MapMode.Small) && (instance.m_mode == Minimap.MapMode.Large))
+
+                        if ((mode == (int)Minimap.MapMode.Small) && (self.m_mode == Minimap.MapMode.Large))
                         {
-                            mode = Minimap.MapMode.None;
+                            mode = (int)Minimap.MapMode.None;
                         }
                     }
                     else
                     {
-                        if ((mode == Minimap.MapMode.Small) && (instance.m_mode == Minimap.MapMode.None))
+                        if ((mode == (int)Minimap.MapMode.Small) && (self.m_mode == Minimap.MapMode.None))
                         {
-                            mode = Minimap.MapMode.None;
+                            mode = (int)Minimap.MapMode.None;
                         }
                     }
                 }
             }
+
+            orig(self, mode);
         }
 
-        [PatchEvent(typeof(Minimap), nameof(Minimap.Awake), PatchEventType.Postfix)]
-        public static void Minimap_Awake_NoMinimap_Patch(Minimap instance)
+        private static void Minimap_Awake_NoMinimap_Patch(On.Minimap.orig_Awake orig, Minimap self)
         {
+            orig(self);
+
             if (Configuration.Current.Map.IsEnabled && Configuration.Current.Map.showNoMinimap)
             {
-                instance.SetMapMode(Minimap.MapMode.None);
+                self.SetMapMode(Minimap.MapMode.None);
             }
         }
     }
