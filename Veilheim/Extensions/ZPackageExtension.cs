@@ -39,7 +39,7 @@ namespace Veilheim.Extensions
         {
             if (!Directory.Exists(Path.GetDirectoryName(filename)))
             {
-                Logger.LogInfo($"Creating path {Path.GetDirectoryName(filename)}");
+                Jotunn.Logger.LogInfo($"Creating path {Path.GetDirectoryName(filename)}");
                 Directory.CreateDirectory(Path.GetDirectoryName(filename));
             }
 
