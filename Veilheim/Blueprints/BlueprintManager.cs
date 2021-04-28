@@ -19,7 +19,7 @@ namespace Veilheim.Blueprints
     {
         internal static BlueprintManager Instance { get; private set; }
 
-        internal static string BlueprintPath = Path.Combine(ConfigUtil.GetConfigIniPath(), "Veilheim", "blueprints");
+        internal static string BlueprintPath = Path.Combine(ConfigUtil.GetConfigPath(), "Veilheim", "blueprints");
         
         internal float selectionRadius = 10.0f;
 
@@ -36,7 +36,7 @@ namespace Veilheim.Blueprints
         {
             if (Instance != null)
             {
-                Logger.LogError($"Two instances of singleton {GetType()}");
+                Jotunn.Logger.LogError($"Two instances of singleton {GetType()}");
                 return;
             }
 
@@ -53,7 +53,7 @@ namespace Veilheim.Blueprints
                 Directory.CreateDirectory(BlueprintPath);
             }
 
-            Logger.LogMessage("Loading known blueprints");
+            Jotunn.Logger.LogMessage("Loading known blueprints");
 
             // Try to load all saved blueprints
             foreach (var name in Directory.EnumerateFiles(BlueprintPath, "*.blueprint").Select(Path.GetFileNameWithoutExtension))
@@ -67,7 +67,7 @@ namespace Veilheim.Blueprints
                     }
                     else
                     {
-                        Logger.LogWarning($"Could not load blueprint {name}");
+                        Jotunn.Logger.LogWarning($"Could not load blueprint {name}");
                     }
                 }
             }
@@ -79,7 +79,7 @@ namespace Veilheim.Blueprints
             On.KeyHints.UpdateHints += ShowBlueprintHints;
             On.Player.UpdatePlacement += ShowBlueprintRadius;
 
-            Logger.LogInfo("BlueprintManager Initialized");
+            Jotunn.Logger.LogInfo("BlueprintManager Initialized");
         }
 
         private void RegisterKnownBlueprints(On.ZNetScene.orig_Awake orig, ZNetScene self)
@@ -89,7 +89,7 @@ namespace Veilheim.Blueprints
             // Client only
             if (!ZNet.instance.IsServerInstance())
             {
-                Logger.LogMessage("Registering known blueprints");
+                Jotunn.Logger.LogMessage("Registering known blueprints");
 
                 // Create prefabs for all known blueprints
                 foreach (var bp in Instance.m_blueprints.Values)
@@ -118,7 +118,7 @@ namespace Veilheim.Blueprints
                     }
 
                     var bpname = $"blueprint{Instance.m_blueprints.Count() + 1:000}";
-                    Logger.LogInfo($"Capturing blueprint {bpname}");
+                    Jotunn.Logger.LogInfo($"Capturing blueprint {bpname}");
 
                     if (Player.m_localPlayer.m_hoveringPiece != null)
                     {
@@ -130,12 +130,12 @@ namespace Veilheim.Blueprints
                         }
                         else
                         {
-                            Logger.LogWarning($"Could not capture blueprint {bpname}");
+                            Jotunn.Logger.LogWarning($"Could not capture blueprint {bpname}");
                         }
                     }
                     else
                     {
-                        Logger.LogInfo("Not hovering any piece");
+                        Jotunn.Logger.LogInfo("Not hovering any piece");
                     }
 
                     // Reset Camera offset
@@ -176,7 +176,7 @@ namespace Veilheim.Blueprints
                         var prefab = PrefabManager.Instance.GetPrefab(entry.name);
                         if (prefab == null)
                         {
-                            Logger.LogError(entry.name + " not found?");
+                            Jotunn.Logger.LogError(entry.name + " not found?");
                             continue;
                         }
 
@@ -345,7 +345,7 @@ namespace Veilheim.Blueprints
                             circleProjector.m_radius = Instance.selectionRadius;
                             circleProjector.m_nrOfSegments = (int)circleProjector.m_radius * 4;
                             circleProjector.Update();
-                            Logger.LogDebug($"Setting radius to {Instance.selectionRadius}");
+                            Jotunn.Logger.LogDebug($"Setting radius to {Instance.selectionRadius}");
                         }
                     }
                     else
