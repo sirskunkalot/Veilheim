@@ -37,6 +37,12 @@ namespace Veilheim.Extensions
         /// <param name="filename"></param>
         public static void WriteToFile(this ZPackage package, string filename)
         {
+            if (!Directory.Exists(Path.GetDirectoryName(filename)))
+            {
+                Logger.LogInfo($"Creating path {Path.GetDirectoryName(filename)}");
+                Directory.CreateDirectory(Path.GetDirectoryName(filename));
+            }
+
             using (var fs = File.Create(filename))
             {
                 using (var bw = new BinaryWriter(fs))
