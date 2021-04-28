@@ -7,7 +7,7 @@
 using System;
 using System.Text;
 using UnityEngine;
-using Logger = Veilheim.Logger;
+using Logger = Jotunn.Logger;
 
 public static class ObjectDBExtensions
 {

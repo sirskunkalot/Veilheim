@@ -14,6 +14,7 @@ using UnityEngine;
 using Veilheim.Extensions;
 using Veilheim.Utils;
 using CompressionLevel = Ionic.Zlib.CompressionLevel;
+using Logger = Jotunn.Logger;
 
 namespace Veilheim.Map
 {
@@ -85,9 +86,9 @@ namespace Veilheim.Map
                 if (ZNet.instance.IsServerInstance())
                 {
                     Minimap.instance.m_explored = new bool[Minimap.instance.m_textureSize * Minimap.instance.m_textureSize];
-                    if (File.Exists(Path.Combine(ConfigUtil.GetConfigIniPath(), ZNet.instance.GetWorldUID().ToString(), "Explorationdata.bin")))
+                    if (File.Exists(Path.Combine(ConfigUtil.GetConfigPath(), ZNet.instance.GetWorldUID().ToString(), "Explorationdata.bin")))
                     {
-                        var mapData = ZPackageExtension.ReadFromFile(Path.Combine(ConfigUtil.GetConfigIniPath(), ZNet.instance.GetWorldUID().ToString(),
+                        var mapData = ZPackageExtension.ReadFromFile(Path.Combine(ConfigUtil.GetConfigPath(), ZNet.instance.GetWorldUID().ToString(),
                             "Explorationdata.bin"));
                         ApplyMapData(mapData);
                     }
@@ -112,7 +113,7 @@ namespace Veilheim.Map
             {
                 Logger.LogInfo($"Saving shared exploration data");
                 var mapData = new ZPackage(CreateExplorationData().ToArray());
-                mapData.WriteToFile(Path.Combine(ConfigUtil.GetConfigIniPath(), ZNet.instance.GetWorldUID().ToString(), "Explorationdata.bin"));
+                mapData.WriteToFile(Path.Combine(ConfigUtil.GetConfigPath(), ZNet.instance.GetWorldUID().ToString(), "Explorationdata.bin"));
             }
 
             orig(self);

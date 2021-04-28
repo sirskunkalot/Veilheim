@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Jotunn.Utils;
 using UnityEngine;
 using Veilheim.Utils;
+using Logger = Jotunn.Logger;
 
 namespace Veilheim.Map
 {

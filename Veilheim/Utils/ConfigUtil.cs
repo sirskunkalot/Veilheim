@@ -21,9 +21,9 @@ namespace Veilheim.Utils
             return VeilheimPlugin.Instance.Config[section, key].Get<T>();
         }
 
-        public static string GetConfigIniPath()
+        public static string GetConfigPath()
         {
-            return Path.GetDirectoryName(VeilheimPlugin.Instance.Config.ConfigFilePath);
+            return Path.Combine(Path.GetDirectoryName(VeilheimPlugin.Instance.Config.ConfigFilePath), VeilheimPlugin.PluginName);
         }
     }
 }

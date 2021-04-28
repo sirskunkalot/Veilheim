@@ -11,6 +11,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System;
+using Logger = Jotunn.Logger;
 
 namespace Veilheim.AssetManagers
 {

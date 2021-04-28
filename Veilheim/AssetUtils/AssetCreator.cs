@@ -6,6 +6,7 @@
 
 using System.Collections.Generic;
 using UnityEngine;
+using Logger = Jotunn.Logger;
 
 namespace Veilheim.AssetUtils
 {
