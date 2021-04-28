@@ -367,3 +367,5 @@ FodyWeavers.xsd
 # not the libraries folder
 !libraries/*
 .idea/
+
+Environment.props
