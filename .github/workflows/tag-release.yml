@@ -7,7 +7,7 @@ on:
 
 defaults:
   run:
-    working-directory: ./working
+
 jobs:
   build_release:
     runs-on: windows-latest
@@ -58,20 +58,20 @@ jobs:
         uses: suisei-cn/actions-download-file@v1
         with:
           url: "https://valheim.thunderstore.io/package/download/denikson/BepInExPack_Valheim/5.4.1000/"
-          target: ${{ env.working-directory }}/bp
+          target: ${{ GITHUB_WORKSPACE }}/bp
 
       - name: Unzip BepinExPack
         run: |
-          7z x ${{ env.working-directory }}/bp/denikson-BepInExPack_Valheim-5.4.1000.zip -oBepInExRaw
-          steamcmd +login anonymous +force_install_dir ${{ env.working-directory }}/VHINSTALL +app_update 896660 validate +exit
-          mv ${{ env.working-directory }}/VHINSTALL/valheim_server_Data/ ${{ env.working-directory }}/VHINSTALL/valheim_Data/ 
-          mv ${{ env.working-directory }}/BepInExRaw/BepInExPack_Valheim/* ${{ env.working-directory }}/VHINSTALL/
+          7z x ${{ GITHUB_WORKSPACE }}/bp/denikson-BepInExPack_Valheim-5.4.1000.zip -oBepInExRaw
+          steamcmd +login anonymous +force_install_dir ${{ GITHUB_WORKSPACE }}/VHINSTALL +app_update 896660 validate +exit
+          mv ${{ GITHUB_WORKSPACE }}/VHINSTALL/valheim_server_Data/ ${{ GITHUB_WORKSPACE }}/VHINSTALL/valheim_Data/ 
+          mv ${{ GITHUB_WORKSPACE }}/BepInExRaw/BepInExPack_Valheim/* ${{ GITHUB_WORKSPACE }}/VHINSTALL/
 
       - name: Remove old publicized and mmhook dlls from cache
         run: |
-          rm -rf ${{ env.working-directory }}/VHINSTALL/valheim_Data/Managed/publicized_assemblies
-          rm -rf ${{ env.working-directory }}/VHINSTALL/valheim_server_Data/Managed/publicized_assemblies
-          rm -rf ${{ env.working-directory }}/VHINSTALL/BepInEx/plugins/MMHOOK
+          rm -rf ${{ GITHUB_WORKSPACE }}/VHINSTALL/valheim_Data/Managed/publicized_assemblies
+          rm -rf ${{ GITHUB_WORKSPACE }}/VHINSTALL/valheim_server_Data/Managed/publicized_assemblies
+          rm -rf ${{ GITHUB_WORKSPACE }}/VHINSTALL/BepInEx/plugins/MMHOOK
 
       - name: Create Environment.props
         run: |
