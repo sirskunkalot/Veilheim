@@ -13,6 +13,9 @@ jobs:
         shell: bash
 
     steps:
+      - name: Create working folder
+        run: cd /d working
+
       - name: Checkout code
         uses: actions/checkout@v2
         with:
@@ -50,14 +53,13 @@ jobs:
         uses: suisei-cn/actions-download-file@v1
         with:
           url: "https://valheim.thunderstore.io/package/download/denikson/BepInExPack_Valheim/5.4.1000/"
-          target: /op1
 
       - name: Unzip BepinExPack
         run: |
-          7z x /op1/denikson-BepInExPack_Valheim-5.4.1000.zip -oBepInExRaw
-          steamcmd +login anonymous +force_install_dir /VHINSTALL +app_update 896660 validate +exit
-          mv /VHINSTALL/valheim_server_Data/ /VHINSTALL/valheim_Data/ 
-          mv BepInExRaw/BepInExPack_Valheim/* /VHINSTALL/
+          7z x denikson-BepInExPack_Valheim-5.4.1000.zip -oBepInExRaw
+          steamcmd +login anonymous +force_install_dir ./VHINSTALL +app_update 896660 validate +exit
+          mv VHINSTALL/valheim_server_Data/ VHINSTALL/valheim_Data/ 
+          mv BepInExRaw/BepInExPack_Valheim/* VHINSTALL/
 
       - name: Remove old publicized and mmhook dlls from cache
         run: |
