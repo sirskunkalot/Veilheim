@@ -76,7 +76,7 @@ jobs:
 
       - name: Build solution
         run: |
-          msbuild Veilheim.sln /p:Configuration=Release
+          dotnet build Veilheim.sln --configuration Release
           mv Veilheim/bin/Release/Veilheim.dll Veilheim.dll
 
       - name: Push version update to master
