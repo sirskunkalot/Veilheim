@@ -20,6 +20,7 @@ jobs:
 
       - name: Get the version
         id: get_version
+        shell: bash
         run: |
           echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
           echo ::set-output name=VERSION_NUMBER::${GITHUB_REF/refs\/tags\/v/}
