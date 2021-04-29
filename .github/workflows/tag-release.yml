@@ -55,11 +55,11 @@ jobs:
           mv D:\a\Veilheim\Veilheim\VHINSTALL/valheim_server_Data/ D:\a\Veilheim\Veilheim\VHINSTALL/valheim_Data/ 
           mv BepInExRaw/BepInExPack_Valheim/* D:\a\Veilheim\Veilheim\VHINSTALL/
 
-      - name: Remove old publicized and mmhook dlls from cache
-        run: |
-          rm -Recurse -Force D:\a\Veilheim\Veilheim\VHINSTALL/valheim_Data/Managed/publicized_assemblies
-          rm -Recurse -Force D:\a\Veilheim\Veilheim\VHINSTALL/valheim_server_Data/Managed/publicized_assemblies
-          rm -Recurse -Force D:\a\Veilheim\Veilheim\VHINSTALL/BepInEx/plugins/MMHOOK
+#      - name: Remove old publicized and mmhook dlls from cache
+#        run: |
+#          rm -Recurse -Force D:\a\Veilheim\Veilheim\VHINSTALL/valheim_Data/Managed/publicized_assemblies
+#          rm -Recurse -Force D:\a\Veilheim\Veilheim\VHINSTALL/valheim_server_Data/Managed/publicized_assemblies
+#          rm -Recurse -Force D:\a\Veilheim\Veilheim\VHINSTALL/BepInEx/plugins/MMHOOK
 
       - name: Create Environment.props
         run: |
