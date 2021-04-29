@@ -14,7 +14,9 @@ jobs:
 
     steps:
       - name: Create working folder
-        run: cd /d working
+        run: |
+          mkdir working
+          cd working
 
       - name: Checkout code
         uses: actions/checkout@v2
