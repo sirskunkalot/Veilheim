@@ -71,8 +71,8 @@ jobs:
 
       - name: Create version.props
         run: |
-          sed -e 's/\[assembly: AssemblyVersion(".*")\]/[assembly: AssemblyVersion("${{ steps.get_version.outputs.VERSION_NUMBER }}.0")]/' Veilheim/Properties/AssemblyInfo.cs > tempAssemblyInfo.cs && mv -Force tempAssemblyInfo.cs Veilheim/Properties/AssemblyInfo.cs
-          sed -e 's/\[assembly: AssemblyFileVersion(".*")\]/[assembly: AssemblyFileVersion("${{ steps.get_version.outputs.VERSION_NUMBER }}.0")]/' Veilheim/Properties/AssemblyInfo.cs > tempAssemblyInfo.cs && mv -Force tempAssemblyInfo.cs Veilheim/Properties/AssemblyInfo.cs
+          sed -e 's/\[assembly: AssemblyVersion(".*")\]/[assembly: AssemblyVersion(""${{ steps.get_version.outputs.VERSION_NUMBER }}.0"")]/' Veilheim/Properties/AssemblyInfo.cs > tempAssemblyInfo.cs && mv -Force tempAssemblyInfo.cs Veilheim/Properties/AssemblyInfo.cs
+          sed -e 's/\[assembly: AssemblyFileVersion(".*")\]/[assembly: AssemblyFileVersion(""${{ steps.get_version.outputs.VERSION_NUMBER }}.0"")]/' Veilheim/Properties/AssemblyInfo.cs > tempAssemblyInfo.cs && mv -Force tempAssemblyInfo.cs Veilheim/Properties/AssemblyInfo.cs
 
       - name: Build solution
         run: |
