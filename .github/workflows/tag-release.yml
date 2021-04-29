@@ -58,11 +58,11 @@ jobs:
         uses: suisei-cn/actions-download-file@v1
         with:
           url: "https://valheim.thunderstore.io/package/download/denikson/BepInExPack_Valheim/5.4.1000/"
-          target: ${{ env.working-directory }}
+          target: ${{ env.working-directory }}/bp
 
       - name: Unzip BepinExPack
         run: |
-          7z x ${{ env.working-directory }}/denikson-BepInExPack_Valheim-5.4.1000.zip -oBepInExRaw
+          7z x ${{ env.working-directory }}/bp/denikson-BepInExPack_Valheim-5.4.1000.zip -oBepInExRaw
           steamcmd +login anonymous +force_install_dir ${{ env.working-directory }}/VHINSTALL +app_update 896660 validate +exit
           mv ${{ env.working-directory }}/VHINSTALL/valheim_server_Data/ ${{ env.working-directory }}/VHINSTALL/valheim_Data/ 
           mv ${{ env.working-directory }}/BepInExRaw/BepInExPack_Valheim/* ${{ env.working-directory }}/VHINSTALL/
