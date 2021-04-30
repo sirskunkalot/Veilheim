@@ -403,6 +403,8 @@ namespace Veilheim.Blueprints
         /// </summary>
         private static void ShowBlueprintHints(On.KeyHints.orig_UpdateHints orig, KeyHints self)
         {
+            orig(self);
+
             Player localPlayer = Player.m_localPlayer;
             if (localPlayer == null)
             {
