@@ -79,6 +79,7 @@ jobs:
 
       - name: Build solution
         run: |
+          mkdir D:\a\Veilheim\Veilheim\Veilheim\bin\Release
           cp BepInExRaw/BepInExPack_Valheim/BepInEx/core/* D:\a\Veilheim\Veilheim\Veilheim\bin\Release
           dotnet build Veilheim.sln --configuration Release
           mv Veilheim/bin/Release/Veilheim.dll Veilheim.dll
