@@ -54,7 +54,9 @@ jobs:
           7z x Bepinex.zip -oBepInExRaw
           steamcmd +login anonymous +force_install_dir D:\a\Veilheim\Veilheim\VHINSTALL +app_update 896660 validate +exit
           mv D:\a\Veilheim\Veilheim\VHINSTALL/valheim_server_Data/ D:\a\Veilheim\Veilheim\VHINSTALL/valheim_Data/ 
-          mv BepInExRaw/BepInExPack_Valheim/* D:\a\Veilheim\Veilheim\VHINSTALL/
+          cp -Recurse BepInExRaw/BepInExPack_Valheim/* D:\a\Veilheim\Veilheim\VHINSTALL/
+
+
 
 #      - name: Remove old publicized and mmhook dlls from cache
 #        run: |
@@ -77,6 +79,7 @@ jobs:
 
       - name: Build solution
         run: |
+          cp BepInExRaw/BepInExPack_Valheim/BepInEx/core/* D:\a\Veilheim\Veilheim\Veilheim\bin\Release
           dotnet build Veilheim.sln --configuration Release
           mv Veilheim/bin/Release/Veilheim.dll Veilheim.dll
 
