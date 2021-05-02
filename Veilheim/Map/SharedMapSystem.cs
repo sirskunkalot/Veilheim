@@ -158,6 +158,12 @@ namespace Veilheim.Map
         /// </summary>
         private static bool EnqueueExploreData(On.Minimap.orig_Explore_int_int orig, Minimap self, int x, int y)
         {
+            // Do not explore if we're in the intro phase
+            if (Player.m_localPlayer?.InIntro() == true)
+            {
+                return false;
+            }
+
             bool result = orig(self, x, y);
 
             if (result && !isInSetMapData)
