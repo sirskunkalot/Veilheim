@@ -44,7 +44,9 @@ function Create-BepInEx{
     Write-Host "Plugin: $TargetAssembly"
     $modname = $TargetAssembly -Replace('.dll')
     $mod = $plug.CreateSubdirectory("$modname");
+    $jotunn = $plug.CreateSubdirectory("Jotunn");
     Copy-Item -Path "$TargetPath\*" -Include $TargetAssembly -Destination "$mod" -Force
+    Copy-Item -Path "$TargetPath\*" -Include "Jotunn.dll" -Destination "$jotunn" -Force
 
     # return basepath as DirectoryInfo
     return $base
