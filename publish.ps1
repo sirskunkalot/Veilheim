@@ -39,6 +39,7 @@ function Create-BepInEx{
 
     # create \BepInEx\plugins
     $plug = $bepinex.CreateSubdirectory('plugins');
+    $mmhook = $plug.CreateSubdirectory('MMHOOK');
 
     # create \BepInEx\plugins\$plugin and copy plugin dll from build
     Write-Host "Plugin: $TargetAssembly"
@@ -47,6 +48,7 @@ function Create-BepInEx{
     $jotunn = $plug.CreateSubdirectory("Jotunn");
     Copy-Item -Path "$TargetPath\*" -Include $TargetAssembly -Destination "$mod" -Force
     Copy-Item -Path "$TargetPath\*" -Include "Jotunn.dll" -Destination "$jotunn" -Force
+    Copy-Item -Path "$ValheimPath\BepInEx\plugins\MMHOOK\*" -Destination "$mmhook" -Force
 
     # return basepath as DirectoryInfo
     return $base
