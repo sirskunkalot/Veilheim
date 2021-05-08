@@ -76,6 +76,7 @@ jobs:
         run: |
           sed -e 's/\[assembly: AssemblyVersion(".*")\]/[assembly: AssemblyVersion(""${{ steps.get_version.outputs.VERSION_NUMBER }}.0"")]/' Veilheim/Properties/AssemblyInfo.cs > tempAssemblyInfo.cs && mv -Force tempAssemblyInfo.cs Veilheim/Properties/AssemblyInfo.cs
           sed -e 's/\[assembly: AssemblyFileVersion(".*")\]/[assembly: AssemblyFileVersion(""${{ steps.get_version.outputs.VERSION_NUMBER }}.0"")]/' Veilheim/Properties/AssemblyInfo.cs > tempAssemblyInfo.cs && mv -Force tempAssemblyInfo.cs Veilheim/Properties/AssemblyInfo.cs
+          sed -e 's/public const string PluginVersion = ".*";/public const string PluginVersion = "${{ steps.get_version.outputs.VERSION_NUMBER }}";/' Veilheim/Veilheim.cs > tempVeilheim.cs && mv -Force tempVeilheim.cs Veilheim/Veilheim.cs
 
       - name: Build solution
         run: |
@@ -89,6 +90,7 @@ jobs:
           git config --global user.name 'github-actions[bot]'
           git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add Veilheim/Properties/AssemblyInfo.cs
+          git add Veilheim/Veilheim.cs
           git commit -m "deploy: Released ${{ steps.get_version.outputs.VERSION }}"
           git push https://${{ secrets.PUSHY }}@github.com/sirskunkalot/Veilheim HEAD:development
           git push https://${{ secrets.PUSHY }}@github.com/sirskunkalot/Veilheim development:master
