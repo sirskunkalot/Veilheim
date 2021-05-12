@@ -3,7 +3,6 @@
     <IncludeAssemblies>
       INIFileParser
       DotNetZip
-	  VeilheimUnityWrappers
     </IncludeAssemblies>
   </Costura>
 </Weavers>

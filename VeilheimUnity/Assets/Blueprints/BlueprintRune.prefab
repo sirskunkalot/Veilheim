@@ -119,9 +119,9 @@ GameObject:
   m_Component:
   - component: {fileID: 6714413790422310430}
   - component: {fileID: 3568516821388203011}
-  - component: {fileID: 3535285024669643436}
-  - component: {fileID: 3485591328026002025}
-  - component: {fileID: 4483421426599012008}
+  - component: {fileID: 1200203811822934074}
+  - component: {fileID: 3819772995888142163}
+  - component: {fileID: 4117808567418363429}
   m_Layer: 12
   m_Name: BlueprintRune
   m_TagString: Untagged
@@ -161,7 +161,7 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 1
---- !u!114 &3535285024669643436
+--- !u!114 &1200203811822934074
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -170,14 +170,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 3595330605884231829}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1717e871ee7eb2444bfb9439dac1dcd6, type: 3}
+  m_Script: {fileID: 1521249158, guid: 9266ceb587ffda14da80e5ef458ca60b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_persistent: 1
   m_distant: 0
   m_type: 0
   m_syncInitialScale: 0
---- !u!114 &3485591328026002025
+--- !u!114 &3819772995888142163
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -186,7 +186,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 3595330605884231829}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d0d611502ea2af247a8988e6ad900426, type: 3}
+  m_Script: {fileID: 1109157524, guid: 9266ceb587ffda14da80e5ef458ca60b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_syncPosition: 1
@@ -194,7 +194,7 @@ MonoBehaviour:
   m_syncScale: 0
   m_syncBodyVelocity: 0
   m_characterParentSync: 0
---- !u!114 &4483421426599012008
+--- !u!114 &4117808567418363429
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -203,7 +203,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 3595330605884231829}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7d57e37d52b637248b1856e0cc5304a9, type: 3}
+  m_Script: {fileID: 825357479, guid: 9266ceb587ffda14da80e5ef458ca60b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_autoPickup: 1
@@ -230,7 +230,7 @@ MonoBehaviour:
       m_equipDuration: 0
       m_variants: 0
       m_trophyPos: {x: 0, y: 0}
-      m_buildPieces: {fileID: 114368156015212241, guid: 762ea833c8f17a44aa7b2da420e7f379,
+      m_buildPieces: {fileID: 4704756160094039144, guid: 762ea833c8f17a44aa7b2da420e7f379,
         type: 3}
       m_centerCamera: 0
       m_setName: 
@@ -394,7 +394,7 @@ MonoBehaviour:
         m_trailStartEffect:
           m_effectPrefabs: []
       m_useDurability: 0
-      m_destroyBroken: 0
+      m_destroyBroken: 1
       m_canBeReparied: 1
       m_maxDurability: 100
       m_durabilityPerLevel: 50
@@ -428,8 +428,6 @@ MonoBehaviour:
       m_trailStartEffect:
         m_effectPrefabs: []
       m_consumeStatusEffect: {fileID: 0}
-  getFromRuntime: 0
-  includeInRelease: 0
 --- !u!1 &6481216377857674673
 GameObject:
   m_ObjectHideFlags: 0

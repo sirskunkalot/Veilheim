@@ -12,7 +12,6 @@ using BepInEx.Configuration;
 using UnityEngine;
 using Veilheim.AssetManagers;
 using Veilheim.Blueprints;
-using Veilheim.UnityWrappers;
 
 namespace Veilheim
 {
@@ -45,9 +44,6 @@ namespace Veilheim
             Instance = this;
 
             CreateConfigBindings();
-
-            // Force load custom Unity assemblies
-            Assembly.GetAssembly(typeof(ItemDropWrapper));  //TODO: force load assembly somewhat more elegant
 
             // Root GameObject for all plugin components
             RootObject = new GameObject("_VeilheimPlugin");

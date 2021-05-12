@@ -91,10 +91,6 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="VeilheimUnityWrappers">
-      <HintPath>..\libraries\Unity\VeilheimUnityWrappers.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Blueprints\BlueprintManager.cs" />
