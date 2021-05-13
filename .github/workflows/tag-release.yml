@@ -46,7 +46,7 @@ jobs:
         uses: CyberAndrii/setup-steamcmd@v1
 
       - name: Prepare Valheim dependencies
-        run: Invoke-WebRequest -Uri https://valheim.thunderstore.io/package/download/denikson/BepInExPack_Valheim/5.4.1000/ -OutFile Bepinex.zip
+        run: Invoke-WebRequest -Uri https://valheim.thunderstore.io/package/download/denikson/BepInExPack_Valheim/5.4.1001/ -OutFile Bepinex.zip
 
 
       - name: Unzip BepinExPack
