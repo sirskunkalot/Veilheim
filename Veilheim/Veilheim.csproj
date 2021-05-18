@@ -139,7 +139,7 @@
     <Exec Command="powershell.exe -ExecutionPolicy RemoteSigned -File &quot;$(SolutionDir)publish.ps1&quot; -Target &quot;$(ConfigurationName)&quot; -TargetPath &quot;$(TargetDir.TrimEnd('\'))&quot; -TargetAssembly &quot;$(TargetFileName)&quot; -ValheimPath &quot;$(VALHEIM_INSTALL.TrimEnd('\'))&quot;" />
   </Target>
   
-  <Target Name="PostBuildTaskUnix" Condition="'$(OS)' == ''" AfterTargets="Build">
+  <Target Name="PostBuildTaskUnix" Condition="'$(OS)' != 'Windows_NT'" AfterTargets="Build">
     <Exec Command="pwsh -ExecutionPolicy RemoteSigned -File &quot;$(SolutionDir)publish.ps1&quot; -Target &quot;$(ConfigurationName)&quot; -TargetPath &quot;$(TargetDir.TrimEnd('\'))&quot; -TargetAssembly &quot;$(TargetFileName)&quot; -ValheimPath &quot;$(VALHEIM_INSTALL.TrimEnd('\'))&quot;" />
   </Target>
   
