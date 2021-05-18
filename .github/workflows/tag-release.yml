@@ -7,7 +7,7 @@ on:
 
 jobs:
   build_release:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
 
@@ -24,6 +24,11 @@ jobs:
         run: |
           echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
           echo ::set-output name=VERSION_NUMBER::${GITHUB_REF/refs\/tags\/v/}
+
+      - name: Get powershell
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y powershell
 
       - name: Setup dotnet for build
         uses: actions/setup-dotnet@v1.7.2
@@ -55,14 +60,6 @@ jobs:
           steamcmd +login anonymous +force_install_dir D:\a\Veilheim\Veilheim\VHINSTALL +app_update 896660 validate +exit
           mv D:\a\Veilheim\Veilheim\VHINSTALL/valheim_server_Data/ D:\a\Veilheim\Veilheim\VHINSTALL/valheim_Data/ 
           cp -Recurse BepInExRaw/BepInExPack_Valheim/* D:\a\Veilheim\Veilheim\VHINSTALL/
-
-
-
-#      - name: Remove old publicized and mmhook dlls from cache
-#        run: |
-#          rm -Recurse -Force D:\a\Veilheim\Veilheim\VHINSTALL/valheim_Data/Managed/publicized_assemblies
-#          rm -Recurse -Force D:\a\Veilheim\Veilheim\VHINSTALL/valheim_server_Data/Managed/publicized_assemblies
-#          rm -Recurse -Force D:\a\Veilheim\Veilheim\VHINSTALL/BepInEx/plugins/MMHOOK
 
       - name: Create Environment.props
         run: |
