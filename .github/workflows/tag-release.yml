@@ -83,8 +83,7 @@ jobs:
 
       - name: Update assembly version
         run: |
-          cat Veilheim/Properties/AssemblyInfo.cs | sed -e 's/\[assembly: AssemblyVersion(".*")\]/[assembly: AssemblyVersion("${{ steps.get_version.outputs.VERSION_NUMBER }}.0")]/' > tempAssemblyInfo.cs
-          cat tempAssemblyInfo.cs | sed -e 's/\[assembly: AssemblyFileVersion(".*")\]/[assembly: AssemblyFileVersion("${{ steps.get_version.outputs.VERSION_NUMBER }}.0")]/' > tempAssemblyInfo.cs && mv tempAssemblyInfo.cs Veilheim/Properties/AssemblyInfo.cs
+          cat Veilheim/Properties/AssemblyInfo.cs | sed -e 's/Version(".*")/Version("${{ steps.get_version.outputs.VERSION_NUMBER }}.0")/' > tempAssemblyInfo.cs && mv tempAssemblyInfo.cs Veilheim/Properties/AssemblyInfo.cs
           
       - name: Update Veilheim.cs version
         run: |
