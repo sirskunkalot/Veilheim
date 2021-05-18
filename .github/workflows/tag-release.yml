@@ -83,12 +83,12 @@ jobs:
 
       - name: Update assembly version
         run: |
-          cat Veilheim/Properties/AssemblyInfo.cs | sed -e 's/\[assembly: AssemblyVersion(".*")\]/[assembly: AssemblyVersion(""${{ steps.get_version.outputs.VERSION_NUMBER }}.0"")]/' > tempAssemblyInfo.cs
-          cat tempAssemblyInfo.cs | sed -e 's/\[assembly: AssemblyFileVersion(".*")\]/[assembly: AssemblyFileVersion(""${{ steps.get_version.outputs.VERSION_NUMBER }}.0"")]/' > tempAssemblyInfo.cs && mv tempAssemblyInfo.cs Veilheim/Properties/AssemblyInfo.cs
+          cat Veilheim/Properties/AssemblyInfo.cs | sed -e 's/\[assembly: AssemblyVersion(".*")\]/[assembly: AssemblyVersion("${{ steps.get_version.outputs.VERSION_NUMBER }}.0")]/' > tempAssemblyInfo.cs
+          cat tempAssemblyInfo.cs | sed -e 's/\[assembly: AssemblyFileVersion(".*")\]/[assembly: AssemblyFileVersion("${{ steps.get_version.outputs.VERSION_NUMBER }}.0")]/' > tempAssemblyInfo.cs && mv tempAssemblyInfo.cs Veilheim/Properties/AssemblyInfo.cs
           
       - name: Update Veilheim.cs version
         run: |
-          cat Veilheim/Veilheim.cs | sed -e 's/public const string PluginVersion = ".*";/public const string PluginVersion = ""${{ steps.get_version.outputs.VERSION_NUMBER }}"";/' > tempVeilheim.cs && mv tempVeilheim.cs Veilheim/Veilheim.cs
+          cat Veilheim/Veilheim.cs | sed -e 's/public const string PluginVersion = ".*";/public const string PluginVersion = "${{ steps.get_version.outputs.VERSION_NUMBER }}";/' > tempVeilheim.cs && mv tempVeilheim.cs Veilheim/Veilheim.cs
 
       - name: Build solution
         run: |
