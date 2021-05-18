@@ -18,17 +18,16 @@ jobs:
           ref: 'development'
           token: ${{ secrets.PUSHY }}
 
-      - name: Get the version
+      - name: Get Valheim version
+        id: valheimversion
+        run: echo "::set-output name=valheimversion::$(curl -s https://api.steamcmd.net/v1/info/896660 | jq -r ".data.\"896660\".depots.branches.public.buildid")"
+
+      - name: Get project version
         id: get_version
         shell: bash
         run: |
           echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
           echo ::set-output name=VERSION_NUMBER::${GITHUB_REF/refs\/tags\/v/}
-
-      - name: Get powershell
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y powershell
 
       - name: Setup dotnet for build
         uses: actions/setup-dotnet@v1.7.2
@@ -47,41 +46,55 @@ jobs:
         run: |
           dotnet tool restore
 
+      - name: Cache Valheim
+        id: cachevalheim
+        uses: actions/cache@v2
+        with:
+          path: ~/VHINSTALL
+          key: ${{ steps.valheimversion.outputs.valheimversion }}-${{ hashFiles('**/lockfiles') }}-BepInExPack-5.4.1001
+
       - name: Install SteamCMD
+        if: steps.cachevalheim.outputs.cache-hit != 'true'
         uses: CyberAndrii/setup-steamcmd@v1
 
       - name: Prepare Valheim dependencies
-        run: Invoke-WebRequest -Uri https://valheim.thunderstore.io/package/download/denikson/BepInExPack_Valheim/5.4.1001/ -OutFile Bepinex.zip
-
-
-      - name: Unzip BepinExPack
+        if: steps.cachevalheim.outputs.cache-hit != 'true'
         run: |
-          7z x Bepinex.zip -oBepInExRaw
-          steamcmd +login anonymous +force_install_dir D:\a\Veilheim\Veilheim\VHINSTALL +app_update 896660 validate +exit
-          mv D:\a\Veilheim\Veilheim\VHINSTALL/valheim_server_Data/ D:\a\Veilheim\Veilheim\VHINSTALL/valheim_Data/ 
-          cp -Recurse BepInExRaw/BepInExPack_Valheim/* D:\a\Veilheim\Veilheim\VHINSTALL/
+          wget -O bepinex.zip "https://valheim.thunderstore.io/package/download/denikson/BepInExPack_Valheim/5.4.1001/"
+          unzip bepinex.zip -d ~/BepInExRaw
+          steamcmd +login anonymous +force_install_dir ~/VHINSTALL +app_update 896660 validate +exit
+          mv ~/VHINSTALL/valheim_server_Data/ ~/VHINSTALL/valheim_Data/
+          mv ~/BepInExRaw/BepInExPack_Valheim/* ~/VHINSTALL/
+
+      - name: Remove old publicized and mmhook dlls from cache
+        if: steps.cachevalheim.outputs.cache-hit != 'true'
+        run: |
+          rm -rf ~/VHINSTALL/valheim_Data/Managed/publicized_assemblies
+          rm -rf ~/VHINSTALL/valheim_server_Data/Managed/publicized_assemblies
+          rm -rf ~/VHINSTALL/BepInEx/plugins/MMHOOK
 
       - name: Create Environment.props
         run: |
-          echo "<?xml version=""1.0"" encoding=""utf-8""?><Project ToolsVersion=""Current"" xmlns=""http://schemas.microsoft.com/developer/msbuild/2003""><PropertyGroup><VALHEIM_INSTALL>D:/a/Veilheim/Veilheim/VHINSTALL</VALHEIM_INSTALL></PropertyGroup></Project>" > Environment.props
+          echo "<?xml version=\"1.0\" encoding=\"utf-8\"?><Project ToolsVersion=\"Current\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\"><PropertyGroup><VALHEIM_INSTALL>$HOME/VHINSTALL/</VALHEIM_INSTALL></PropertyGroup></Project>" > Environment.props
 
       - name: Create DoPrebuild.props
         run: |
-          echo "<?xml version=""1.0"" encoding=""utf-8""?><Project ToolsVersion=""Current"" xmlns=""http://schemas.microsoft.com/developer/msbuild/2003""><PropertyGroup><ExecutePrebuild>true</ExecutePrebuild></PropertyGroup></Project>" > DoPrebuild.props
+          echo "<?xml version=\"1.0\" encoding=\"utf-8\"?><Project ToolsVersion=\"Current\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\"><PropertyGroup><ExecutePrebuild>true</ExecutePrebuild></PropertyGroup></Project>" > JotunnLib/BuildProps/DoPrebuild.props
 
-      - name: Create version.props
+      - name: Update assembly version
         run: |
-          sed -e 's/\[assembly: AssemblyVersion(".*")\]/[assembly: AssemblyVersion(""${{ steps.get_version.outputs.VERSION_NUMBER }}.0"")]/' Veilheim/Properties/AssemblyInfo.cs > tempAssemblyInfo.cs && mv -Force tempAssemblyInfo.cs Veilheim/Properties/AssemblyInfo.cs
-          sed -e 's/\[assembly: AssemblyFileVersion(".*")\]/[assembly: AssemblyFileVersion(""${{ steps.get_version.outputs.VERSION_NUMBER }}.0"")]/' Veilheim/Properties/AssemblyInfo.cs > tempAssemblyInfo.cs && mv -Force tempAssemblyInfo.cs Veilheim/Properties/AssemblyInfo.cs
-          sed -e 's/public const string PluginVersion = ".*";/public const string PluginVersion = ""${{ steps.get_version.outputs.VERSION_NUMBER }}"";/' Veilheim/Veilheim.cs > tempVeilheim.cs && mv -Force tempVeilheim.cs Veilheim/Veilheim.cs
+          cat Veilheim/Properties/AssemblyInfo.cs | sed -e 's/\[assembly: AssemblyVersion(".*")\]/[assembly: AssemblyVersion(""${{ steps.get_version.outputs.VERSION_NUMBER }}.0"")]/' > tempAssemblyInfo.cs
+          cat tempAssemblyInfo.cs | sed -e 's/\[assembly: AssemblyFileVersion(".*")\]/[assembly: AssemblyFileVersion(""${{ steps.get_version.outputs.VERSION_NUMBER }}.0"")]/' > tempAssemblyInfo.cs && mv tempAssemblyInfo.cs Veilheim/Properties/AssemblyInfo.cs
+          
+      - name: Update Veilheim.cs version
+        run: |
+          cat Veilheim/Veilheim.cs | sed -e 's/public const string PluginVersion = ".*";/public const string PluginVersion = ""${{ steps.get_version.outputs.VERSION_NUMBER }}"";/' > tempVeilheim.cs && mv tempVeilheim.cs Veilheim/Veilheim.cs
 
       - name: Build solution
         run: |
-          mkdir D:\a\Veilheim\Veilheim\Veilheim\bin\Release
-          cp BepInExRaw/BepInExPack_Valheim/BepInEx/core/* D:\a\Veilheim\Veilheim\Veilheim\bin\Release
-          dotnet build Veilheim.sln --configuration Release
-          mv Veilheim/bin/Release/Veilheim.dll Veilheim.dll
-
+          msbuild Veilheim.sln /p:Configuration=Release
+          mv Veilheim/bin/Release/net462/Veilheim.dll Veilheim.dll
+          
       - name: Push version update to master
         run: |
           git config --global user.name 'github-actions[bot]'
