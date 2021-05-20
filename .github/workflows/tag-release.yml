@@ -91,7 +91,6 @@ jobs:
 
       - name: Build solution
         run: |
-          cp BepInExRaw/BepInExPack_Valheim/BepInEx/core/* Veilheim/bin/Release/
           msbuild Veilheim.sln /p:Configuration=Release
           mv Veilheim/bin/Release/Veilheim.dll Veilheim.dll
           

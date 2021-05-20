@@ -32,10 +32,7 @@ function Create-BepInEx{
     
     # create \BepInEx\core and copy core dlls from build
     $core = $bepinex.CreateSubdirectory('core');
-    Copy-Item -Path "$TargetPath\*" -Filter 'BepInEx*.dll' -Destination "$core" -Force
-    Copy-Item -Path "$TargetPath\*" -Filter '*Harmony*.dll' -Destination "$core" -Force
-    Copy-Item -Path "$TargetPath\*" -Filter 'Mono.Cecil*.dll' -Destination "$core" -Force
-    Copy-Item -Path "$TargetPath\*" -Filter 'MonoMod*.dll' -Destination "$core" -Force
+    Copy-Item -Path "$ValheimPath\BepInEx\core\*" -Destination "$core" -Force
 
     # create \BepInEx\plugins
     $plug = $bepinex.CreateSubdirectory('plugins');
