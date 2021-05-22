@@ -4,11 +4,10 @@
 // File:    Veilheim.cs
 // Project: Veilheim
 
-using System;
-using System.Collections.Generic;
-using System.Reflection;
 using BepInEx;
 using BepInEx.Configuration;
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 using Veilheim.AssetManagers;
 using Veilheim.Blueprints;
@@ -35,7 +34,7 @@ namespace Veilheim
             typeof(GUIManager),
             typeof(BlueprintManager)
         };
-        
+
         // List of all managers
         private readonly List<Manager> managers = new List<Manager>();
 
