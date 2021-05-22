@@ -277,8 +277,15 @@ namespace Veilheim.Blueprints
                 return null;
             }
 
+            // Instantiate plan objects
+            if (!PlanInstantiate())
+            {
+                Logger.LogWarning("Could not create plan");
+                Object.DestroyImmediate(m_prefab);
+                return null;
+            }
+
             // Add to known prefabs
-            
             CustomPiece CP = new CustomPiece(m_prefab, new PieceConfig
             {
                 PieceTable = "_BlueprintPieceTable"
@@ -337,6 +344,12 @@ namespace Veilheim.Blueprints
             PrefabManager.Instance.DestroyPrefab(m_prefabname);
         }
 
+        /// <summary>
+        ///     Instantiate all pieces from this prefab under the stub piece
+        ///     to generate a new piece representing the blueprint
+        /// </summary>
+        /// <param name="baseObject"></param>
+        /// <returns></returns>
         private bool GhostInstantiate(GameObject baseObject)
         {
             var ret = true;
@@ -344,10 +357,12 @@ namespace Veilheim.Blueprints
 
             try
             {
+                // Get max x/z from blueprint pieces
                 var pieces = new List<PieceEntry>(m_pieceEntries);
                 var maxX = pieces.Max(x => x.posX);
                 var maxZ = pieces.Max(x => x.posZ);
 
+                // Get rotation relative to the camera
                 var tf = baseObject.transform;
                 tf.rotation = Camera.main.transform.rotation;
                 var quat = new Quaternion();
@@ -356,6 +371,7 @@ namespace Veilheim.Blueprints
                 tf.position -= tf.right * (maxX / 2f);
                 tf.position += tf.forward * 5f;
 
+                // Get all distinct pieces
                 var prefabs = new Dictionary<string, GameObject>();
                 foreach (var piece in pieces.GroupBy(x => x.name).Select(x => x.FirstOrDefault()))
                 {
@@ -364,12 +380,14 @@ namespace Veilheim.Blueprints
                     prefabs.Add(piece.name, go);
                 }
 
+                // Check if all distinct pieces are found
                 var nulls = prefabs.Values.Count(x => x == null);
                 if (nulls > 0)
                 {
                     throw new Exception($"{nulls} nulls found");
                 }
 
+                // Instantiate all pieces for the ghost prefab
                 foreach (var piece in pieces)
                 {
                     var pos = tf.position + tf.right * piece.GetPosition().x + tf.forward * piece.GetPosition().z +
@@ -396,6 +414,75 @@ namespace Veilheim.Blueprints
             finally
             {
                 ZNetView.m_forceDisableInit = false;
+            }
+
+            return ret;
+        }
+
+        /// <summary>
+        ///     Instantiate plan prefabs for all pieces in this blueprint.
+        /// </summary>
+        /// <returns></returns>
+        private bool PlanInstantiate()
+        {
+            var ret = true;
+
+            try
+            {
+                // Get all distinct pieces and create plan versions
+                var pieces = new List<PieceEntry>(m_pieceEntries);
+                var prefabs = new Dictionary<string, GameObject>();
+                foreach (var piece in pieces.GroupBy(x => x.name).Select(x => x.FirstOrDefault()))
+                {
+                    // Check if plan prefab already exists
+                    string planPrefabName = $"{piece.name}_planned";
+                    if (PrefabManager.Instance.GetPrefab(planPrefabName))
+                    {
+                        continue;
+                    }
+
+                    // Clone vanilla prefab
+                    GameObject oldPrefab = PrefabManager.Instance.GetPrefab(piece.name);
+                    Piece oldPiece = oldPrefab.GetComponent<Piece>();
+                    GameObject newPrefab = PrefabManager.Instance.CreateClonedPrefab(planPrefabName, oldPrefab);
+
+                    // A plan doesn't need fancy scripts
+                    foreach (var component in newPrefab.GetComponentsInChildren<MonoBehaviour>())
+                    {
+                        Object.Destroy(component);
+                    }
+
+                    // Except the basics
+                    ZNetView zNetView = newPrefab.AddComponent<ZNetView>();
+                    zNetView.m_persistent = true;
+
+                    Piece newPiece = newPrefab.AddComponent<Piece>();
+                    newPiece.m_name = $"Planned {oldPiece.m_name}";
+                    newPiece.m_resources = new Piece.Requirement[0];
+                    newPiece.m_craftingStation = null;
+                    newPiece.m_placeEffect.m_effectPrefabs = new EffectList.EffectData[0];
+                    newPiece.m_comfort = 0;
+                    newPiece.m_canBeRemoved = true;
+
+                    WearNTear wearNTear = newPrefab.AddComponent<WearNTear>();
+                    wearNTear.m_noSupportWear = true;
+                    wearNTear.m_noRoofWear = false;
+                    wearNTear.m_autoCreateFragments = false;
+                    wearNTear.m_supports = true;
+                    wearNTear.m_hitEffect = new EffectList();
+
+                    // Also add our PlanPiece script
+                    PlanPiece planPieceScript = newPrefab.AddComponent<PlanPiece>();
+                    planPieceScript.originalPiece = oldPiece;
+
+                    // Add to known prefabs
+                    PrefabManager.Instance.AddPrefab(newPrefab);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Error while instantiating: {ex}");
+                ret = false;
             }
 
             return ret;

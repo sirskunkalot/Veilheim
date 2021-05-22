@@ -73,6 +73,8 @@ namespace Veilheim.Blueprints
             }
 
             // Hooks
+            ItemManager.OnVanillaItemsAvailable += GetPlanShader;
+
             On.ZNetScene.Awake += RegisterKnownBlueprints;
             On.Player.PlacePiece += BeforePlaceBlueprintPiece;
             On.GameCamera.UpdateCamera += AdjustCameraHeight;
@@ -80,6 +82,11 @@ namespace Veilheim.Blueprints
             On.Player.UpdatePlacement += ShowBlueprintRadius;
 
             Jotunn.Logger.LogInfo("BlueprintManager Initialized");
+        }
+
+        private void GetPlanShader()
+        {
+            ShaderHelper.planShader = Shader.Find("Lux Lit Particles/ Bumped");
         }
 
         private void RegisterKnownBlueprints(On.ZNetScene.orig_Awake orig, ZNetScene self)
@@ -172,8 +179,9 @@ namespace Veilheim.Blueprints
                         Quaternion entryQuat = new Quaternion(entry.rotX, entry.rotY, entry.rotZ, entry.rotW);
                         entryQuat.eulerAngles += rotation.eulerAngles;
 
-                        // Get the prefab
-                        var prefab = PrefabManager.Instance.GetPrefab(entry.name);
+                        // Get the prefab or the piece or the plan piece
+                        var prefabName = ZInput.GetButton("Crouch") ? $"{entry.name}_planned" : entry.name;
+                        var prefab = PrefabManager.Instance.GetPrefab(prefabName);
                         if (prefab == null)
                         {
                             Jotunn.Logger.LogError(entry.name + " not found?");
@@ -190,17 +198,17 @@ namespace Veilheim.Blueprints
                             self.AddKnownStation(craftingStation);
                         }
                         Piece newpiece = gameObject.GetComponent<Piece>();
-                        if (newpiece)
+                        if (newpiece != null)
                         {
                             newpiece.SetCreator(self.GetPlayerID());
                         }
                         PrivateArea privateArea = gameObject.GetComponent<PrivateArea>();
-                        if (privateArea)
+                        if (privateArea != null)
                         {
                             privateArea.Setup(Game.instance.GetPlayerProfile().GetName());
                         }
                         WearNTear wearntear = gameObject.GetComponent<WearNTear>();
-                        if (wearntear)
+                        if (wearntear != null)
                         {
                             wearntear.OnPlaced();
                         }
