@@ -223,7 +223,7 @@ namespace Veilheim.Blueprints
 
                         // Get the prefab of the piece or the plan piece
                         string prefabName = entry.name;
-                        if (!ConfigUtil.Get<bool>("Blueprints", "allowPlacementWithoutMaterial") || ZInput.GetButton("Crouch"))
+                        if (!ConfigUtil.Get<bool>("Blueprints", "allowPlacementWithoutMaterial") || !Input.GetKey(KeyCode.LeftControl))
                         {
                             prefabName += "_planned";
                         }
