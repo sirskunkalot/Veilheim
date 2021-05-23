@@ -8,6 +8,7 @@ using Jotunn.Configs;
 using Jotunn.Entities;
 using Jotunn.Managers;
 using Jotunn.Utils;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -49,33 +50,24 @@ namespace Veilheim.Blueprints
         internal override void Init()
         {
             //TODO: Client only - how to do? or just ignore - there are no bps and maybe someday there will be a server-wide directory of blueprints for sharing :)
+            
+            LoadAssets();
+            
+            LoadKnownBlueprints();
 
-            //TODO: save per profile or world or global?
-            if (!Directory.Exists(BlueprintPath))
-            {
-                Directory.CreateDirectory(BlueprintPath);
-            }
+            ItemManager.OnVanillaItemsAvailable += GetPlanShader;
 
-            Jotunn.Logger.LogMessage("Loading known blueprints");
+            On.ZNetScene.Awake += RegisterKnownBlueprints;
+            On.Player.PlacePiece += BeforePlaceBlueprintPiece;
+            On.GameCamera.UpdateCamera += AdjustCameraHeight;
+            On.KeyHints.UpdateHints += ShowBlueprintHints;
+            On.Player.UpdatePlacement += ShowBlueprintRadius;
 
-            // Try to load all saved blueprints
-            foreach (var name in Directory.EnumerateFiles(BlueprintPath, "*.blueprint").Select(Path.GetFileNameWithoutExtension))
-            {
-                if (!m_blueprints.ContainsKey(name))
-                {
-                    var bp = new Blueprint(name);
-                    if (bp.Load())
-                    {
-                        m_blueprints.Add(name, bp);
-                    }
-                    else
-                    {
-                        Jotunn.Logger.LogWarning($"Could not load blueprint {name}");
-                    }
-                }
-            }
+            Jotunn.Logger.LogInfo("BlueprintManager Initialized");
+        }
 
-            // Load all assets
+        private void LoadAssets()
+        {
             AssetBundle assetBundle = AssetUtils.LoadAssetBundleFromResources("blueprints", typeof(VeilheimPlugin).Assembly);
 
             PieceManager.Instance.AddPieceTable(assetBundle.LoadAsset<GameObject>("_BlueprintPieceTable"));
@@ -107,18 +99,32 @@ namespace Veilheim.Blueprints
                 LocalizationManager.Instance.AddJson(lang, textAsset.ToString());
             }
             assetBundle.Unload(false);
+        }
 
-            // Hooks
-            ItemManager.OnVanillaItemsAvailable += GetPlanShader;
+        private void LoadKnownBlueprints()
+        {
+            Jotunn.Logger.LogMessage("Loading known blueprints");
 
-            On.ZNetScene.Awake += RegisterKnownBlueprints;
-            On.Player.PlacePiece += BeforePlaceBlueprintPiece;
-            On.GameCamera.UpdateCamera += AdjustCameraHeight;
-            On.KeyHints.UpdateHints += ShowBlueprintHints;
-            On.Player.UpdatePlacement += ShowBlueprintRadius;
+            if (!Directory.Exists(BlueprintPath))
+            {
+                Directory.CreateDirectory(BlueprintPath);
+            }
 
-            // Done
-            Jotunn.Logger.LogInfo("BlueprintManager Initialized");
+            foreach (var name in Directory.EnumerateFiles(BlueprintPath, "*.blueprint").Select(Path.GetFileNameWithoutExtension))
+            {
+                if (!m_blueprints.ContainsKey(name))
+                {
+                    var bp = new Blueprint(name);
+                    if (bp.Load())
+                    {
+                        m_blueprints.Add(name, bp);
+                    }
+                    else
+                    {
+                        Jotunn.Logger.LogWarning($"Could not load blueprint {name}");
+                    }
+                }
+            }
         }
 
         private void GetPlanShader()
@@ -192,20 +198,19 @@ namespace Veilheim.Blueprints
                 // Place a known blueprint
                 if (Player.m_localPlayer.m_placementStatus == Player.PlacementStatus.Valid && piece.name.StartsWith("piece_blueprint"))
                 {
-                    if (ZInput.GetButton("AltPlace"))
-                    {
-                        Vector2 extent = Instance.m_blueprints.First(x => $"piece_blueprint ({x.Key})" == piece.name).Value.GetExtent();
-                        FlattenTerrain.FlattenForBlueprint(self.m_placementGhost.transform, extent.x, extent.y,
-                            Instance.m_blueprints.First(x => $"piece_blueprint ({x.Key})" == piece.name).Value.m_pieceEntries);
-                    }
-
-                    uint cntEffects = 0u;
-                    uint maxEffects = 10u;
-
                     Blueprint bp = Instance.m_blueprints[piece.m_name];
                     var transform = self.m_placementGhost.transform;
                     var position = self.m_placementGhost.transform.position;
                     var rotation = self.m_placementGhost.transform.rotation;
+
+                    if (ZInput.GetButton("AltPlace"))
+                    {
+                        Vector2 extent = bp.GetExtent();
+                        FlattenTerrain.FlattenForBlueprint(transform, extent.x, extent.y, bp.m_pieceEntries);
+                    }
+
+                    uint cntEffects = 0u;
+                    uint maxEffects = 10u;
 
                     foreach (var entry in bp.m_pieceEntries)
                     {
@@ -216,7 +221,7 @@ namespace Veilheim.Blueprints
                         Quaternion entryQuat = new Quaternion(entry.rotX, entry.rotY, entry.rotZ, entry.rotW);
                         entryQuat.eulerAngles += rotation.eulerAngles;
 
-                        // Get the prefab or the piece or the plan piece
+                        // Get the prefab of the piece or the plan piece
                         var prefabName = ZInput.GetButton("Crouch") ? $"{entry.name}_planned" : entry.name;
                         var prefab = PrefabManager.Instance.GetPrefab(prefabName);
                         if (prefab == null)
@@ -285,7 +290,7 @@ namespace Veilheim.Blueprints
         {
             orig(self, dt);
 
-            if (Player.m_localPlayer)
+            if (Player.m_localPlayer != null)
             {
                 if (Player.m_localPlayer.InPlaceMode())
                 {

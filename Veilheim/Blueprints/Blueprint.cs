@@ -420,7 +420,7 @@ namespace Veilheim.Blueprints
         }
 
         /// <summary>
-        ///     Instantiate plan prefabs for all pieces in this blueprint.
+        ///     Instantiate plan prefabs for all distinct pieces in this blueprint.
         /// </summary>
         /// <returns></returns>
         private bool PlanInstantiate()
