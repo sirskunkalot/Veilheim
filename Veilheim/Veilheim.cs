@@ -65,38 +65,57 @@ namespace Veilheim
 
         private void CreateConfigBindings()
         {
+            string section;
+
             // Section Map
-            Config.Bind("Map", "showPortalsOnMap", false, "Show portals on map");
-            Config.Bind("Map", "showPortalSelection", false, "Show portal selection window on portal rename");
-            Config.Bind("Map", "showNoMinimap", false, "Play without minimap");
+            section = "Map";
+            Config.Bind(section, "showPortalsOnMap", false, "Show portals on map");
+            Config.Bind(section, "showPortalSelection", false, "Show portal selection window on portal rename");
+            Config.Bind(section, "showNoMinimap", false, "Play without minimap");
 
             // Section MapServer
-            Config.Bind("MapServer", "shareMapProgression", false,
+            section = "MapServer";
+            Config.Bind(section, "shareMapProgression", false,
                 new ConfigDescription("With this enabled you will receive the same exploration progression as other players on the server", null, new object[] { new ConfigurationManagerAttributes() { IsAdminOnly = true } }));
-            Config.Bind("MapServer", "exploreRadius", 100f,
+            Config.Bind(section, "exploreRadius", 100f,
                 new ConfigDescription("The radius of the map that you explore when moving", null, new object[] { new ConfigurationManagerAttributes() { IsAdminOnly = true } }));
-            Config.Bind("MapServer", "exploreRadiusSailing", 100f,
+            Config.Bind(section, "exploreRadiusSailing", 100f,
                 new ConfigDescription("The radius of the map that you explore while sailing", null, new object[] { new ConfigurationManagerAttributes() { IsAdminOnly = true } }));
-            Config.Bind("MapServer", "playerPositionPublicOnJoin", false,
+            Config.Bind(section, "playerPositionPublicOnJoin", false,
                 new ConfigDescription("Automatically turn on the Map option to share your position when joining or starting a game", null, new object[] { new ConfigurationManagerAttributes() { IsAdminOnly = true } }));
-            Config.Bind("MapServer", "preventPlayerFromTurningOffPublicPosition", false,
+            Config.Bind(section, "preventPlayerFromTurningOffPublicPosition", false,
                 new ConfigDescription("Prevents you and other people on the server to turn off their map sharing option", null, new object[] { new ConfigurationManagerAttributes() { IsAdminOnly = true } }));
 
+            // Section Blueprints
+            section = "Blueprints";
+            Config.Bind(section, "allowPlacementWithoutMaterial", false,
+                new ConfigDescription("Allow placement of blueprints without materials", null, new object[] { new ConfigurationManagerAttributes() { IsAdminOnly = true } }));
+
+            ShaderHelper.showRealTexturesConfig = Config.Bind("Blueprints", "showRealTextures", false, new ConfigDescription("Show real textures on planned pieces"));
+            ShaderHelper.unsupportedColorConfig = Config.Bind("Blueprints", "unsupportedColor", new Color(1f, 1f, 1f, 0.1f), new ConfigDescription("Color of unsupported blueprint pieces"));
+            ShaderHelper.supportedColorConfig = Config.Bind("Blueprints", "supportedColor", new Color(1f, 1f, 1f, 0.5f), new ConfigDescription("Color of supported blueprint pieces"));
+            ShaderHelper.transparencyConfig = Config.Bind("Blueprints", "transparency", 0.30f, new ConfigDescription("Additional transparency for blueprint pieces", new AcceptableValueRange<float>(0f, 1f)));
+
+            ShaderHelper.showRealTexturesConfig.SettingChanged += ShaderHelper.UpdateAllTextures;
+            ShaderHelper.unsupportedColorConfig.SettingChanged += ShaderHelper.UpdateAllTextures;
+            ShaderHelper.supportedColorConfig.SettingChanged += ShaderHelper.UpdateAllTextures;
+            ShaderHelper.transparencyConfig.SettingChanged += ShaderHelper.UpdateAllTextures;
 
             // Section ProductionInputAmount
-            Config.Bind("ProductionInputAmounts", "windmillBarleyAmount", 50,
+            section = "ProductionInputAmounts";
+            Config.Bind(section, "windmillBarleyAmount", 50,
                 new ConfigDescription("Max windmill barley amount", null, new object[] { new ConfigurationManagerAttributes() { IsAdminOnly = true } }));
-            Config.Bind("ProductionInputAmounts", "kilnWoodAmount", 25,
+            Config.Bind(section, "kilnWoodAmount", 25,
                 new ConfigDescription("Max wood amount for kiln", null, new object[] { new ConfigurationManagerAttributes() { IsAdminOnly = true } }));
-            Config.Bind("ProductionInputAmounts", "furnaceCoalAmount", 20,
+            Config.Bind(section, "furnaceCoalAmount", 20,
                 new ConfigDescription("Max coal amount for furnace", null, new object[] { new ConfigurationManagerAttributes() { IsAdminOnly = true } }));
-            Config.Bind("ProductionInputAmounts", "furnaceOreAmount", 10,
+            Config.Bind(section, "furnaceOreAmount", 10,
                 new ConfigDescription("Max ore amount for furnace", null, new object[] { new ConfigurationManagerAttributes() { IsAdminOnly = true } }));
-            Config.Bind("ProductionInputAmounts", "blastfurnaceCoalAmount", 20,
+            Config.Bind(section, "blastfurnaceCoalAmount", 20,
                 new ConfigDescription("Max coal amount for blast furnace", null, new object[] { new ConfigurationManagerAttributes() { IsAdminOnly = true } }));
-            Config.Bind("ProductionInputAmounts", "blastfurnaceOreAmount", 10,
+            Config.Bind(section, "blastfurnaceOreAmount", 10,
                 new ConfigDescription("Max ore amount for blast furnace", null, new object[] { new ConfigurationManagerAttributes() { IsAdminOnly = true } }));
-            Config.Bind("ProductionInputAmounts", "spinningWheelFlachsAmount", 40,
+            Config.Bind(section, "spinningWheelFlachsAmount", 40,
                 new ConfigDescription("Max flachs amount for spinning wheel", null, new object[] { new ConfigurationManagerAttributes() { IsAdminOnly = true } }));
         }
     }

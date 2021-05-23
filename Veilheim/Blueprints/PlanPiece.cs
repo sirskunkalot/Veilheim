@@ -88,11 +88,10 @@ namespace Veilheim.Blueprints
 
         private ShaderHelper.ShaderState GetShaderState()
         {
-            //TODO: bind key on rune?
-            /*if (PlanBuild.showRealTextures)
+            if (ShaderHelper.showRealTexturesConfig.Value)
             {
                 return ShaderHelper.ShaderState.Skuld;
-            }*/
+            }
             if (hasSupport)
             {
                 return ShaderHelper.ShaderState.Supported;

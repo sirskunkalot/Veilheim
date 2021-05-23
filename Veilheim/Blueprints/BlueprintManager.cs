@@ -222,9 +222,13 @@ namespace Veilheim.Blueprints
                         entryQuat.eulerAngles += rotation.eulerAngles;
 
                         // Get the prefab of the piece or the plan piece
-                        var prefabName = ZInput.GetButton("Crouch") ? $"{entry.name}_planned" : entry.name;
-                        var prefab = PrefabManager.Instance.GetPrefab(prefabName);
-                        if (prefab == null)
+                        string prefabName = entry.name;
+                        if (!ConfigUtil.Get<bool>("Blueprints", "allowPlacementWithoutMaterial") || ZInput.GetButton("Crouch"))
+                        {
+                            prefabName += "_planned";
+                        }
+                        GameObject prefab = PrefabManager.Instance.GetPrefab(prefabName);
+                        if (!prefab)
                         {
                             Jotunn.Logger.LogError(entry.name + " not found?");
                             continue;

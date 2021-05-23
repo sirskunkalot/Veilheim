@@ -1,6 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using BepInEx.Configuration;
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
+using Object = UnityEngine.Object;
 
 namespace Veilheim.Blueprints
 {
@@ -14,22 +17,25 @@ namespace Veilheim.Blueprints
         }
 
         internal static Shader planShader;
+        internal static ConfigEntry<bool> showRealTexturesConfig;
+        internal static ConfigEntry<Color> unsupportedColorConfig;
+        internal static ConfigEntry<Color> supportedColorConfig;
+        internal static ConfigEntry<float> transparencyConfig;
 
         private static readonly Dictionary<string, Material> originalMaterialDict = new Dictionary<string, Material>();
 
-        public static Texture2D GetTexture(Color color)
+        internal static Texture2D GetTexture(Color color)
         {
             Texture2D texture2D = new Texture2D(1, 1);
             texture2D.SetPixel(0, 0, color);
             return texture2D;
         }
 
-        public static void UpdateTextures(GameObject m_placementplan, ShaderState shaderState)
+        internal static void UpdateTextures(GameObject m_placementplan, ShaderState shaderState)
         {
-
-            Color unsupportedColor = new Color(1f, 1f, 1f, 0.1f);
-            Color supportedColor = new Color(1f, 1f, 1f, 0.5f);
-            float transparency = 0.30f;
+            Color unsupportedColor = unsupportedColorConfig.Value;
+            Color supportedColor = supportedColorConfig.Value;
+            float transparency = transparencyConfig.Value;
             transparency *= transparency; //x² mapping for finer control
             MeshRenderer[] meshRenderers = m_placementplan.GetComponentsInChildren<MeshRenderer>();
             foreach (MeshRenderer meshRenderer in meshRenderers)
@@ -55,6 +61,14 @@ namespace Veilheim.Blueprints
                     meshRenderer.sharedMaterials = sharedMaterials;
                     meshRenderer.shadowCastingMode = ShadowCastingMode.Off;
                 }
+            }
+        }
+
+        internal static void UpdateAllTextures(object sender, EventArgs e)
+        {
+            foreach (PlanPiece planPiece in Object.FindObjectsOfType<PlanPiece>())
+            {
+                planPiece.UpdateTextures();
             }
         }
 
