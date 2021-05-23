@@ -59,9 +59,7 @@ namespace Veilheim
                 manager.Init();
             }
 
-            //TODO: load assets with events from manager
-            AssetUtils.AssetLoader.LoadAssets();
-
+            // Done
             Jotunn.Logger.LogInfo($"{PluginName} v{PluginVersion} loaded");
         }
 

@@ -100,8 +100,6 @@
     <Compile Include="Extensions\ObjectExtensions.cs" />
     <Compile Include="Manager.cs" />
     <Compile Include="AssetManagers\GUIManager.cs" />
-    <Compile Include="AssetUtils\AssetCreator.cs" />
-    <Compile Include="AssetUtils\AssetLoader.cs" />
     <Compile Include="Blueprints\Blueprint.cs" />
     <Compile Include="Blueprints\FlattenTerrain.cs" />
     <Compile Include="Extensions\ObjectDBExtensions.cs" />

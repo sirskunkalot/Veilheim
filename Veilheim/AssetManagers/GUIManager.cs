@@ -12,6 +12,7 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System;
 using Logger = Jotunn.Logger;
+using Jotunn.Utils;
 
 namespace Veilheim.AssetManagers
 {
@@ -50,13 +51,39 @@ namespace Veilheim.AssetManagers
 
         internal override void Init()
         {
+            // Create GUI container
             GUIContainer = new GameObject("GUI");
             GUIContainer.transform.SetParent(VeilheimPlugin.RootObject.transform);
             var canvas = GUIContainer.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
             GUIContainer.AddComponent<GraphicRaycaster>();
 
+            // Load assets
+            AssetBundle assetBundle;
+
+            assetBundle = AssetUtils.LoadAssetBundleFromResources("configurationgui", typeof(VeilheimPlugin).Assembly);
+            LoadGUIPrefab(assetBundle, "ConfigurationEntry");
+            LoadGUIPrefab(assetBundle, "ConfigurationSection");
+            LoadGUIPrefab(assetBundle, "ConfigurationGUIRoot");
+            assetBundle.Unload(false);
+
+            assetBundle = AssetUtils.LoadAssetBundleFromResources("portalselectiongui", typeof(VeilheimPlugin).Assembly);
+            LoadGUIPrefab(assetBundle, "PortalButtonBox");
+            assetBundle.Unload(false);
+
+            // Done
             Logger.LogInfo("Initialized GUIManager");
+        }
+
+        /// <summary>
+        ///     Load a GUI prefab from a bundle and register it in the <see cref="GUIManager" />.
+        /// </summary>
+        /// <param name="assetBundle"></param>
+        /// <param name="assetName"></param>
+        private void LoadGUIPrefab(AssetBundle assetBundle, string assetName)
+        {
+            var prefab = assetBundle.LoadAsset<GameObject>(assetName);
+            Veilheim.AssetManagers.GUIManager.Instance.AddPrefab(assetName, prefab);
         }
 
         internal void AddPrefab(string name, GameObject prefab)

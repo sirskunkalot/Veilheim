@@ -4,12 +4,15 @@
 // File:    BlueprintManager.cs
 // Project: Veilheim
 
+using Jotunn.Configs;
+using Jotunn.Entities;
+using Jotunn.Managers;
+using Jotunn.Utils;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
-using Jotunn.Managers;
 using Veilheim.Utils;
 using Object = UnityEngine.Object;
 
@@ -20,7 +23,7 @@ namespace Veilheim.Blueprints
         internal static BlueprintManager Instance { get; private set; }
 
         internal static string BlueprintPath = Path.Combine(ConfigUtil.GetConfigPath(), "blueprints");
-        
+
         internal float selectionRadius = 10.0f;
 
         internal float cameraOffsetMake = 0.0f;
@@ -72,6 +75,39 @@ namespace Veilheim.Blueprints
                 }
             }
 
+            // Load all assets
+            AssetBundle assetBundle = AssetUtils.LoadAssetBundleFromResources("blueprints", typeof(VeilheimPlugin).Assembly);
+
+            PieceManager.Instance.AddPieceTable(assetBundle.LoadAsset<GameObject>("_BlueprintPieceTable"));
+
+            GameObject runeprefab = assetBundle.LoadAsset<GameObject>("BlueprintRune");
+            CustomItem rune = new CustomItem(runeprefab, fixReference: false);
+            ItemManager.Instance.AddItem(rune);
+
+            CustomRecipe runeRecipe = new CustomRecipe(new RecipeConfig()
+            {
+                Item = "BlueprintRune",
+                Amount = 1,
+                Requirements = new RequirementConfig[]
+                {
+                    new RequirementConfig {Item = "Stone", Amount = 1}
+                }
+            });
+            ItemManager.Instance.AddRecipe(runeRecipe);
+
+            GameObject makebp_prefab = assetBundle.LoadAsset<GameObject>("make_blueprint");
+            PrefabManager.Instance.AddPrefab(makebp_prefab);
+            GameObject placebp_prefab = assetBundle.LoadAsset<GameObject>("piece_blueprint");
+            PrefabManager.Instance.AddPrefab(placebp_prefab);
+
+            TextAsset[] textAssets = assetBundle.LoadAllAssets<TextAsset>();
+            foreach (var textAsset in textAssets)
+            {
+                var lang = textAsset.name.Replace(".json", null);
+                LocalizationManager.Instance.AddJson(lang, textAsset.ToString());
+            }
+            assetBundle.Unload(false);
+
             // Hooks
             ItemManager.OnVanillaItemsAvailable += GetPlanShader;
 
@@ -81,6 +117,7 @@ namespace Veilheim.Blueprints
             On.KeyHints.UpdateHints += ShowBlueprintHints;
             On.Player.UpdatePlacement += ShowBlueprintRadius;
 
+            // Done
             Jotunn.Logger.LogInfo("BlueprintManager Initialized");
         }
 
@@ -237,7 +274,7 @@ namespace Veilheim.Blueprints
                     return false;
                 }
             }
-            
+
             return orig(self, piece);
         }
 
@@ -247,7 +284,7 @@ namespace Veilheim.Blueprints
         private void AdjustCameraHeight(On.GameCamera.orig_UpdateCamera orig, GameCamera self, float dt)
         {
             orig(self, dt);
-            
+
             if (Player.m_localPlayer)
             {
                 if (Player.m_localPlayer.InPlaceMode())
@@ -305,7 +342,7 @@ namespace Veilheim.Blueprints
         private void ShowBlueprintRadius(On.Player.orig_UpdatePlacement orig, Player self, bool takeInput, float dt)
         {
             orig(self, takeInput, dt);
-            
+
             if (self.m_placementGhost)
             {
                 var piece = self.m_placementGhost.GetComponent<Piece>();
