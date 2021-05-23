@@ -36,13 +36,13 @@ function Create-BepInEx{
 
     # create \BepInEx\plugins
     $plug = $bepinex.CreateSubdirectory('plugins');
-    $mmhook = $plug.CreateSubdirectory('MMHOOK');
 
     # create \BepInEx\plugins\$plugin and copy plugin dll from build
     Write-Host "Plugin: $TargetAssembly"
     $modname = $TargetAssembly -Replace('.dll')
     $mod = $plug.CreateSubdirectory("$modname");
     $jotunn = $plug.CreateSubdirectory("Jotunn");
+    $mmhook = $plug.CreateSubdirectory('MMHOOK');
     Copy-Item -Path "$TargetPath\*" -Include $TargetAssembly -Destination "$mod" -Force
     Copy-Item -Path "$TargetPath\*" -Include "Jotunn.dll" -Destination "$jotunn" -Force
     Copy-Item -Path "$ValheimPath\BepInEx\plugins\MMHOOK\*" -Destination "$mmhook" -Force
@@ -95,30 +95,33 @@ Push-Location -Path (Split-Path -Parent $MyInvocation.MyCommand.Path)
 # Main Script
 Write-Host "Publishing for $Target from $TargetPath"
 
+# Plugin name without ".dll"
+$modname = "$TargetAssembly" -Replace('.dll')
+
 if ($Target.Equals("Debug")) {
     Write-Host "Updating local installation in $ValheimPath"
     
     # create \BepInEx\plugins\$plugin and copy plugin dll from build
+    $plug = New-Item -Type Directory -Path "$ValheimPath\BepInEx\plugins\$modname" -Force
     Write-Host "Plugin: $TargetAssembly"
-    $modname = $TargetAssembly -Replace('.dll')
-    $mod = New-Item -Type Directory -Path "$ValheimPath\BepInEx\plugins\$modname" -Force
-    Copy-Item -Path "$TargetPath\$TargetAssembly" -Destination "$mod" -Force
+    Copy-Item -Path "$TargetPath\$modname.dll" -Destination "$plug" -Force
+    
+    # Create the mdb file
+    $pdb = "$TargetPath\$modname.pdb"
+    if (Test-Path -Path "$pdb") {
+        Write-Host "Create and copy mdb file"
+        Invoke-Expression "& `"$(Get-Location)\libraries\Debug\pdb2mdb.exe`" `"$TargetPath\$TargetAssembly`""
+        Copy-Item -Path "$TargetPath\$modname.dll.mdb" -Destination "$plug" -Force
+    }
 
-    # copy debug files
+    # Copy mono debug file
     $mono = "$ValheimPath\MonoBleedingEdge\EmbedRuntime";
     Write-Host "Copy mono-2.0-bdwgc.dll to $mono"
     if (!(Test-Path -Path "$mono\mono-2.0-bdwgc.dll.orig")) {
         Copy-Item -Path "$mono\mono-2.0-bdwgc.dll" -Destination "$mono\mono-2.0-bdwgc.dll.orig" -Force
     }
     Copy-Item -Path "$(Get-Location)\libraries\Debug\mono-2.0-bdwgc.dll" -Destination "$mono" -Force
-
-    $pdb = "$TargetPath\$modname.pdb"
-    if (Test-Path -Path "$pdb") {
-        Write-Host "Copy Debug files for $TargetAssembly"
-        Copy-Item -Path "$pdb" -Destination "$mod" -Force
-        start "$(Get-Location)\libraries\Debug\pdb2mdb.exe" "$mod\$TargetAssembly"
-    }
-        
+  
     # set dnspy debugger env
     #$dnspy = '--debugger-agent=transport=dt_socket,server=y,address=127.0.0.1:56000,suspend=y,no-hide-debugger'
     #[Environment]::SetEnvironmentVariable('DNSPY_UNITY_DBG2','','User')
