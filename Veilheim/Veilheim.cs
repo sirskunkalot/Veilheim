@@ -88,7 +88,7 @@ namespace Veilheim
 
             // Section Blueprints
             section = "Blueprints";
-            Config.Bind(section, "allowPlacementWithoutMaterial", false,
+            Config.Bind(section, "allowPlacementWithoutMaterial", true,
                 new ConfigDescription("Allow placement of blueprints without materials", null, new object[] { new ConfigurationManagerAttributes() { IsAdminOnly = true } }));
 
             ShaderHelper.showRealTexturesConfig = Config.Bind("Blueprints", "showRealTextures", false, new ConfigDescription("Show real textures on planned pieces"));
