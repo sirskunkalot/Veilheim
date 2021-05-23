@@ -4,6 +4,7 @@
 // File:    BlueprintManager.cs
 // Project: Veilheim
 
+using BepInEx.Configuration;
 using Jotunn.Configs;
 using Jotunn.Entities;
 using Jotunn.Managers;
@@ -24,17 +25,13 @@ namespace Veilheim.Blueprints
         internal static BlueprintManager Instance { get; private set; }
 
         internal static string BlueprintPath = Path.Combine(ConfigUtil.GetConfigPath(), "blueprints");
+        
+        private float selectionRadius = 10.0f;
 
-        internal float selectionRadius = 10.0f;
-
-        internal float cameraOffsetMake = 0.0f;
-        internal float cameraOffsetPlace = 5.0f;
+        private float cameraOffsetMake = 0.0f;
+        private float cameraOffsetPlace = 5.0f;
 
         internal readonly Dictionary<string, Blueprint> m_blueprints = new Dictionary<string, Blueprint>();
-
-        private GameObject kbHintsMake;
-        private GameObject kbHintsPlace;
-        private GameObject kbHintsOrig;
 
         private void Awake()
         {
@@ -52,15 +49,16 @@ namespace Veilheim.Blueprints
             //TODO: Client only - how to do? or just ignore - there are no bps and maybe someday there will be a server-wide directory of blueprints for sharing :)
             
             LoadAssets();
-            
+
             LoadKnownBlueprints();
+
+            CreateCustomKeyHints();
 
             ItemManager.OnVanillaItemsAvailable += GetPlanShader;
 
             On.ZNetScene.Awake += RegisterKnownBlueprints;
             On.Player.PlacePiece += BeforePlaceBlueprintPiece;
             On.GameCamera.UpdateCamera += AdjustCameraHeight;
-            On.KeyHints.UpdateHints += ShowBlueprintHints;
             On.Player.UpdatePlacement += ShowBlueprintRadius;
 
             Jotunn.Logger.LogInfo("BlueprintManager Initialized");
@@ -124,6 +122,36 @@ namespace Veilheim.Blueprints
                         Jotunn.Logger.LogWarning($"Could not load blueprint {name}");
                     }
                 }
+            }
+        }
+
+        private void CreateCustomKeyHints()
+        {
+            KeyHintConfig KHC_default = new KeyHintConfig
+            {
+                Item = "BlueprintRune",
+                ButtonConfigs = new[]
+                {
+                    new ButtonConfig { Name = "BuildMenu", HintToken = "$" }
+                }
+            };
+            GUIManager.Instance.AddKeyHint(KHC_default);
+
+            KeyHintConfig KHC_make = new KeyHintConfig
+            {
+                Item = "BlueprintRune",
+                Piece = "make_blueprint",
+                ButtonConfigs = new[]
+                {
+                    new ButtonConfig { Name = "Attack", HintToken = "$hud_bpcapture" },
+                    new ButtonConfig { Name = "Scroll", Axis = "Mouse ScrollWheel", HintToken = "$hud_bpradius" }
+                }
+            };
+            GUIManager.Instance.AddKeyHint(KHC_make);
+
+            foreach (var entry in m_blueprints)
+            {
+                entry.Value.CreateKeyHint();
             }
         }
 
@@ -223,7 +251,7 @@ namespace Veilheim.Blueprints
 
                         // Get the prefab of the piece or the plan piece
                         string prefabName = entry.name;
-                        if (!ConfigUtil.Get<bool>("Blueprints", "allowPlacementWithoutMaterial") || !Input.GetKey(KeyCode.LeftControl))
+                        if (!ConfigUtil.Get<bool>("Blueprints", "allowPlacementWithoutMaterial") || !ZInput.GetButton("Crouch"))
                         {
                             prefabName += "_planned";
                         }
@@ -438,93 +466,6 @@ namespace Veilheim.Blueprints
                         // default value, if we introduce config stuff for this, then change it here!
                         self.m_maxPlaceDistance = 8;
                     }
-                }
-            }
-        }
-
-        private static void InitHint(GameObject hint, string component, bool active, string text = null)
-        {
-            GameObject obj;
-            Text txt;
-            obj = hint.transform.Find(component).gameObject;
-            obj.SetActive(active);
-
-            if (text != null)
-            {
-                string translated = Localization.instance.Translate(text);
-                txt = obj.transform.Find("Text").GetComponent<Text>();
-                txt.text = translated;
-            }
-        }
-
-        /// <summary>
-        ///     Changes the hint GUI for the BlueprintRune
-        /// </summary>
-        private static void ShowBlueprintHints(On.KeyHints.orig_UpdateHints orig, KeyHints self)
-        {
-            orig(self);
-
-            Player localPlayer = Player.m_localPlayer;
-            if (localPlayer == null)
-            {
-                return;
-            }
-
-            if (localPlayer.InPlaceMode() && localPlayer.m_buildPieces.GetSelectedPiece() != null)
-            {
-                if (Instance.kbHintsOrig == null)
-                {
-                    Instance.kbHintsOrig = self.m_buildHints;
-                }
-                if (Instance.kbHintsMake == null)
-                {
-                    Instance.kbHintsMake = Object.Instantiate(Instance.kbHintsOrig);
-                    Instance.kbHintsMake.transform.SetParent(Instance.kbHintsOrig.transform.parent.parent, false);
-                    Instance.kbHintsMake.name = "BlueprintHintsMake";
-
-                    InitHint(Instance.kbHintsMake, "Keyboard/Place", true, "hud_bpcapture");
-                    InitHint(Instance.kbHintsMake, "Keyboard/Remove", false);
-                    InitHint(Instance.kbHintsMake, "Keyboard/BuildMenu", false);
-                    InitHint(Instance.kbHintsMake, "Keyboard/AltPlace", false);
-                    InitHint(Instance.kbHintsMake, "Keyboard/rotate", true, "hud_bpradius");
-                }
-                if (Instance.kbHintsPlace == null)
-                {
-                    Instance.kbHintsPlace = Object.Instantiate(Instance.kbHintsOrig);
-                    Instance.kbHintsPlace.transform.SetParent(Instance.kbHintsOrig.transform.parent.parent, false);
-                    Instance.kbHintsPlace.name = "BlueprintHintsPlace";
-
-                    InitHint(Instance.kbHintsPlace, "Keyboard/Place", true, "hud_bpplace");
-                    InitHint(Instance.kbHintsPlace, "Keyboard/Remove", false);
-                    InitHint(Instance.kbHintsPlace, "Keyboard/BuildMenu", false);
-                    InitHint(Instance.kbHintsPlace, "Keyboard/AltPlace", true, "hud_bpflatten");
-                    InitHint(Instance.kbHintsPlace, "Keyboard/rotate", true, "hud_bprotate");
-                }
-
-                if (localPlayer.m_buildPieces.name.Equals("_BlueprintPieceTable"))
-                {
-                    if (localPlayer.m_buildPieces.GetSelectedPiece().name == "make_blueprint")
-                    {
-                        Instance.kbHintsMake.SetActive(true);
-                        Instance.kbHintsPlace.SetActive(false);
-                        Instance.kbHintsOrig.SetActive(false);
-                        self.m_buildHints = Instance.kbHintsMake;
-                    }
-                    else
-                    {
-                        Instance.kbHintsMake.SetActive(false);
-                        Instance.kbHintsPlace.SetActive(true);
-                        Instance.kbHintsOrig.SetActive(false);
-                        self.m_buildHints = Instance.kbHintsPlace;
-                    }
-
-                }
-                else
-                {
-                    Instance.kbHintsMake.SetActive(false);
-                    Instance.kbHintsPlace.SetActive(false);
-                    Instance.kbHintsOrig.SetActive(true);
-                    self.m_buildHints = Instance.kbHintsOrig;
                 }
             }
         }
