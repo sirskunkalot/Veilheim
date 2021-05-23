@@ -91,10 +91,10 @@ namespace Veilheim
             Config.Bind(section, "allowPlacementWithoutMaterial", true,
                 new ConfigDescription("Allow placement of blueprints without materials", null, new object[] { new ConfigurationManagerAttributes() { IsAdminOnly = true } }));
 
-            ShaderHelper.showRealTexturesConfig = Config.Bind("Blueprints", "showRealTextures", false, new ConfigDescription("Show real textures on planned pieces"));
-            ShaderHelper.unsupportedColorConfig = Config.Bind("Blueprints", "unsupportedColor", new Color(1f, 1f, 1f, 0.1f), new ConfigDescription("Color of unsupported blueprint pieces"));
-            ShaderHelper.supportedColorConfig = Config.Bind("Blueprints", "supportedColor", new Color(1f, 1f, 1f, 0.5f), new ConfigDescription("Color of supported blueprint pieces"));
-            ShaderHelper.transparencyConfig = Config.Bind("Blueprints", "transparency", 0.30f, new ConfigDescription("Additional transparency for blueprint pieces", new AcceptableValueRange<float>(0f, 1f)));
+            ShaderHelper.showRealTexturesConfig = Config.Bind(section, "showRealTextures", false, new ConfigDescription("Show real textures on planned pieces"));
+            ShaderHelper.unsupportedColorConfig = Config.Bind(section, "unsupportedColor", new Color(1f, 1f, 1f, 0.1f), new ConfigDescription("Color of unsupported blueprint pieces"));
+            ShaderHelper.supportedColorConfig = Config.Bind(section, "supportedColor", new Color(1f, 1f, 1f, 0.5f), new ConfigDescription("Color of supported blueprint pieces"));
+            ShaderHelper.transparencyConfig = Config.Bind(section, "transparency", 0.30f, new ConfigDescription("Additional transparency for blueprint pieces", new AcceptableValueRange<float>(0f, 1f)));
 
             ShaderHelper.showRealTexturesConfig.SettingChanged += ShaderHelper.UpdateAllTextures;
             ShaderHelper.unsupportedColorConfig.SettingChanged += ShaderHelper.UpdateAllTextures;
