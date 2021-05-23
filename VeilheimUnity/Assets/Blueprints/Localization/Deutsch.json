@@ -10,5 +10,11 @@
   "hud_bpplace": "Erstellen",
   "hud_bpflatten": "Begradigen",
   "hud_bpplan": "Als Plan erstellen"
-  "hud_bprotate": "Drehen (Shift halten ändert Kameraabstand)"
+  "hud_bprotate": "Drehen (Shift halten ändert Kameraabstand)",
+  "plan_hover_add_material": "Material hinzufügen",
+  "plan_hover_add_all_materials": "Alle Materialien hinzufügen",
+  "plan_hover_hold": "Halten: ",
+  "plan_hover_build": "Bauen",
+  "plan_need_rune": "Braucht die Rune des Kopierens",
+  "plan_not_enough_support": "Nicht genug Stabilität"
 }

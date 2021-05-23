@@ -10,5 +10,11 @@
   "hud_bpplace": "Place",
   "hud_bpflatten": "Flatten ground",
   "hud_bpplan": "Plan blueprint",
-  "hud_bprotate": "Rotate (Hold Shift for camera distance)"
+  "hud_bprotate": "Rotate (Hold Shift for camera distance)",
+  "plan_hover_add_material": "Add material",
+  "plan_hover_add_all_materials": "Add all materials",
+  "plan_hover_hold": "Hold",
+  "plan_hover_build": "Build",
+  "plan_need_rune": "Needs Blueprint Rune",
+  "plan_not_enough_support": "Not enough support"
 }

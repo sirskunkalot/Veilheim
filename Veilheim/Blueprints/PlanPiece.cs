@@ -24,24 +24,13 @@ namespace Veilheim.Blueprints
         public string m_hoverText = "";
         public Piece originalPiece;
 
-        //GUI 
-        public static bool m_forceDisableInit;
-
         public void Awake()
         {
-            if (m_forceDisableInit)
-            {
-                Destroy(this);
-                return;
-            }
-
             if (!originalPiece)
             {
                 InvalidPlanPiece();
                 return;
             }
-
-            //DisablePiece(gameObject);
 
             m_wearNTear = GetComponent<WearNTear>();
             m_nView = GetComponent<ZNetView>();
@@ -53,6 +42,7 @@ namespace Veilheim.Blueprints
             m_nView.Register<string, int>("AddResource", RPC_AddResource);
             m_nView.Register("SpawnPieceAndDestroy", RPC_SpawnPieceAndDestroy);
             UpdateHoverText();
+            UpdateTextures();
         }
 
         private void RPC_Refund(long sender, bool all)
@@ -78,76 +68,8 @@ namespace Veilheim.Blueprints
             }
         }
 
-        private static readonly List<Type> typesToDestroyInChildren = new List<Type>()
-            {
-                typeof(Joint),
-                typeof(Rigidbody),
-                typeof(TerrainModifier),
-                typeof(GuidePoint),
-                typeof(Light),
-                typeof(LightLod),
-                typeof(Interactable),
-                typeof(Hoverable)
-            };
-
         public static int m_planLayer = LayerMask.NameToLayer("piece_nonsolid");
         public static int m_placeRayMask = LayerMask.GetMask("Default", "static_solid", "Default_small", "piece", "piece_nonsolid", "terrain", "vehicle");
-
-        public void DisablePiece(GameObject gameObject)
-        {
-            foreach (Type toDestroy in typesToDestroyInChildren)
-            {
-                Component[] componentsInChildren = gameObject.GetComponentsInChildren(toDestroy);
-                for (int i = 0; i < componentsInChildren.Length; i++)
-                {
-                    Component subComponent = componentsInChildren[i];
-                    if (subComponent.GetType() == typeof(PlanPiece))
-                    {
-                        continue;
-                    }
-                    Destroy(subComponent);
-                }
-            }
-
-            Collider[] componentsInChildren3 = gameObject.GetComponentsInChildren<Collider>();
-            foreach (Collider collider in componentsInChildren3)
-            {
-                if (((1 << collider.gameObject.layer) & m_placeRayMask) == 0)
-                {
-                    collider.gameObject.layer = m_planLayer;
-                }
-            }
-            Transform[] componentsInChildren4 = gameObject.GetComponentsInChildren<Transform>();
-            int layer = m_planLayer;
-            Transform[] array = componentsInChildren4;
-            for (int i = 0; i < array.Length; i++)
-            {
-                array[i].gameObject.layer = layer;
-            }
-
-            AudioSource[] componentsInChildren8 = gameObject.GetComponentsInChildren<AudioSource>();
-            for (int i = 0; i < componentsInChildren8.Length; i++)
-            {
-                componentsInChildren8[i].enabled = false;
-            }
-            ZSFX[] componentsInChildren9 = gameObject.GetComponentsInChildren<ZSFX>();
-            for (int i = 0; i < componentsInChildren9.Length; i++)
-            {
-                componentsInChildren9[i].enabled = false;
-            }
-            Windmill componentInChildren2 = gameObject.GetComponentInChildren<Windmill>();
-            if ((bool)componentInChildren2)
-            {
-                componentInChildren2.enabled = false;
-            }
-            ParticleSystem[] componentsInChildren10 = gameObject.GetComponentsInChildren<ParticleSystem>();
-            for (int i = 0; i < componentsInChildren10.Length; i++)
-            {
-                componentsInChildren10[i].gameObject.SetActive(value: false);
-            }
-
-            UpdateTextures();
-        }
 
         /// <summary>
         /// Destroy this gameObject because of invalid state detected
@@ -198,10 +120,10 @@ namespace Veilheim.Blueprints
             if (!HasAllResources())
             {
                 return Localization.instance.Localize("" +
-                    "[<color=yellow>$KEY_Use</color>] [<color=yellow>1-8</color>] $plan_piece_hover_add_material\n" +
-                    "[$plan_piece_hover_hold <color=yellow>$KEY_Use</color>] $plan_piece_hover_add_all_materials");
+                    "[<color=yellow>$KEY_Use</color>] [<color=yellow>1-8</color>] $plan_hover_add_material\n" +
+                    "[$plan_hover_hold <color=yellow>$KEY_Use</color>] $plan_hover_add_all_materials");
             }
-            return Localization.instance.Localize("[<color=yellow>$KEY_Use</color>] $plan_piece_hover_build");
+            return Localization.instance.Localize("[<color=yellow>$KEY_Use</color>] $plan_hover_build");
         }
 
         private void SetupPieceInfo(Piece piece)
@@ -340,13 +262,11 @@ namespace Veilheim.Blueprints
                 user.Message(MessageHud.MessageType.Center, "$msg_missingrequirement");
                 return false;
             }
-            //TODO: what does it do?
-            /*if (user.GetInventory().GetItem("$item_hammer") == null
-                && user.GetInventory().GetItem(PlanHammerPrefab.itemName) == null)
+            if (user.GetInventory().GetItem("$item_blueprintrune") == null)
             {
-                user.Message(MessageHud.MessageType.Center, "$message_plan_piece_need_hammer");
+                user.Message(MessageHud.MessageType.Center, "$plan_need_rune");
                 return false;
-            }*/
+            }
             if ((bool)originalPiece.m_craftingStation)
             {
                 CraftingStation craftingStation = CraftingStation.HaveBuildStationInRange(originalPiece.m_craftingStation.m_name, user.transform.position);
@@ -358,7 +278,7 @@ namespace Veilheim.Blueprints
             }
             if (!hasSupport)
             {
-                user.Message(MessageHud.MessageType.Center, "$message_plan_piece_not_enough_support");
+                user.Message(MessageHud.MessageType.Center, "$plan_not_enough_support");
                 return false;
             }
             m_nView.InvokeRPC("Refund", false);
