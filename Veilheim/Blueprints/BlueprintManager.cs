@@ -402,7 +402,7 @@ namespace Veilheim.Blueprints
                             Jotunn.Logger.LogDebug($"Setting radius to {Instance.selectionRadius}");
                         }
                     }
-                    else
+                    else if (piece.name.StartsWith("piece_blueprint"))
                     {
                         // Destroy placement marker instance to get rid of the circleprojector
                         if (self.m_placementMarkerInstance)
@@ -410,15 +410,8 @@ namespace Veilheim.Blueprints
                             DestroyImmediate(self.m_placementMarkerInstance);
                         }
 
-                        // Restore placementDistance
-                        if (!piece.name.StartsWith("piece_blueprint"))
-                        {
-                            // default value, if we introduce config stuff for this, then change it here!
-                            self.m_maxPlaceDistance = 8;
-                        }
-
                         // Reset rotation when changing camera
-                        if (piece.name.StartsWith("piece_blueprint") && Input.GetAxis("Mouse ScrollWheel") != 0f && Input.GetKey(KeyCode.LeftShift))
+                        if (Input.GetAxis("Mouse ScrollWheel") != 0f && Input.GetKey(KeyCode.LeftShift))
                         {
 
                             if (Input.GetAxis("Mouse ScrollWheel") < 0f)
@@ -432,6 +425,18 @@ namespace Veilheim.Blueprints
                             }
 
                         }
+                    }
+                    else
+                    {
+                        // Destroy placement marker instance to get rid of the circleprojector
+                        if (self.m_placementMarkerInstance)
+                        {
+                            DestroyImmediate(self.m_placementMarkerInstance);
+                        }
+
+                        // Restore placementDistance
+                        // default value, if we introduce config stuff for this, then change it here!
+                        self.m_maxPlaceDistance = 8;
                     }
                 }
             }

@@ -6,7 +6,6 @@
 
 using HarmonyLib;
 using System;
-using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
@@ -18,11 +17,11 @@ namespace Veilheim.Blueprints
         public const string zdoPlanPiece = "PlanPiece";
         public const string zdoPlanResource = "PlanResource";
 
-        private ZNetView m_nView;
-        private WearNTear m_wearNTear;
-
         public string m_hoverText = "";
         public Piece originalPiece;
+
+        private ZNetView m_nView;
+        private WearNTear m_wearNTear;
 
         public void Awake()
         {

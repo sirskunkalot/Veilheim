@@ -404,6 +404,9 @@ namespace Veilheim.Blueprints
                     {
                         Object.Destroy(component);
                     }
+
+                    // A Ghost also has to look like one
+                    ShaderHelper.UpdateTextures(child, ShaderHelper.ShaderState.Floating);
                 }
             }
             catch (Exception ex)
