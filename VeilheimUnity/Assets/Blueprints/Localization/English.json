@@ -16,5 +16,6 @@
   "plan_hover_hold": "Hold",
   "plan_hover_build": "Build",
   "plan_need_rune": "Needs Blueprint Rune",
-  "plan_not_enough_support": "Not enough support"
+  "plan_not_enough_support": "Not enough support",
+  "plan_direct_build_disable": "Direct build disabled"
 }

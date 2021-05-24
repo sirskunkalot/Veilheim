@@ -231,6 +231,12 @@ namespace Veilheim.Blueprints
                     var position = self.m_placementGhost.transform.position;
                     var rotation = self.m_placementGhost.transform.rotation;
 
+                    if (ZInput.GetButton("Crouch") && !ConfigUtil.Get<bool>("Blueprints", "allowPlacementWithoutMaterial"))
+                    {
+                        MessageHud.instance.ShowMessage(MessageHud.MessageType.Center, "$plan_direct_build_disable");
+                        return false;
+                    }
+
                     if (ZInput.GetButton("AltPlace"))
                     {
                         Vector2 extent = bp.GetExtent();

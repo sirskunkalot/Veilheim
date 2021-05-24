@@ -16,5 +16,6 @@
   "plan_hover_hold": "Halten: ",
   "plan_hover_build": "Bauen",
   "plan_need_rune": "Braucht die Rune des Kopierens",
-  "plan_not_enough_support": "Nicht genug Stabilität"
+  "plan_not_enough_support": "Nicht genug Stabilität",
+  "plan_direct_build_disable": "Ohne Plan zu bauen ist deaktiviert"
 }
