@@ -513,6 +513,16 @@ namespace Veilheim.Blueprints
             GUIManager.Instance.AddKeyHint(KHC);
         }
 
+        internal void RemoveKeyHint()
+        {
+            KeyHintConfig KHC = new KeyHintConfig
+            {
+                Item = "BlueprintRune",
+                Piece = m_prefabname
+            };
+            GUIManager.Instance.RemoveKeyHint(KHC);
+        }
+
         /// <summary>
         ///     Helper class for naming and saving a captured blueprint via GUI
         ///     Implements the Interface <see cref="TextReceiver" />. SetText is called from <see cref="TextInput" /> upon entering
@@ -543,6 +553,7 @@ namespace Veilheim.Blueprints
                     {
                         Blueprint oldbp = BlueprintManager.Instance.m_blueprints[newbp.m_name];
                         oldbp.DestroyPrefab();
+                        oldbp.RemoveKeyHint();
                         BlueprintManager.Instance.m_blueprints.Remove(newbp.m_name);
                     }
 
