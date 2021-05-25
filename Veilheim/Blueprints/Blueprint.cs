@@ -160,7 +160,7 @@ namespace Veilheim.Blueprints
                     var yo = (int) Mathf.Round(yp * orig.height); //Other Y pos
                     Color origPixel = orig.GetPixel(xo, yo);
                     origPixel.a = 1f;
-                    result.SetPixel(x, y, orig.GetPixel(xo, yo));
+                    result.SetPixel(x, y, origPixel);
                 }
             }
 
