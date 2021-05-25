@@ -20,7 +20,7 @@ namespace Veilheim
     {
         public const string PluginGUID = "de.sirskunkalot.valheim.veilheim";
         public const string PluginName = "Veilheim";
-        public const string PluginVersion = "0.3.19";
+        public const string PluginVersion = "0.3.20";
 
         // Static instance needed for Coroutines
         public static VeilheimPlugin Instance = null;
